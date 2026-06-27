@@ -69,18 +69,6 @@ target_link_options(LauncherJX PRIVATE "/MANIFEST:NO")
 target_compile_options(LauncherJX PRIVATE "/utf-8")
 target_compile_definitions(LauncherJX PRIVATE UNICODE _UNICODE)
 
-set(LAUNCHER_RESOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/resources/version.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/resources/data.txt
-)
-
-add_custom_command(TARGET LauncherJX POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:LauncherJX>/launcher_res
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            ${LAUNCHER_RESOURCES}
-            $<TARGET_FILE_DIR:LauncherJX>/launcher_res
-    VERBATIM
-)
 
 # Thêm target test cho logic update
 add_executable(update_tests
