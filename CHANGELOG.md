@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.10 - 2026-06-27
+
+### Fixes
+- Add query timestamp (cache-buster) to remote CHANGELOG.md URL to bypass GitHub Raw CDN caching and show the latest changes immediately
+
 ## v1.0.9 - 2026-06-27
 
 ### Features
