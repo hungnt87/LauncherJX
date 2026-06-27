@@ -226,24 +226,36 @@ void RenderUI(LauncherApp& app) {
         if (ImGui::BeginTabItem("Cai dat")) {
             ImGui::Spacing();
             ImGui::BeginChild("SettingsArea", ImVec2(936, 434), true);
-            ImGui::Text("Graphics & audio");
+            
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f));
+            ImGui::Text("== Do phan giai Game (Game Resolution) ==");
+            ImGui::PopStyleColor();
             ImGui::Separator();
             ImGui::Spacing();
 
-            static int selectedRes = 0;
-            ImGui::Text("Game resolution:");
-            ImGui::RadioButton("800 x 600 (Default)", &selectedRes, 0);
-            ImGui::RadioButton("1024 x 768", &selectedRes, 1);
-            ImGui::RadioButton("1280 x 720 (HD)", &selectedRes, 2);
+            ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Chon do phan giai phu hop voi may tinh cua ban:");
+            ImGui::Spacing();
+
+            int currentRes = app.GameResolution();
+
+            bool sel800  = (currentRes == 800);
+            bool sel1024 = (currentRes == 1024);
+
+            if (ImGui::RadioButton("800 x 600  (tiet kiem tai nguyen, may cu)", sel800)) {
+                app.SetGameResolution(800);
+            }
+            ImGui::Spacing();
+            if (ImGui::RadioButton("1024 x 768 (do hoa cao hon, may tot)", sel1024)) {
+                app.SetGameResolution(1024);
+            }
 
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
-
-            static bool isWindowed = true;
-            static bool enableSound = true;
-            ImGui::Checkbox("Windowed mode", &isWindowed);
-            ImGui::Checkbox("Enable in-game sound", &enableSound);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+            ImGui::TextWrapped("* Thay doi duoc ap dung va luu ngay lap tuc vao config.ini (Theme) va package.ini (0=xxx.pak).");
+            ImGui::TextWrapped("* Ban can khoi dong lai game de ap dung do phan giai moi.");
+            ImGui::PopStyleColor();
 
             ImGui::EndChild();
             ImGui::EndTabItem();

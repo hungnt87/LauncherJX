@@ -22,10 +22,15 @@ public:
     const std::string& ChangelogContent() const noexcept;
     void LoadChangelog();
 
+    int GameResolution() const noexcept;
+    void SetGameResolution(int resolution);
+
 private:
     void RunCheckWorker();
     void RunUpdateWorker();
     void SetSnapshot(const launcher::update::UpdateSnapshot& snapshot);
+    void LoadResolutionSettings();
+    void SaveResolutionSettings(int resolution);
 
     std::atomic<bool> running_{true};
     mutable std::mutex snapshot_mutex_;
@@ -33,6 +38,7 @@ private:
     std::wstring exe_dir_;
     std::string version_string_;
     std::string changelog_content_;
+    int game_resolution_ = 1024;
     
     launcher::update::Manifest server_manifest_;
     bool has_update_ = false;

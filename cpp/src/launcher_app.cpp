@@ -58,6 +58,7 @@ void LauncherApp::Initialize(const std::wstring& exe_dir) {
         check_thread_.join();
     }
     changelog_content_ = "Dang tai thong tin cap nhat tu GitHub...";
+    LoadResolutionSettings();
     check_thread_ = std::thread(&LauncherApp::RunCheckWorker, this);
 }
 
@@ -454,4 +455,42 @@ void LauncherApp::RunUpdateWorker() {
 void LauncherApp::SetSnapshot(const launcher::update::UpdateSnapshot& snapshot) {
     std::lock_guard<std::mutex> lock(snapshot_mutex_);
     snapshot_ = snapshot;
+}
+
+int LauncherApp::GameResolution() const noexcept {
+    return game_resolution_;
+}
+
+void LauncherApp::SetGameResolution(int resolution) {
+    if (resolution == 800 || resolution == 1024) {
+        SaveResolutionSettings(resolution);
+    }
+}
+
+void LauncherApp::LoadResolutionSettings() {
+    std::wstring config_path = exe_dir_ + L"\\config.ini";
+    wchar_t theme_buf[32] = {0};
+    GetPrivateProfileStringW(L"Client", L"Theme", L"1024", theme_buf, 32, config_path.c_str());
+    
+    std::wstring theme_str(theme_buf);
+    if (theme_str == L"800") {
+        game_resolution_ = 800;
+    } else {
+        game_resolution_ = 1024;
+    }
+}
+
+void LauncherApp::SaveResolutionSettings(int resolution) {
+    game_resolution_ = resolution;
+    std::wstring wres_str = std::to_wstring(resolution);
+    
+    std::wstring config_path = exe_dir_ + L"\\config.ini";
+    std::wstring package_path = exe_dir_ + L"\\package.ini";
+    
+    // 1. Ghi đè vào config.ini: [Client] -> Theme = 800 / 1024
+    WritePrivateProfileStringW(L"Client", L"Theme", wres_str.c_str(), config_path.c_str());
+    
+    // 2. Ghi đè vào package.ini: [Package] -> 0 = 800.pak / 1024.pak
+    std::wstring pak_val = wres_str + L".pak";
+    WritePrivateProfileStringW(L"Package", L"0", pak_val.c_str(), package_path.c_str());
 }
