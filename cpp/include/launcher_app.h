@@ -25,12 +25,16 @@ public:
     int GameResolution() const noexcept;
     void SetGameResolution(int resolution);
 
+    bool IsFullScreen() const noexcept;
+    void SetFullScreen(bool fullscreen);
+
 private:
     void RunCheckWorker();
     void RunUpdateWorker();
     void SetSnapshot(const launcher::update::UpdateSnapshot& snapshot);
     void LoadResolutionSettings();
     void SaveResolutionSettings(int resolution);
+    void SaveFullScreenSetting(bool fullscreen);
 
     std::atomic<bool> running_{true};
     mutable std::mutex snapshot_mutex_;
@@ -39,6 +43,7 @@ private:
     std::string version_string_;
     std::string changelog_content_;
     int game_resolution_ = 1024;
+    bool fullscreen_ = false;
     
     launcher::update::Manifest server_manifest_;
     bool has_update_ = false;

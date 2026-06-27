@@ -252,9 +252,27 @@ void RenderUI(LauncherApp& app) {
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
+
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f));
+            ImGui::Text("== Hien thi (Display Mode) ==");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Che do hien thi:");
+            ImGui::Spacing();
+
+            bool fullscreen = app.IsFullScreen();
+            if (ImGui::Checkbox("Toan man hinh (FullScreen = 1)", &fullscreen)) {
+                app.SetFullScreen(fullscreen);
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
-            ImGui::TextWrapped("* Thay doi duoc ap dung va luu ngay lap tuc vao config.ini (Theme) va package.ini (0=xxx.pak).");
-            ImGui::TextWrapped("* Ban can khoi dong lai game de ap dung do phan giai moi.");
+            ImGui::TextWrapped("* Thay doi duoc ap dung va luu ngay lap tuc vao config.ini (Theme, FullScreen) va package.ini (0=xxx.pak).");
+            ImGui::TextWrapped("* Ban can khoi dong lai game de ap dung cai dat moi.");
             ImGui::PopStyleColor();
 
             ImGui::EndChild();

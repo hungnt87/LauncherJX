@@ -478,6 +478,11 @@ void LauncherApp::LoadResolutionSettings() {
     } else {
         game_resolution_ = 1024;
     }
+
+    // Đọc FullScreen từ config.ini
+    wchar_t fs_buf[32] = {0};
+    GetPrivateProfileStringW(L"Client", L"FullScreen", L"0", fs_buf, 32, config_path.c_str());
+    fullscreen_ = (std::wstring(fs_buf) == L"1");
 }
 
 void LauncherApp::SaveResolutionSettings(int resolution) {
@@ -493,4 +498,18 @@ void LauncherApp::SaveResolutionSettings(int resolution) {
     // 2. Ghi đè vào package.ini: [Package] -> 0 = 800.pak / 1024.pak
     std::wstring pak_val = wres_str + L".pak";
     WritePrivateProfileStringW(L"Package", L"0", pak_val.c_str(), package_path.c_str());
+}
+
+bool LauncherApp::IsFullScreen() const noexcept {
+    return fullscreen_;
+}
+
+void LauncherApp::SetFullScreen(bool fullscreen) {
+    SaveFullScreenSetting(fullscreen);
+}
+
+void LauncherApp::SaveFullScreenSetting(bool fullscreen) {
+    fullscreen_ = fullscreen;
+    std::wstring config_path = exe_dir_ + L"\\config.ini";
+    WritePrivateProfileStringW(L"Client", L"FullScreen", fullscreen ? L"1" : L"0", config_path.c_str());
 }
