@@ -16,173 +16,12 @@ ID3D11Device* g_pd3dDevice = nullptr;
 ID3D11DeviceContext* g_pd3dDeviceContext = nullptr;
 HWND g_hWnd = nullptr;
 
-ID3D11ShaderResourceView* g_bannerTexture = nullptr;
-ID3D11ShaderResourceView* g_logoTexture = nullptr;
-int g_bannerWidth = 0;
-int g_bannerHeight = 0;
-int g_logoWidth = 0;
-int g_logoHeight = 0;
-
-std::wstring GetExecutablePath() {
-    wchar_t buffer[MAX_PATH];
-    GetModuleFileNameW(nullptr, buffer, MAX_PATH);
-    std::wstring path(buffer);
-    const size_t pos = path.find_last_of(L"\\/");
-    if (pos != std::wstring::npos) {
-        return path.substr(0, pos);
-    }
-    return L".";
-}
-
-bool LoadTextureFromImage(const wchar_t* filename, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height) {
-    Gdiplus::Bitmap bitmap(filename);
-    if (bitmap.GetLastStatus() != Gdiplus::Ok) {
-        return false;
-    }
-
-    const UINT width = bitmap.GetWidth();
-    const UINT height = bitmap.GetHeight();
-
-    Gdiplus::BitmapData bitmapData;
-    Gdiplus::Rect rect(0, 0, width, height);
-    if (bitmap.LockBits(&rect, Gdiplus::ImageLockModeRead, PixelFormat32bppARGB, &bitmapData) != Gdiplus::Ok) {
-        return false;
-    }
-
-    D3D11_TEXTURE2D_DESC desc;
-    ZeroMemory(&desc, sizeof(desc));
-    desc.Width = width;
-    desc.Height = height;
-    desc.MipLevels = 1;
-    desc.ArraySize = 1;
-    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    desc.SampleDesc.Count = 1;
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-
-    D3D11_SUBRESOURCE_DATA subResource;
-    ZeroMemory(&subResource, sizeof(subResource));
-    subResource.pSysMem = bitmapData.Scan0;
-    subResource.SysMemPitch = bitmapData.Stride;
-
-    ID3D11Texture2D* pTexture = nullptr;
-    HRESULT hr = g_pd3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
-    bitmap.UnlockBits(&bitmapData);
-    if (FAILED(hr)) {
-        return false;
-    }
-
-    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-    ZeroMemory(&srvDesc, sizeof(srvDesc));
-    srvDesc.Format = desc.Format;
-    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = 1;
-
-    hr = g_pd3dDevice->CreateShaderResourceView(pTexture, &srvDesc, out_srv);
-    pTexture->Release();
-    if (FAILED(hr)) {
-        return false;
-    }
-
-    *out_width = static_cast<int>(width);
-    *out_height = static_cast<int>(height);
-    return true;
-}
-
-bool LoadTextureFromResource(int resource_id, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height) {
-    HRSRC hResInfo = FindResourceW(nullptr, MAKEINTRESOURCEW(resource_id), RT_RCDATA);
-    if (!hResInfo) return false;
-
-    HGLOBAL hResData = LoadResource(nullptr, hResInfo);
-    if (!hResData) return false;
-
-    void* pBuffer = LockResource(hResData);
-    DWORD dwSize = SizeofResource(nullptr, hResInfo);
-    if (!pBuffer || dwSize == 0) return false;
-
-    HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwSize);
-    if (!hGlobal) return false;
-
-    void* pData = GlobalLock(hGlobal);
-    if (!pData) {
-        GlobalFree(hGlobal);
-        return false;
-    }
-    memcpy(pData, pBuffer, dwSize);
-    GlobalUnlock(hGlobal);
-
-    IStream* pStream = nullptr;
-    if (CreateStreamOnHGlobal(hGlobal, TRUE, &pStream) != S_OK) {
-        GlobalFree(hGlobal);
-        return false;
-    }
-
-    Gdiplus::Bitmap bitmap(pStream);
-    pStream->Release();
-
-    if (bitmap.GetLastStatus() != Gdiplus::Ok) {
-        return false;
-    }
-
-    const UINT width = bitmap.GetWidth();
-    const UINT height = bitmap.GetHeight();
-
-    Gdiplus::BitmapData bitmapData;
-    Gdiplus::Rect rect(0, 0, width, height);
-    if (bitmap.LockBits(&rect, Gdiplus::ImageLockModeRead, PixelFormat32bppARGB, &bitmapData) != Gdiplus::Ok) {
-        return false;
-    }
-
-    D3D11_TEXTURE2D_DESC desc;
-    ZeroMemory(&desc, sizeof(desc));
-    desc.Width = width;
-    desc.Height = height;
-    desc.MipLevels = 1;
-    desc.ArraySize = 1;
-    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    desc.SampleDesc.Count = 1;
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-
-    D3D11_SUBRESOURCE_DATA subResource;
-    ZeroMemory(&subResource, sizeof(subResource));
-    subResource.pSysMem = bitmapData.Scan0;
-    subResource.SysMemPitch = bitmapData.Stride;
-
-    ID3D11Texture2D* pTexture = nullptr;
-    HRESULT hr = g_pd3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
-    bitmap.UnlockBits(&bitmapData);
-    if (FAILED(hr)) {
-        return false;
-    }
-
-    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-    ZeroMemory(&srvDesc, sizeof(srvDesc));
-    srvDesc.Format = desc.Format;
-    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = 1;
-
-    hr = g_pd3dDevice->CreateShaderResourceView(pTexture, &srvDesc, out_srv);
-    pTexture->Release();
-    if (FAILED(hr)) {
-        return false;
-    }
-
-    *out_width = static_cast<int>(width);
-    *out_height = static_cast<int>(height);
-    return true;
-}
-
 }  // namespace
 
 void InitUI(ID3D11Device* device, ID3D11DeviceContext* context, HWND hWnd) {
     g_pd3dDevice = device;
     g_pd3dDeviceContext = context;
     g_hWnd = hWnd;
-
-    // Tải ảnh trực tiếp từ bộ nhớ tài nguyên nhúng của file EXE
-    LoadTextureFromResource(102, &g_logoTexture, &g_logoWidth, &g_logoHeight);
-    LoadTextureFromResource(103, &g_bannerTexture, &g_bannerWidth, &g_bannerHeight);
 
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeui.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesVietnamese());
@@ -226,12 +65,7 @@ void RenderUI(LauncherApp& app) {
 
     ImGui::Begin("MainLauncher", nullptr, windowFlags);
 
-    ImGui::SetCursorPos(ImVec2(10, 8));
-    if (g_logoTexture) {
-        ImGui::Image(reinterpret_cast<void*>(g_logoTexture), ImVec2(24, 24));
-    }
-    ImGui::SameLine();
-    ImGui::SetCursorPosY(10);
+    ImGui::SetCursorPos(ImVec2(12, 10));
     const std::string titleText = "LauncherJX - " + app.VersionString();
     ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "%s", titleText.c_str());
 
@@ -496,12 +330,4 @@ void RenderUI(LauncherApp& app) {
 }
 
 void CleanupUI() {
-    if (g_bannerTexture) {
-        g_bannerTexture->Release();
-        g_bannerTexture = nullptr;
-    }
-    if (g_logoTexture) {
-        g_logoTexture->Release();
-        g_logoTexture = nullptr;
-    }
 }

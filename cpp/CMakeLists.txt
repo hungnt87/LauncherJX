@@ -70,8 +70,6 @@ target_compile_options(LauncherJX PRIVATE "/utf-8")
 target_compile_definitions(LauncherJX PRIVATE UNICODE _UNICODE)
 
 set(LAUNCHER_RESOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/resources/wuxia_banner.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/resources/app_icon.png
     ${CMAKE_CURRENT_SOURCE_DIR}/resources/version.json
     ${CMAKE_CURRENT_SOURCE_DIR}/resources/data.txt
 )
