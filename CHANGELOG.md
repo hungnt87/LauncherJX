@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.5 - 2026-06-27
+
+### Features
+- Implement automatic game file integrity check and repair logic (Auto-Repair) when local files are missing or modified
+
 ## v1.0.4 - 2026-06-27
 
 ### Fixes

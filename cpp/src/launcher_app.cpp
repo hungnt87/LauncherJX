@@ -158,16 +158,29 @@ void LauncherApp::RunCheckWorker() {
         ready_snapshot.message = "Co ban cap nhat moi: " + manifest.version + " (Hien tai: " + version_string_ + "). Bam UPDATE de cap nhat.";
         SetSnapshot(ready_snapshot);
     } else {
-        has_update_ = false;
-        try {
-            std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"tmp");
-        } catch (...) {}
+        // Kể cả khi phiên bản bằng hoặc nhỏ hơn server, vẫn quét kiểm tra tính toàn vẹn của các file game
+        const auto files_to_update = launcher::update::CollectFilesToUpdate(exe_dir_, manifest);
+        if (!files_to_update.empty()) {
+            server_manifest_ = manifest;
+            has_update_ = true;
 
-        launcher::update::UpdateSnapshot done_snapshot;
-        done_snapshot.progress = 1.0f;
-        done_snapshot.phase = launcher::update::UpdatePhase::Done;
-        done_snapshot.message = "Game da o phien ban moi nhat (" + version_string_ + ")! (Da quet " + std::to_string(manifest.files.size()) + " file)";
-        SetSnapshot(done_snapshot);
+            launcher::update::UpdateSnapshot integrity_snapshot;
+            integrity_snapshot.progress = 0.0f;
+            integrity_snapshot.phase = launcher::update::UpdatePhase::Idle;
+            integrity_snapshot.message = "Phat hien " + std::to_string(files_to_update.size()) + " file game bi thieu hoac loi. Bam UPDATE de sua loi game.";
+            SetSnapshot(integrity_snapshot);
+        } else {
+            has_update_ = false;
+            try {
+                std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"tmp");
+            } catch (...) {}
+
+            launcher::update::UpdateSnapshot done_snapshot;
+            done_snapshot.progress = 1.0f;
+            done_snapshot.phase = launcher::update::UpdatePhase::Done;
+            done_snapshot.message = "Game da o phien ban moi nhat (" + version_string_ + ")! (Da quet " + std::to_string(manifest.files.size()) + " file toan ven)";
+            SetSnapshot(done_snapshot);
+        }
     }
 }
 
