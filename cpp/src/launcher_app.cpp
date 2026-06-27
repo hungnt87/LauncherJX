@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <wininet.h>
 #include <chrono>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
@@ -106,7 +107,8 @@ const std::string& LauncherApp::ChangelogContent() const noexcept {
 
 void LauncherApp::LoadChangelog() {
     const std::wstring temp_changelog_path = exe_dir_ + L"\\tmp\\CHANGELOG.md";
-    const std::wstring remote_changelog_url = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/main/CHANGELOG.md";
+    // Thêm timestamp để phá cache CDN của GitHub Raw, đảm bảo tải thông tin mới nhất lập tức
+    std::wstring remote_changelog_url = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/main/CHANGELOG.md?t=" + std::to_wstring(std::time(nullptr));
     
     if (launcher::update::DownloadFile(nullptr, remote_changelog_url, temp_changelog_path, running_, nullptr)) {
         std::ifstream file(temp_changelog_path, std::ios::binary);
