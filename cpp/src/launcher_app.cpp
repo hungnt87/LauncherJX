@@ -182,10 +182,20 @@ void LauncherApp::RunCheckWorker() {
             server_manifest_ = manifest;
             has_update_ = true;
 
+            // Lấy danh sách ví dụ các file bị lỗi (tối đa 3 file)
+            std::string examples;
+            for (size_t i = 0; i < (std::min)(size_t(3), files_to_update.size()); ++i) {
+                if (i > 0) {
+                    examples += ", ";
+                }
+                examples += files_to_update[i].name;
+            }
+
             launcher::update::UpdateSnapshot integrity_snapshot;
             integrity_snapshot.progress = 0.0f;
             integrity_snapshot.phase = launcher::update::UpdatePhase::Idle;
-            integrity_snapshot.message = "Phat hien " + std::to_string(files_to_update.size()) + " file game bi thieu hoac loi. Bam UPDATE de sua loi game.";
+            integrity_snapshot.message = "Phat hien " + std::to_string(files_to_update.size()) + 
+                                         " file game bi loi/thieu (Vi du: " + examples + "). Bam UPDATE de sua loi game.";
             SetSnapshot(integrity_snapshot);
         } else {
             has_update_ = false;

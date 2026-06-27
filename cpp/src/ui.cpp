@@ -180,7 +180,20 @@ void RenderUI(LauncherApp& app) {
             }
 
             ImGui::Spacing();
-            ImGui::BeginChild("NewsText", ImVec2(936, 220), true);
+            static float copyFeedbackTime = 0.0f;
+            char copyBtnLabel[64] = "Sao chep thong bao (Copy)";
+            if (copyFeedbackTime > 0.0f) {
+                copyFeedbackTime -= ImGui::GetIO().DeltaTime;
+                strcpy_s(copyBtnLabel, "Da sao chep! (Copied)");
+            }
+
+            if (ImGui::Button(copyBtnLabel, ImVec2(220, 26))) {
+                ImGui::SetClipboardText(app.ChangelogContent().c_str());
+                copyFeedbackTime = 2.0f;
+            }
+            ImGui::Spacing();
+
+            ImGui::BeginChild("NewsText", ImVec2(936, 184), true); // Điều chỉnh chiều cao từ 220 xuống 184 để nhường chỗ cho nút bấm
             std::istringstream stream(app.ChangelogContent());
             std::string line;
             while (std::getline(stream, line)) {
