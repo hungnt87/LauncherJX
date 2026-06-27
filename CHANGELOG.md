@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.9 - 2026-06-27
+
+### Features
+- Implement remote CHANGELOG.md downloading directly to memory via background thread (no local copy needed)
+
 ## v1.0.8 - 2026-06-27
 
 ### Fixes

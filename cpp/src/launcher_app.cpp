@@ -56,7 +56,7 @@ void LauncherApp::Initialize(const std::wstring& exe_dir) {
     if (check_thread_.joinable()) {
         check_thread_.join();
     }
-    LoadChangelog(); // Đọc file CHANGELOG.md cục bộ lúc khởi tạo
+    changelog_content_ = "Dang tai thong tin cap nhat tu GitHub...";
     check_thread_ = std::thread(&LauncherApp::RunCheckWorker, this);
 }
 
@@ -105,19 +105,28 @@ const std::string& LauncherApp::ChangelogContent() const noexcept {
 }
 
 void LauncherApp::LoadChangelog() {
-    std::wstring changelog_path = exe_dir_ + L"\\CHANGELOG.md";
-    std::ifstream file(changelog_path, std::ios::binary);
-    if (!file.is_open()) {
-        changelog_content_ = "Khong tim thay thong tin cap nhat (CHANGELOG.md thieu).";
-        return;
-    }
-    changelog_content_ = std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-    if (changelog_content_.empty()) {
-        changelog_content_ = "Thong tin cap nhat trong.";
+    const std::wstring temp_changelog_path = exe_dir_ + L"\\tmp\\CHANGELOG.md";
+    const std::wstring remote_changelog_url = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/main/CHANGELOG.md";
+    
+    if (launcher::update::DownloadFile(nullptr, remote_changelog_url, temp_changelog_path, running_, nullptr)) {
+        std::ifstream file(temp_changelog_path, std::ios::binary);
+        if (file.is_open()) {
+            changelog_content_ = std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+            if (changelog_content_.empty()) {
+                changelog_content_ = "Thong tin cap nhat trong.";
+            }
+            file.close();
+        }
+        try {
+            std::filesystem::remove(temp_changelog_path);
+        } catch (...) {}
+    } else {
+        changelog_content_ = "Khong the tai thong tin cap nhat tu GitHub. Vui long kiem tra ket noi.";
     }
 }
 
 void LauncherApp::RunCheckWorker() {
+    LoadChangelog();
     const std::wstring temp_version_path = exe_dir_ + L"\\tmp\\version.json";
     const std::wstring remote_version_url = launcher::update::kManifestUrl;
 
