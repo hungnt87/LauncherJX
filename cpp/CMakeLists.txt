@@ -47,7 +47,6 @@ target_sources(LauncherJX
 target_link_libraries(LauncherJX
     PRIVATE
         launcher_resources
-        imgui_objects
         common_lib
         comctl32
         user32
