@@ -13,3 +13,5 @@
 *.exe
 *.manifest
 *.log
+/zips
+/patch/zips
