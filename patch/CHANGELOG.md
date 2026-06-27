@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.8 - 2026-06-27
+
+### Fixes
+- Skip hash integrity check for local .ini settings files (e.g. package.ini, config.ini) to keep player settings and prevent infinite update loops
+
 ## v1.0.7 - 2026-06-27
 
 ### Fixes
