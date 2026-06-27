@@ -1,12 +1,39 @@
+cmake_minimum_required(VERSION 3.20)
+
+project(LauncherJX_cpp LANGUAGES CXX)
+
+include(FetchContent)
+
+# Tai ImGui tu GitHub
+FetchContent_Declare(
+  imgui
+  GIT_REPOSITORY https://github.com/ocornut/imgui.git
+  GIT_TAG        v1.90.8
+)
+
+FetchContent_MakeAvailable(imgui)
+
+# Duong dan nguon ImGui
+set(IMGUI_DIR ${imgui_SOURCE_DIR})
+
+# Thiet lap target executable voi file nguon ImGui
 add_executable(LauncherJX WIN32
     src/main.cpp
     src/ui.cpp
     resources/app.rc
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_win32.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_dx11.cpp
 )
 
 target_include_directories(LauncherJX
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${IMGUI_DIR}
+        ${IMGUI_DIR}/backends
 )
 
 target_link_libraries(LauncherJX
@@ -16,6 +43,8 @@ target_link_libraries(LauncherJX
         user32
         gdi32
         gdiplus
+        d3d11
+        d3dcompiler
 )
 
 # Sao chep file anh resources vao cac thu muc build

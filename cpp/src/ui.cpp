@@ -1,457 +1,306 @@
 #include "ui.h"
-
-#include <commctrl.h>
-#include <string>
-#include <thread>
-#include <atomic>
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx11.h"
 #include <gdiplus.h>
+#include <atomic>
+#include <thread>
+#include <string>
 
 namespace {
 
-constexpr wchar_t kWindowClassName[] = L"LauncherJXWindowClass";
-constexpr wchar_t kWindowTitle[] = L"Aetheris Launcher";
+ID3D11Device*        g_pd3dDevice = nullptr;
+ID3D11DeviceContext* g_pd3dDeviceContext = nullptr;
+HWND                 g_hWnd = nullptr;
 
-constexpr wchar_t kNewsContainerClassName[] = L"NewsContainerClass";
-constexpr wchar_t kSettingsContainerClassName[] = L"SettingsContainerClass";
+// Texture tai nguyen
+ID3D11ShaderResourceView* g_bannerTexture = nullptr;
+ID3D11ShaderResourceView* g_logoTexture = nullptr;
+int g_bannerWidth = 0, g_bannerHeight = 0;
+int g_logoWidth = 0, g_logoHeight = 0;
 
-constexpr UINT WM_USER_UPDATE_PROGRESS = WM_USER + 1;
-constexpr UINT WM_USER_UPDATE_COMPLETE = WM_USER + 2;
-
-HWND g_mainWindow = nullptr;
-HWND g_tabControl = nullptr;
-HWND g_statusText = nullptr;
-HWND g_progressBar = nullptr;
-HWND g_playButton = nullptr;
-
-// Containers
-HWND g_newsContainer = nullptr;
-HWND g_settingsContainer = nullptr;
-
-// Font chung
-HFONT g_defaultFont = nullptr;
-
-// Controls cho Tab News (Thong bao)
-HWND g_newsTextBox = nullptr;
-
-// Controls cho Tab Settings (Cai dat)
-HWND g_settingsGroupBox = nullptr;
-HWND g_resRadio1 = nullptr;
-HWND g_resRadio2 = nullptr;
-HWND g_resRadio3 = nullptr;
-HWND g_windowedCheckbox = nullptr;
-HWND g_soundCheckbox = nullptr;
-
-// Đa luong
+// Da luong cap nhat
+std::atomic<float> g_updateProgress{0.0f};
+std::atomic<int> g_updateState{0}; // 0: Chua cap nhat, 1: Dang cap nhat, 2: Hoan thanh
 std::atomic<bool> g_appRunning{true};
 std::thread g_updateThread;
 
-void UpdateProcessWorker(HWND mainWindow) {
-    for (int i = 0; i <= 100; ++i) {
-        if (!g_appRunning) {
-            break;
-        }
-        
-        PostMessageW(mainWindow, WM_USER_UPDATE_PROGRESS, static_cast<WPARAM>(i), 0);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+// Ham lay duong dan den thu muc chua file .exe
+std::wstring GetExecutablePath() {
+    wchar_t buffer[MAX_PATH];
+    GetModuleFileNameW(nullptr, buffer, MAX_PATH);
+    std::wstring path(buffer);
+    size_t pos = path.find_last_of(L"\\/");
+    if (pos != std::wstring::npos) {
+        return path.substr(0, pos);
     }
+    return L".";
+}
+
+bool LoadTextureFromImage(const wchar_t* filename, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height) {
+    // Tai anh bang GDI+
+    Gdiplus::Bitmap bitmap(filename);
+    if (bitmap.GetLastStatus() != Gdiplus::Ok) {
+        return false;
+    }
+
+    UINT width = bitmap.GetWidth();
+    UINT height = bitmap.GetHeight();
+
+    // Khoa pixel de lay du lieu ARGB raw
+    Gdiplus::BitmapData bitmapData;
+    Gdiplus::Rect rect(0, 0, width, height);
+    if (bitmap.LockBits(&rect, Gdiplus::ImageLockModeRead, PixelFormat32bppARGB, &bitmapData) != Gdiplus::Ok) {
+        return false;
+    }
+
+    // Tao Texture 2D DirectX 11
+    D3D11_TEXTURE2D_DESC desc;
+    ZeroMemory(&desc, sizeof(desc));
+    desc.Width = width;
+    desc.Height = height;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; // Phù hop voi PixelFormat32bppARGB cua GDI+
+    desc.SampleDesc.Count = 1;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+    D3D11_SUBRESOURCE_DATA subResource;
+    ZeroMemory(&subResource, sizeof(subResource));
+    subResource.pSysMem = bitmapData.Scan0;
+    subResource.SysMemPitch = bitmapData.Stride;
+
+    ID3D11Texture2D* pTexture = nullptr;
+    HRESULT hr = g_pd3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
     
-    if (g_appRunning) {
-        PostMessageW(mainWindow, WM_USER_UPDATE_COMPLETE, 0, 0);
-    }
-}
+    // Mo khoa pixel
+    bitmap.UnlockBits(&bitmapData);
 
-void ApplyClassicLook(HWND hwnd) {
-    SendMessageW(g_progressBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
-    SendMessageW(g_progressBar, PBM_SETPOS, 0, 0);
-    SetWindowTextW(g_statusText, L"Hệ thống đã sẵn sàng. Vui lòng bấm UPDATE để cập nhật game.");
-    EnableWindow(g_playButton, TRUE);
-}
-
-void LayoutChildren(HWND hwnd) {
-    RECT rc = {};
-    GetClientRect(hwnd, &rc);
-
-    const int margin = 12;
-    const int top = margin;
-    const int fullWidth = rc.right - rc.left - (margin * 2);
-    const int statusHeight = 20;
-    const int progressHeight = 22;
-    const int buttonWidth = 120;
-    const int buttonHeight = 34;
-
-    // Di chuyen Tab Control
-    MoveWindow(g_tabControl, margin, top, fullWidth, rc.bottom - margin * 3 - progressHeight - statusHeight, TRUE);
-
-    // Lay vung lam viec cua Tab
-    RECT rcTab = { margin, top, margin + fullWidth, top + (rc.bottom - margin * 3 - progressHeight - statusHeight) };
-    TabCtrl_AdjustRect(g_tabControl, FALSE, &rcTab);
-
-    // Di chuyen các Container con
-    MoveWindow(g_newsContainer, rcTab.left, rcTab.top, rcTab.right - rcTab.left, rcTab.bottom - rcTab.top, TRUE);
-    MoveWindow(g_settingsContainer, rcTab.left, rcTab.top, rcTab.right - rcTab.left, rcTab.bottom - rcTab.top, TRUE);
-
-    // Di chuyen các control footer
-    MoveWindow(g_statusText, margin, rc.bottom - margin - statusHeight - progressHeight - 6, fullWidth, statusHeight, TRUE);
-    MoveWindow(g_progressBar, margin, rc.bottom - margin - progressHeight - 2, fullWidth - buttonWidth - 14, progressHeight, TRUE);
-    MoveWindow(g_playButton, rc.right - margin - buttonWidth, rc.bottom - margin - buttonHeight, buttonWidth, buttonHeight, TRUE);
-}
-
-// Thu tuc xu ly cho Tab News
-LRESULT CALLBACK WndProcNews(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    switch (msg) {
-    case WM_CREATE: {
-        g_newsTextBox = CreateWindowExW(
-            WS_EX_CLIENTEDGE, L"EDIT",
-            L"=== TIN TỨC VÕ LÂM JX ===\r\n\r\n"
-            L"1. Khai mở máy chủ thử nghiệm Thái Sơn vào ngày 28/06/2026.\r\n"
-            L"2. Sự kiện 'Kiếm Hiệp Tranh Hùng' nhận kỳ trân dị bảo cực hot.\r\n"
-            L"3. Hệ thống launcher Win32 classic thế hệ mới hoạt động mượt mà.\r\n"
-            L"4. Tự động cập nhật patch mới nhất chỉ với 1 cú click chuột.\r\n\r\n"
-            L"Chúc các đại hiệp hành tẩu giang hồ gặp nhiều may mắn!",
-            WS_CHILD | WS_VISIBLE | ES_MULTILINE | ES_READONLY | WS_VSCROLL,
-            0, 0, 0, 0,
-            hwnd, nullptr, GetModuleHandleW(nullptr), nullptr);
-        SendMessageW(g_newsTextBox, WM_SETFONT, reinterpret_cast<WPARAM>(g_defaultFont), TRUE);
-        return 0;
-    }
-    case WM_SIZE: {
-        RECT rc = {};
-        GetClientRect(hwnd, &rc);
-        int bannerHeight = 120;
-        MoveWindow(g_newsTextBox, 4, bannerHeight + 6, rc.right - rc.left - 8, rc.bottom - rc.top - bannerHeight - 10, TRUE);
-        return 0;
-    }
-    case WM_PAINT: {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hwnd, &ps);
-        
-        Gdiplus::Graphics graphics(hdc);
-        Gdiplus::Image image(L"wuxia_banner.png");
-        
-        RECT rc = {};
-        GetClientRect(hwnd, &rc);
-        
-        if (image.GetLastStatus() == Gdiplus::Ok) {
-            graphics.DrawImage(&image, 4, 4, rc.right - rc.left - 8, 120);
-        } else {
-            HBRUSH hbrShadow = CreateSolidBrush(RGB(90, 90, 90));
-            RECT rcBanner = { 4, 4, rc.right - 4, 124 };
-            FillRect(hdc, &rcBanner, hbrShadow);
-            DeleteObject(hbrShadow);
-            
-            SetTextColor(hdc, RGB(255, 255, 255));
-            SetBkMode(hdc, TRANSPARENT);
-            DrawTextW(hdc, L"Không thể tải ảnh wuxia_banner.png", -1, &rcBanner, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-        }
-        
-        EndPaint(hwnd, &ps);
-        return 0;
-    }
-    case WM_CTLCOLORSTATIC:
-    case WM_CTLCOLOREDIT: {
-        HDC hdc = reinterpret_cast<HDC>(wParam);
-        SetBkColor(hdc, GetSysColor(COLOR_BTNFACE));
-        return reinterpret_cast<LRESULT>(GetSysColorBrush(COLOR_BTNFACE));
-    }
-    default:
-        return DefWindowProcW(hwnd, msg, wParam, lParam);
-    }
-}
-
-// Thu tuc xu ly cho Tab Settings
-LRESULT CALLBACK WndProcSettings(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    switch (msg) {
-    case WM_CREATE: {
-        HINSTANCE hInst = GetModuleHandleW(nullptr);
-        
-        g_settingsGroupBox = CreateWindowExW(
-            0, L"BUTTON", L"Cấu hình đồ họa & Âm thanh",
-            WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
-            0, 0, 0, 0,
-            hwnd, nullptr, hInst, nullptr);
-        SendMessageW(g_settingsGroupBox, WM_SETFONT, reinterpret_cast<WPARAM>(g_defaultFont), TRUE);
-
-        g_resRadio1 = CreateWindowExW(
-            0, L"BUTTON", L"800 x 600 (Mặc định)",
-            WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP,
-            0, 0, 0, 0,
-            hwnd, reinterpret_cast<HMENU>(301), hInst, nullptr);
-        SendMessageW(g_resRadio1, WM_SETFONT, reinterpret_cast<WPARAM>(g_defaultFont), TRUE);
-        SendMessageW(g_resRadio1, BM_SETCHECK, BST_CHECKED, 0);
-
-        g_resRadio2 = CreateWindowExW(
-            0, L"BUTTON", L"1024 x 768",
-            WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
-            0, 0, 0, 0,
-            hwnd, reinterpret_cast<HMENU>(302), hInst, nullptr);
-        SendMessageW(g_resRadio2, WM_SETFONT, reinterpret_cast<WPARAM>(g_defaultFont), TRUE);
-
-        g_resRadio3 = CreateWindowExW(
-            0, L"BUTTON", L"1280 x 720 (HD)",
-            WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
-            0, 0, 0, 0,
-            hwnd, reinterpret_cast<HMENU>(303), hInst, nullptr);
-        SendMessageW(g_resRadio3, WM_SETFONT, reinterpret_cast<WPARAM>(g_defaultFont), TRUE);
-
-        g_windowedCheckbox = CreateWindowExW(
-            0, L"BUTTON", L"Chế độ cửa sổ (Windowed)",
-            WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
-            0, 0, 0, 0,
-            hwnd, reinterpret_cast<HMENU>(304), hInst, nullptr);
-        SendMessageW(g_windowedCheckbox, WM_SETFONT, reinterpret_cast<WPARAM>(g_defaultFont), TRUE);
-        SendMessageW(g_windowedCheckbox, BM_SETCHECK, BST_CHECKED, 0);
-
-        g_soundCheckbox = CreateWindowExW(
-            0, L"BUTTON", L"Bật âm thanh trong game",
-            WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
-            0, 0, 0, 0,
-            hwnd, reinterpret_cast<HMENU>(305), hInst, nullptr);
-        SendMessageW(g_soundCheckbox, WM_SETFONT, reinterpret_cast<WPARAM>(g_defaultFont), TRUE);
-        SendMessageW(g_soundCheckbox, BM_SETCHECK, BST_CHECKED, 0);
-
-        return 0;
-    }
-    case WM_SIZE: {
-        RECT rc = {};
-        GetClientRect(hwnd, &rc);
-        
-        MoveWindow(g_settingsGroupBox, 10, 10, rc.right - rc.left - 20, rc.bottom - rc.top - 20, TRUE);
-        
-        MoveWindow(g_resRadio1, 30, 40, 200, 24, TRUE);
-        MoveWindow(g_resRadio2, 30, 70, 200, 24, TRUE);
-        MoveWindow(g_resRadio3, 30, 100, 200, 24, TRUE);
-        
-        MoveWindow(g_windowedCheckbox, 30, 140, 240, 24, TRUE);
-        MoveWindow(g_soundCheckbox, 30, 170, 240, 24, TRUE);
-        return 0;
-    }
-    case WM_CTLCOLORSTATIC: {
-        HDC hdc = reinterpret_cast<HDC>(wParam);
-        SetBkColor(hdc, GetSysColor(COLOR_BTNFACE));
-        return reinterpret_cast<LRESULT>(GetSysColorBrush(COLOR_BTNFACE));
-    }
-    default:
-        return DefWindowProcW(hwnd, msg, wParam, lParam);
-    }
-}
-
-// Thu tuc xu ly cho Cua so chinh
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    switch (msg) {
-    case WM_CREATE: {
-        INITCOMMONCONTROLSEX icc = { sizeof(icc), ICC_TAB_CLASSES | ICC_PROGRESS_CLASS };
-        InitCommonControlsEx(&icc);
-
-        // Tao Font he thong dep hon
-        g_defaultFont = CreateFontW(16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, 
-                                    DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, 
-                                    DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
-
-        g_tabControl = CreateWindowExW(
-            0, WC_TABCONTROLW, nullptr,
-            WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
-            0, 0, 0, 0,
-            hwnd, reinterpret_cast<HMENU>(1), GetModuleHandleW(nullptr), nullptr);
-        SendMessageW(g_tabControl, WM_SETFONT, reinterpret_cast<WPARAM>(g_defaultFont), TRUE);
-
-        TCITEMW tabItem = {};
-        tabItem.mask = TCIF_TEXT;
-        tabItem.pszText = const_cast<LPWSTR>(L"Thông báo");
-        TabCtrl_InsertItem(g_tabControl, 0, &tabItem);
-        tabItem.pszText = const_cast<LPWSTR>(L"Cài đặt");
-        TabCtrl_InsertItem(g_tabControl, 1, &tabItem);
-
-        // Tao các container cua so con
-        g_newsContainer = CreateWindowExW(
-            0, kNewsContainerClassName, nullptr,
-            WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
-            0, 0, 0, 0,
-            hwnd, nullptr, GetModuleHandleW(nullptr), nullptr);
-
-        g_settingsContainer = CreateWindowExW(
-            0, kSettingsContainerClassName, nullptr,
-            WS_CHILD | WS_CLIPSIBLINGS,
-            0, 0, 0, 0,
-            hwnd, nullptr, GetModuleHandleW(nullptr), nullptr);
-
-        g_statusText = CreateWindowExW(
-            0, L"STATIC",
-            L"Đang khởi tạo...",
-            WS_CHILD | WS_VISIBLE,
-            0, 0, 0, 0,
-            hwnd, nullptr, GetModuleHandleW(nullptr), nullptr);
-        SendMessageW(g_statusText, WM_SETFONT, reinterpret_cast<WPARAM>(g_defaultFont), TRUE);
-
-        g_progressBar = CreateWindowExW(
-            0, PROGRESS_CLASSW, nullptr,
-            WS_CHILD | WS_VISIBLE,
-            0, 0, 0, 0,
-            hwnd, nullptr, GetModuleHandleW(nullptr), nullptr);
-
-        g_playButton = CreateWindowExW(
-            0, L"BUTTON", L"UPDATE",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            0, 0, 0, 0,
-            hwnd, reinterpret_cast<HMENU>(2), GetModuleHandleW(nullptr), nullptr);
-        SendMessageW(g_playButton, WM_SETFONT, reinterpret_cast<WPARAM>(g_defaultFont), TRUE);
-
-        ApplyClassicLook(hwnd);
-        LayoutChildren(hwnd);
-        return 0;
-    }
-    case WM_SIZE:
-        LayoutChildren(hwnd);
-        return 0;
-    case WM_NOTIFY: {
-        LPNMHDR lpnmhdr = reinterpret_cast<LPNMHDR>(lParam);
-        if (lpnmhdr->hwndFrom == g_tabControl && lpnmhdr->code == TCN_SELCHANGE) {
-            int selectedTab = TabCtrl_GetCurSel(g_tabControl);
-            if (selectedTab == 0) {
-                ShowWindow(g_newsContainer, SW_SHOW);
-                ShowWindow(g_settingsContainer, SW_HIDE);
-            } else {
-                ShowWindow(g_newsContainer, SW_HIDE);
-                ShowWindow(g_settingsContainer, SW_SHOW);
-            }
-            return 0;
-        }
-        break;
-    }
-    case WM_COMMAND:
-        if (LOWORD(wParam) == 2) { // Play/Update button
-            wchar_t buttonText[32] = {};
-            GetWindowTextW(g_playButton, buttonText, 32);
-            
-            if (wcscmp(buttonText, L"UPDATE") == 0) {
-                EnableWindow(g_playButton, FALSE);
-                SetWindowTextW(g_statusText, L"Đang tải bản cập nhật...");
-                SetWindowTextW(g_playButton, L"UPDATING...");
-                
-                if (g_updateThread.joinable()) {
-                    g_updateThread.join();
-                }
-                g_updateThread = std::thread(UpdateProcessWorker, hwnd);
-            } else if (wcscmp(buttonText, L"PLAY") == 0) {
-                MessageBoxW(hwnd, L"Đang khởi chạy game Võ Lâm Truyền Kỳ! Chúc đại hiệp chơi game vui vẻ.", L"LauncherJX", MB_OK | MB_ICONINFORMATION);
-                PostQuitMessage(0);
-            }
-        }
-        return 0;
-    case WM_USER_UPDATE_PROGRESS: {
-        int progress = static_cast<int>(wParam);
-        SendMessageW(g_progressBar, PBM_SETPOS, progress, 0);
-        
-        wchar_t statusBuffer[64] = {};
-        swprintf_s(statusBuffer, L"Đang tải bản cập nhật: %d%%", progress);
-        SetWindowTextW(g_statusText, statusBuffer);
-        return 0;
-    }
-    case WM_USER_UPDATE_COMPLETE: {
-        SetWindowTextW(g_statusText, L"Cập nhật hoàn tất! Hệ thống đã sẵn sàng.");
-        SetWindowTextW(g_playButton, L"PLAY");
-        EnableWindow(g_playButton, TRUE);
-        return 0;
-    }
-    case WM_CTLCOLORDLG: {
-        static HBRUSH hbrTeal = CreateSolidBrush(RGB(0, 128, 128)); // Màu nền chính Teal
-        return reinterpret_cast<LRESULT>(hbrTeal);
-    }
-    case WM_CTLCOLORSTATIC: {
-        HDC hdc = reinterpret_cast<HDC>(wParam);
-        HWND hwndStatic = reinterpret_cast<HWND>(lParam);
-        
-        if (hwndStatic == g_statusText) {
-            // Chữ trạng thái màu trắng, nền trong suốt đè lên Teal
-            SetTextColor(hdc, RGB(255, 255, 255));
-            SetBkMode(hdc, TRANSPARENT);
-            static HBRUSH hbrTeal = CreateSolidBrush(RGB(0, 128, 128));
-            return reinterpret_cast<LRESULT>(hbrTeal);
-        }
-        
-        SetBkColor(hdc, GetSysColor(COLOR_BTNFACE));
-        return reinterpret_cast<LRESULT>(GetSysColorBrush(COLOR_BTNFACE));
-    }
-    case WM_DESTROY:
-        g_appRunning = false;
-        if (g_updateThread.joinable()) {
-            g_updateThread.join();
-        }
-        if (g_defaultFont) {
-            DeleteObject(g_defaultFont);
-        }
-        PostQuitMessage(0);
-        return 0;
-    default:
-        return DefWindowProcW(hwnd, msg, wParam, lParam);
-    }
-    return DefWindowProcW(hwnd, msg, wParam, lParam);
-}
-
-}  // namespace
-
-bool CreateLauncherWindow(HINSTANCE instance, int showCommand) {
-    WNDCLASSEXW wc = {};
-    wc.cbSize = sizeof(wc);
-    wc.style = CS_HREDRAW | CS_VREDRAW;
-    wc.lpfnWndProc = WndProc;
-    wc.hInstance = instance;
-    wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
-    wc.lpszClassName = kWindowClassName;
-
-    if (!RegisterClassExW(&wc)) {
+    if (FAILED(hr)) {
         return false;
     }
 
-    // Đăng ký các class container phụ
-    WNDCLASSEXW wcNews = {};
-    wcNews.cbSize = sizeof(wcNews);
-    wcNews.style = CS_HREDRAW | CS_VREDRAW;
-    wcNews.lpfnWndProc = WndProcNews;
-    wcNews.hInstance = instance;
-    wcNews.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    wcNews.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
-    wcNews.lpszClassName = kNewsContainerClassName;
-    RegisterClassExW(&wcNews);
+    // Tao Shader Resource View tu Texture
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+    ZeroMemory(&srvDesc, sizeof(srvDesc));
+    srvDesc.Format = desc.Format;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = 1;
 
-    WNDCLASSEXW wcSettings = {};
-    wcSettings.cbSize = sizeof(wcSettings);
-    wcSettings.style = CS_HREDRAW | CS_VREDRAW;
-    wcSettings.lpfnWndProc = WndProcSettings;
-    wcSettings.hInstance = instance;
-    wcSettings.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    wcSettings.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
-    wcSettings.lpszClassName = kSettingsContainerClassName;
-    RegisterClassExW(&wcSettings);
+    hr = g_pd3dDevice->CreateShaderResourceView(pTexture, &srvDesc, out_srv);
+    pTexture->Release();
 
-    g_mainWindow = CreateWindowExW(
-        WS_EX_CLIENTEDGE,
-        kWindowClassName,
-        kWindowTitle,
-        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-        CW_USEDEFAULT, CW_USEDEFAULT, 640, 420,
-        nullptr, nullptr, instance, nullptr);
-
-    if (!g_mainWindow) {
+    if (FAILED(hr)) {
         return false;
     }
 
-    // Load và set icon cửa sổ từ app_icon.png thông qua GDI+
-    Gdiplus::Bitmap bitmap(L"app_icon.png");
-    HICON hIcon = nullptr;
-    if (bitmap.GetLastStatus() == Gdiplus::Ok) {
-        bitmap.GetHICON(&hIcon);
-        if (hIcon) {
-            SendMessageW(g_mainWindow, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
-            SendMessageW(g_mainWindow, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon));
-        }
-    }
-
-    ShowWindow(g_mainWindow, showCommand);
-    UpdateWindow(g_mainWindow);
+    *out_width = static_cast<int>(width);
+    *out_height = static_cast<int>(height);
     return true;
 }
 
-HWND GetMainWindow() {
-    return g_mainWindow;
+} // namespace
+
+void InitUI(ID3D11Device* device, ID3D11DeviceContext* context, HWND hWnd) {
+    g_pd3dDevice = device;
+    g_pd3dDeviceContext = context;
+    g_hWnd = hWnd;
+
+    // Load cac texture tu cung thu muc chay file .exe
+    std::wstring exeDir = GetExecutablePath();
+    std::wstring bannerPath = exeDir + L"\\wuxia_banner.png";
+    std::wstring logoPath = exeDir + L"\\app_icon.png";
+
+    LoadTextureFromImage(bannerPath.c_str(), &g_bannerTexture, &g_bannerWidth, &g_bannerHeight);
+    LoadTextureFromImage(logoPath.c_str(), &g_logoTexture, &g_logoWidth, &g_logoHeight);
+
+    // Cau hinh Font tieng Viet Segoe UI tu thu muc Fonts he thong
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeui.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesVietnamese());
+
+    // Thiet lap phong cach Custom Theme Teal toi & Neon Cyan
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowRounding = 8.0f;
+    style.FrameRounding = 4.0f;
+    style.PopupRounding = 6.0f;
+    style.GrabRounding = 4.0f;
+    style.WindowBorderSize = 1.0f;
+
+    style.Colors[ImGuiCol_WindowBg]             = ImVec4(0.00f, 0.07f, 0.07f, 0.95f); // Teal cực toi
+    style.Colors[ImGuiCol_ChildBg]              = ImVec4(0.00f, 0.12f, 0.12f, 0.50f); // Grey-Teal toi
+    style.Colors[ImGuiCol_Border]               = ImVec4(0.00f, 0.50f, 0.50f, 0.50f); // Vien Teal trung tinh
+    style.Colors[ImGuiCol_FrameBg]              = ImVec4(0.00f, 0.20f, 0.20f, 0.54f);
+    style.Colors[ImGuiCol_FrameBgHovered]       = ImVec4(0.00f, 0.40f, 0.40f, 0.40f);
+    style.Colors[ImGuiCol_FrameBgActive]        = ImVec4(0.00f, 0.50f, 0.50f, 0.67f);
+    style.Colors[ImGuiCol_TitleBg]              = ImVec4(0.00f, 0.20f, 0.20f, 1.00f);
+    style.Colors[ImGuiCol_TitleBgActive]        = ImVec4(0.00f, 0.30f, 0.30f, 1.00f);
+    style.Colors[ImGuiCol_CheckMark]            = ImVec4(0.00f, 1.00f, 1.00f, 1.00f); // Neon Cyan check
+    style.Colors[ImGuiCol_SliderGrab]           = ImVec4(0.00f, 0.50f, 0.50f, 1.00f);
+    style.Colors[ImGuiCol_SliderGrabActive]     = ImVec4(0.00f, 0.80f, 0.80f, 1.00f);
+    style.Colors[ImGuiCol_Button]               = ImVec4(0.00f, 0.37f, 0.37f, 1.00f); // Teal sang
+    style.Colors[ImGuiCol_ButtonHovered]        = ImVec4(0.00f, 0.50f, 0.50f, 1.00f); // Neon Cyan hover
+    style.Colors[ImGuiCol_ButtonActive]         = ImVec4(0.00f, 0.70f, 0.70f, 1.00f);
+    style.Colors[ImGuiCol_Header]               = ImVec4(0.00f, 0.30f, 0.30f, 0.55f);
+    style.Colors[ImGuiCol_HeaderHovered]        = ImVec4(0.00f, 0.50f, 0.50f, 0.80f);
+    style.Colors[ImGuiCol_HeaderActive]         = ImVec4(0.00f, 0.60f, 0.60f, 1.00f);
+    style.Colors[ImGuiCol_Tab]                  = ImVec4(0.00f, 0.25f, 0.25f, 0.86f);
+    style.Colors[ImGuiCol_TabHovered]           = ImVec4(0.00f, 0.50f, 0.50f, 0.80f);
+    style.Colors[ImGuiCol_TabActive]            = ImVec4(0.00f, 0.40f, 0.40f, 1.00f);
+}
+
+void RenderUI() {
+    // Dat vi tri cua so ImGui khop khit 640x420
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::SetNextWindowSize(ImVec2(640, 420));
+    
+    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | 
+                                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | 
+                                   ImGuiWindowFlags_NoSavedSettings;
+                                   
+    ImGui::Begin("MainLauncher", nullptr, windowFlags);
+
+    // 1. Tu thiet ke Custom Title Bar (Vung tieu de cao 40px)
+    ImGui::SetCursorPos(ImVec2(10, 8));
+    if (g_logoTexture) {
+        ImGui::Image(reinterpret_cast<void*>(g_logoTexture), ImVec2(24, 24));
+    }
+    ImGui::SameLine();
+    ImGui::SetCursorPosY(10);
+    ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Aetheris Launcher"); // Chu Neon Cyan
+
+    // Nut Minimize va Close o goc tren ben phai
+    ImGui::SetCursorPos(ImVec2(570, 6));
+    if (ImGui::Button("_", ImVec2(26, 26))) {
+        ShowWindow(g_hWnd, SW_MINIMIZE);
+    }
+    ImGui::SameLine();
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.1f, 0.1f, 1.0f)); // Hover dong mau do
+    if (ImGui::Button("X", ImVec2(26, 26))) {
+        PostQuitMessage(0);
+    }
+    ImGui::PopStyleColor();
+
+    ImGui::Separator();
+
+    // 2. Tao he thong Tab (Thong bao & Cai dat)
+    ImGui::SetCursorPos(ImVec2(12, 45));
+    if (ImGui::BeginTabBar("LauncherTabs")) {
+        // --- TAB THÔNG BÁO ---
+        if (ImGui::BeginTabItem("Thông báo")) {
+            ImGui::Spacing();
+            // Ve anh banner
+            if (g_bannerTexture) {
+                ImGui::Image(reinterpret_cast<void*>(g_bannerTexture), ImVec2(616, 120));
+            } else {
+                // Ve khong gian trong neu anh loi
+                ImGui::BeginChild("ErrorBanner", ImVec2(616, 120), true);
+                ImGui::Text("Không thể tải ảnh wuxia_banner.png");
+                ImGui::EndChild();
+            }
+            ImGui::Spacing();
+            
+            // Text box tin tuc cuon
+            ImGui::BeginChild("NewsText", ImVec2(616, 130), true);
+            ImGui::TextWrapped("=== TIN TỨC VÕ LÂM JX ===");
+            ImGui::Separator();
+            ImGui::BulletText("Khai mở máy chủ thử nghiệm Thái Sơn vào ngày 28/06/2026.");
+            ImGui::BulletText("Sự kiện 'Kiếm Hiệp Tranh Hùng' nhận kỳ trân dị bảo cực hot.");
+            ImGui::BulletText("Hệ thống launcher Dear ImGui + DX11 thế hệ mới chạy siêu mượt.");
+            ImGui::BulletText("Tự động cập nhật patch mới nhất chỉ với 1 cú click chuột.");
+            ImGui::Spacing();
+            ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Chúc các đại hiệp hành tẩu giang hồ gặp nhiều may mắn!");
+            ImGui::EndChild();
+            
+            ImGui::EndTabItem();
+        }
+
+        // --- TAB CÀI ĐẶT ---
+        if (ImGui::BeginTabItem("Cài đặt")) {
+            ImGui::Spacing();
+            ImGui::BeginChild("SettingsArea", ImVec2(616, 264), true);
+            ImGui::Text("Cấu hình đồ họa & Âm thanh");
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            // Lua chon do phan giai
+            static int selectedRes = 0;
+            ImGui::Text("Độ phân giải game:");
+            ImGui::RadioButton("800 x 600 (Mặc định)", &selectedRes, 0);
+            ImGui::RadioButton("1024 x 768", &selectedRes, 1);
+            ImGui::RadioButton("1280 x 720 (HD)", &selectedRes, 2);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            // Checkbox che do cua so & am thanh
+            static bool isWindowed = true;
+            static bool enableSound = true;
+            ImGui::Checkbox("Chế độ cửa sổ (Windowed)", &isWindowed);
+            ImGui::Checkbox("Bật âm thanh trong game", &enableSound);
+
+            ImGui::EndChild();
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
+    }
+
+    // 3. Vung chan trang Footer
+    ImGui::SetCursorPos(ImVec2(12, 335));
+    
+    // Status text
+    if (g_updateState == 0) {
+        ImGui::Text("Hệ thống đã sẵn sàng. Vui lòng bấm UPDATE để cập nhật game.");
+    } else if (g_updateState == 1) {
+        ImGui::Text("Đang tải bản cập nhật: %.0f%%", g_updateProgress * 100.0f);
+    } else if (g_updateState == 2) {
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Cập nhật hoàn tất! Hệ thống đã sẵn sàng.");
+    }
+
+    // Progress bar
+    ImGui::SetCursorPos(ImVec2(12, 365));
+    ImGui::ProgressBar(g_updateProgress, ImVec2(480, 22));
+
+    // Nut UPDATE/PLAY lon o goc duoi ben phai
+    ImGui::SetCursorPos(ImVec2(504, 355));
+    
+    if (g_updateState == 0) {
+        if (ImGui::Button("UPDATE", ImVec2(120, 36))) {
+            g_updateState = 1;
+            if (g_updateThread.joinable()) {
+                g_updateThread.join();
+            }
+            g_updateThread = std::thread([]() {
+                for (int i = 0; i <= 100; ++i) {
+                    if (!g_appRunning) break;
+                    g_updateProgress = static_cast<float>(i) / 100.0f;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                }
+                if (g_appRunning) {
+                    g_updateState = 2;
+                }
+            });
+        }
+    } else if (g_updateState == 1) {
+        ImGui::BeginDisabled();
+        ImGui::Button("UPDATING...", ImVec2(120, 36));
+        ImGui::EndDisabled();
+    } else if (g_updateState == 2) {
+        if (ImGui::Button("PLAY", ImVec2(120, 36))) {
+            MessageBoxW(g_hWnd, L"Đang khởi chạy game Võ Lâm Truyền Kỳ! Chúc đại hiệp chơi game vui vẻ.", L"LauncherJX", MB_OK | MB_ICONINFORMATION);
+            PostQuitMessage(0);
+        }
+    }
+
+    ImGui::End();
+}
+
+void CleanupUI() {
+    g_appRunning = false;
+    if (g_updateThread.joinable()) {
+        g_updateThread.join();
+    }
+    if (g_bannerTexture) { g_bannerTexture->Release(); g_bannerTexture = nullptr; }
+    if (g_logoTexture) { g_logoTexture->Release(); g_logoTexture = nullptr; }
 }
