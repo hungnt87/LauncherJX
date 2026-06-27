@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <wincrypt.h>
+#include <wininet.h>
 
 #include <algorithm>
 #include <cctype>
@@ -183,21 +184,83 @@ std::string ComputeSha256(const std::wstring& file_path) {
     return ToLowerAscii(result);
 }
 
-std::vector<std::wstring> CollectFilesToUpdate(const std::wstring& exe_dir, const Manifest& manifest) {
-    std::vector<std::wstring> files_to_update;
+std::wstring Utf8ToWstring(const std::string& str) {
+    if (str.empty()) return L"";
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), nullptr, 0);
+    std::wstring wstrTo(size_needed, 0);
+    MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+    return wstrTo;
+}
+
+std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const Manifest& manifest) {
+    std::vector<FileEntry> files_to_update;
 
     const std::filesystem::path root(exe_dir);
     const std::filesystem::path launcher_res = root / L"launcher_res";
 
     for (const FileEntry& file : manifest.files) {
-        const std::filesystem::path local_path = launcher_res / std::filesystem::path(std::wstring(file.name.begin(), file.name.end()));
+        std::wstring wname = Utf8ToWstring(file.name);
+        const std::filesystem::path local_path = launcher_res / std::filesystem::path(wname);
         const std::string local_hash = ComputeSha256(local_path.wstring());
         if (local_hash.empty() || ToLowerAscii(local_hash) != ToLowerAscii(file.hash)) {
-            files_to_update.push_back(local_path.wstring());
+            files_to_update.push_back(file);
         }
     }
 
     return files_to_update;
+}
+
+bool DownloadFile(const std::wstring& url, const std::wstring& dest_path, const std::atomic<bool>& running, const std::function<void(float)>& progress_callback) {
+    // Đảm bảo thư mục cha tồn tại
+    std::filesystem::path dest(dest_path);
+    if (dest.has_parent_path()) {
+        std::filesystem::create_directories(dest.parent_path());
+    }
+
+    HINTERNET hInternet = InternetOpenW(L"LauncherJX/1.0", INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0);
+    if (!hInternet) return false;
+
+    DWORD flags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_SECURE;
+    HINTERNET hUrl = InternetOpenUrlW(hInternet, url.c_str(), nullptr, 0, flags, 0);
+    if (!hUrl) {
+        InternetCloseHandle(hInternet);
+        return false;
+    }
+
+    DWORD contentLength = 0;
+    DWORD contentLengthSize = sizeof(contentLength);
+    HttpQueryInfoW(hUrl, HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER, &contentLength, &contentLengthSize, nullptr);
+
+    std::ofstream file(dest_path, std::ios::binary);
+    if (!file.is_open()) {
+        InternetCloseHandle(hUrl);
+        InternetCloseHandle(hInternet);
+        return false;
+    }
+
+    char buffer[8192];
+    DWORD bytesRead = 0;
+    size_t totalBytesRead = 0;
+
+    while (running && InternetReadFile(hUrl, buffer, sizeof(buffer), &bytesRead) && bytesRead > 0) {
+        file.write(buffer, bytesRead);
+        totalBytesRead += bytesRead;
+        if (contentLength > 0 && progress_callback) {
+            progress_callback(static_cast<float>(totalBytesRead) / contentLength);
+        }
+    }
+
+    file.close();
+    InternetCloseHandle(hUrl);
+    InternetCloseHandle(hInternet);
+
+    if (!running) {
+        // Xóa file tải dở nếu bị hủy giữa chừng
+        std::filesystem::remove(dest_path);
+        return false;
+    }
+
+    return true;
 }
 
 }  // namespace launcher::update

@@ -2,8 +2,13 @@
 
 #include <string>
 #include <vector>
+#include <atomic>
+#include <functional>
 
 namespace launcher::update {
+
+// Base URL trên GitHub để tải tài nguyên game
+const std::wstring kServerBaseUrl = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/main/cpp/resources/";
 
 struct ManifestSource {
     std::wstring path;
@@ -36,6 +41,14 @@ struct UpdateSnapshot {
 
 bool ParseManifest(const ManifestSource& source, Manifest* out_manifest, std::string* error);
 std::string ComputeSha256(const std::wstring& file_path);
-std::vector<std::wstring> CollectFilesToUpdate(const std::wstring& exe_dir, const Manifest& manifest);
+
+// Thay đổi kiểu trả về thành FileEntry để lấy được cả tên và hash file cần tải
+std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const Manifest& manifest);
+
+// Hàm tiện ích chuyển đổi UTF-8 string sang std::wstring (Win32)
+std::wstring Utf8ToWstring(const std::string& str);
+
+// Hàm thực hiện tải file qua WinINet hỗ trợ báo cáo tiến trình và hủy tải
+bool DownloadFile(const std::wstring& url, const std::wstring& dest_path, const std::atomic<bool>& running, const std::function<void(float)>& progress_callback);
 
 }  // namespace launcher::update

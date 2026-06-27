@@ -56,6 +56,7 @@ target_link_libraries(LauncherJX
         d3d11
         d3dcompiler
         advapi32
+        wininet
 )
 
 target_include_directories(LauncherJX

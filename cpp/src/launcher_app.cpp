@@ -1,6 +1,7 @@
 #include "launcher_app.h"
 
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <iterator>
 
@@ -91,26 +92,43 @@ const std::string& LauncherApp::VersionString() const noexcept {
 }
 
 void LauncherApp::RunUpdateWorker() {
-    const std::wstring version_path = exe_dir_ + L"\\launcher_res\\version.json";
+    // 1. Tạo thư mục tạm và tải version.json từ Server
+    launcher::update::UpdateSnapshot download_manifest_snapshot;
+    download_manifest_snapshot.progress = 0.0f;
+    download_manifest_snapshot.phase = launcher::update::UpdatePhase::Checking;
+    download_manifest_snapshot.message = "Dang tai cau hinh cap nhat tu server...";
+    SetSnapshot(download_manifest_snapshot);
+
+    const std::wstring temp_version_path = exe_dir_ + L"\\update_temp\\version.json";
+    const std::wstring remote_version_url = launcher::update::kServerBaseUrl + L"version.json";
+
+    if (!launcher::update::DownloadFile(remote_version_url, temp_version_path, running_, nullptr)) {
+        launcher::update::UpdateSnapshot error_snapshot;
+        error_snapshot.phase = launcher::update::UpdatePhase::Error;
+        error_snapshot.message = "Khong the tai phien ban moi tu server.";
+        SetSnapshot(error_snapshot);
+        return;
+    }
+
+    // 2. Đọc và phân tích file version.json vừa tải
     const std::string json_content = [&] {
-        std::ifstream file(version_path, std::ios::binary);
+        std::ifstream file(temp_version_path, std::ios::binary);
         if (!file.is_open()) {
             return std::string{};
         }
-
         return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
     }();
 
     if (json_content.empty()) {
         launcher::update::UpdateSnapshot error_snapshot;
         error_snapshot.phase = launcher::update::UpdatePhase::Error;
-        error_snapshot.message = "Khong mo duoc version.json";
+        error_snapshot.message = "Loi doc version.json tu server";
         SetSnapshot(error_snapshot);
         return;
     }
 
     launcher::update::ManifestSource source;
-    source.path = version_path;
+    source.path = temp_version_path;
     source.content = json_content;
 
     launcher::update::Manifest manifest;
@@ -118,27 +136,39 @@ void LauncherApp::RunUpdateWorker() {
     if (!launcher::update::ParseManifest(source, &manifest, &error)) {
         launcher::update::UpdateSnapshot error_snapshot;
         error_snapshot.phase = launcher::update::UpdatePhase::Error;
-        error_snapshot.message = error;
+        error_snapshot.message = "Loi phan tich manifest: " + error;
         SetSnapshot(error_snapshot);
         return;
     }
 
+    // 3. Kiểm tra các file cần cập nhật
     launcher::update::UpdateSnapshot checking_snapshot;
     checking_snapshot.progress = 0.0f;
     checking_snapshot.phase = launcher::update::UpdatePhase::Checking;
-    checking_snapshot.message = "Dang kiem tra cac file...";
+    checking_snapshot.message = "Dang kiem tra cac file local...";
     SetSnapshot(checking_snapshot);
 
     const auto files_to_update = launcher::update::CollectFilesToUpdate(exe_dir_, manifest);
     if (files_to_update.empty()) {
+        // Đồng bộ file version.json kể cả khi không cần tải file nào khác
+        try {
+            std::filesystem::path dest_ver = std::filesystem::path(exe_dir_) / L"launcher_res" / L"version.json";
+            std::filesystem::create_directories(dest_ver.parent_path());
+            std::filesystem::copy_file(temp_version_path, dest_ver, std::filesystem::copy_options::overwrite_existing);
+            std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"update_temp");
+        } catch (...) {}
+
+        version_string_ = manifest.version;
+
         launcher::update::UpdateSnapshot done_snapshot;
         done_snapshot.progress = 1.0f;
         done_snapshot.phase = launcher::update::UpdatePhase::Done;
-        done_snapshot.message = "Cap nhat hoan tat! He thong da san sang.";
+        done_snapshot.message = "Game da o phien ban moi nhat!";
         SetSnapshot(done_snapshot);
         return;
     }
 
+    // 4. Tải các file cập nhật về update_temp
     launcher::update::UpdateSnapshot downloading_snapshot;
     downloading_snapshot.progress = 0.0f;
     downloading_snapshot.phase = launcher::update::UpdatePhase::Downloading;
@@ -150,33 +180,75 @@ void LauncherApp::RunUpdateWorker() {
             break;
         }
 
-        for (int i = 0; i <= 100; ++i) {
-            if (!running_) {
-                break;
-            }
+        const auto& file = files_to_update[idx];
+        std::wstring wname = launcher::update::Utf8ToWstring(file.name);
+        std::wstring file_url = launcher::update::kServerBaseUrl + wname;
+        std::wstring temp_file_path = (std::filesystem::path(exe_dir_) / L"update_temp" / wname).wstring();
 
-            const float progress = (static_cast<float>(idx) + static_cast<float>(i) / 100.0f) /
-                                   static_cast<float>(files_to_update.size());
+        // Callback cập nhật tiến trình tổng
+        auto progress_callback = [&](float file_progress) {
+            const float progress = (static_cast<float>(idx) + file_progress) / static_cast<float>(files_to_update.size());
             launcher::update::UpdateSnapshot progress_snapshot;
             progress_snapshot.progress = progress;
             progress_snapshot.phase = launcher::update::UpdatePhase::Downloading;
-            progress_snapshot.message = "Dang tai ban cap nhat...";
+            progress_snapshot.message = "Dang tai " + file.name + "...";
             SetSnapshot(progress_snapshot);
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        }
+        };
 
-        std::ofstream out_file(files_to_update[idx], std::ios::binary);
-        if (out_file.is_open()) {
-            out_file << "Phien ban moi nhat da duoc tai xuong.";
+        if (!launcher::update::DownloadFile(file_url, temp_file_path, running_, progress_callback)) {
+            if (running_) {
+                launcher::update::UpdateSnapshot error_snapshot;
+                error_snapshot.phase = launcher::update::UpdatePhase::Error;
+                error_snapshot.message = "Loi tai file: " + file.name;
+                SetSnapshot(error_snapshot);
+            }
+            return;
         }
     }
 
+    // 5. Cài đặt các file cập nhật từ update_temp sang launcher_res
     if (running_) {
-        launcher::update::UpdateSnapshot done_snapshot;
-        done_snapshot.progress = 1.0f;
-        done_snapshot.phase = launcher::update::UpdatePhase::Done;
-        done_snapshot.message = "Cap nhat hoan tat! He thong da san sang.";
-        SetSnapshot(done_snapshot);
+        launcher::update::UpdateSnapshot copying_snapshot;
+        copying_snapshot.progress = 0.95f;
+        copying_snapshot.phase = launcher::update::UpdatePhase::Downloading;
+        copying_snapshot.message = "Dang cai dat ban cap nhat...";
+        SetSnapshot(copying_snapshot);
+
+        try {
+            // Copy các file game
+            for (const auto& file : files_to_update) {
+                std::wstring wname = launcher::update::Utf8ToWstring(file.name);
+                std::filesystem::path temp_path = std::filesystem::path(exe_dir_) / L"update_temp" / wname;
+                std::filesystem::path dest_path = std::filesystem::path(exe_dir_) / L"launcher_res" / wname;
+
+                if (dest_path.has_parent_path()) {
+                    std::filesystem::create_directories(dest_path.parent_path());
+                }
+                std::filesystem::copy_file(temp_path, dest_path, std::filesystem::copy_options::overwrite_existing);
+            }
+
+            // Copy file version.json chính thức để lưu version mới
+            std::filesystem::path temp_ver = std::filesystem::path(exe_dir_) / L"update_temp" / L"version.json";
+            std::filesystem::path dest_ver = std::filesystem::path(exe_dir_) / L"launcher_res" / L"version.json";
+            std::filesystem::copy_file(temp_ver, dest_ver, std::filesystem::copy_options::overwrite_existing);
+
+            // Xóa thư mục tạm
+            std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"update_temp");
+
+            // Lưu version vào bộ nhớ
+            version_string_ = manifest.version;
+
+            launcher::update::UpdateSnapshot done_snapshot;
+            done_snapshot.progress = 1.0f;
+            done_snapshot.phase = launcher::update::UpdatePhase::Done;
+            done_snapshot.message = "Cap nhat hoan tat! He thong da san sang.";
+            SetSnapshot(done_snapshot);
+        } catch (const std::filesystem::filesystem_error& ex) {
+            launcher::update::UpdateSnapshot error_snapshot;
+            error_snapshot.phase = launcher::update::UpdatePhase::Error;
+            error_snapshot.message = std::string("Loi cai dat: ") + ex.what();
+            SetSnapshot(error_snapshot);
+        }
     }
 }
 
