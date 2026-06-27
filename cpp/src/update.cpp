@@ -231,6 +231,7 @@ bool DownloadFile(const std::wstring& url, const std::wstring& dest_path, const 
     DWORD statusCodeSize = sizeof(statusCode);
     if (HttpQueryInfoW(hUrl, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &statusCode, &statusCodeSize, nullptr)) {
         if (statusCode < 200 || statusCode >= 300) {
+            SetLastError(statusCode); // Thiết lập LastError bằng HTTP status code để hiển thị
             InternetCloseHandle(hUrl);
             InternetCloseHandle(hInternet);
             return false;

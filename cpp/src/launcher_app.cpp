@@ -143,10 +143,18 @@ void LauncherApp::RunUpdateWorker() {
     }
 
     // 3. Kiểm tra các file cần cập nhật
+    std::string check_path_utf8 = [&] {
+        std::string res;
+        int size_needed = WideCharToMultiByte(CP_UTF8, 0, exe_dir_.c_str(), (int)exe_dir_.size(), nullptr, 0, nullptr, nullptr);
+        res.resize(size_needed);
+        WideCharToMultiByte(CP_UTF8, 0, exe_dir_.c_str(), (int)exe_dir_.size(), &res[0], size_needed, nullptr, nullptr);
+        return res;
+    }();
+
     launcher::update::UpdateSnapshot checking_snapshot;
     checking_snapshot.progress = 0.0f;
     checking_snapshot.phase = launcher::update::UpdatePhase::Checking;
-    checking_snapshot.message = "Dang kiem tra cac file local...";
+    checking_snapshot.message = "Dang kiem tra cac file tai: " + check_path_utf8;
     SetSnapshot(checking_snapshot);
 
     const auto files_to_update = launcher::update::CollectFilesToUpdate(exe_dir_, manifest);
@@ -164,7 +172,7 @@ void LauncherApp::RunUpdateWorker() {
         launcher::update::UpdateSnapshot done_snapshot;
         done_snapshot.progress = 1.0f;
         done_snapshot.phase = launcher::update::UpdatePhase::Done;
-        done_snapshot.message = "Game da o phien ban moi nhat!";
+        done_snapshot.message = "Game da o phien ban moi nhat! (Da quet " + std::to_string(manifest.files.size()) + " file)";
         SetSnapshot(done_snapshot);
         return;
     }
@@ -173,7 +181,7 @@ void LauncherApp::RunUpdateWorker() {
     launcher::update::UpdateSnapshot downloading_snapshot;
     downloading_snapshot.progress = 0.0f;
     downloading_snapshot.phase = launcher::update::UpdatePhase::Downloading;
-    downloading_snapshot.message = "Dang tai ban cap nhat...";
+    downloading_snapshot.message = "Tim thay " + std::to_string(files_to_update.size()) + " file can cap nhat. Dang tai...";
     SetSnapshot(downloading_snapshot);
 
     std::wstring wversion = launcher::update::Utf8ToWstring(manifest.version);
@@ -193,7 +201,7 @@ void LauncherApp::RunUpdateWorker() {
             launcher::update::UpdateSnapshot progress_snapshot;
             progress_snapshot.progress = progress;
             progress_snapshot.phase = launcher::update::UpdatePhase::Downloading;
-            progress_snapshot.message = "Dang tai " + file.name + "...";
+            progress_snapshot.message = "Dang tai (" + std::to_string(idx + 1) + "/" + std::to_string(files_to_update.size()) + "): " + file.name;
             SetSnapshot(progress_snapshot);
         };
 
