@@ -14,6 +14,7 @@ Tài liệu này đặc tả thiết kế kỹ thuật cho tính năng tự đ�
    - Ghi đè file `version.json` local bằng file từ server và xóa thư mục tạm `tmp`.
 5. **Ủy thác xử lý lỗi mạng:** Nếu không kết nối được tới server để check update, thông báo lỗi kết nối nhưng vẫn cho phép nhấn nút **PLAY** để vào game bằng phiên bản hiện tại.
 6. **Cải tiến công cụ tạo Manifest:** Script `tools/generate_manifest.py` tự động phát hiện thư mục `patch` ở thư mục cha, đọc phiên bản cũ, hỗ trợ nhập phiên bản mới từ bàn phím, quét và băm SHA-256 các file cùng cấp/con của thư mục `patch` (ngoại trừ `version.json`).
+7. **Tải song song đa luồng + Keep-Alive:** Hỗ trợ tải các file cập nhật đồng thời bằng 4 luồng (threads), mỗi luồng tái sử dụng kết nối HTTP Keep-Alive để tối ưu hóa thời gian tải các file nhỏ.
 
 ---
 
@@ -130,8 +131,8 @@ private:
 #### 5. Logic `RunUpdateWorker`:
 - Sử dụng `server_manifest_` đã lưu trong bộ nhớ để so sánh hash các file.
 - So sánh hash của từng file trong `server_manifest_.files` với file tương ứng tại `<exe_dir>/<file.name>`.
-- Nếu hash khác nhau hoặc file local chưa có, đưa vào danh sách tải.
-- Tải từng file về `<exe_dir>/tmp/<file.name>`.
+- Tải các file cần cập nhật song song bằng 4 luồng (threads), mỗi luồng giữ một handle WinINet (HINTERNET) riêng để tự động kích hoạt HTTP Keep-Alive tái sử dụng kết nối.
+- Sử dụng điều phối động (atomic index) để phân chia file cho các thread một cách tối ưu.
 - Nếu tải thành công toàn bộ:
   - Copy toàn bộ file từ `tmp` đè ra `<exe_dir>`.
   - Ghi đè file `<exe_dir>/tmp/version.json` vào `<exe_dir>/version.json`.

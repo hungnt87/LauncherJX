@@ -52,6 +52,7 @@ std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const M
 std::wstring Utf8ToWstring(const std::string& str);
 
 // Hàm thực hiện tải file qua WinINet hỗ trợ báo cáo tiến trình và hủy tải
-bool DownloadFile(const std::wstring& url, const std::wstring& dest_path, const std::atomic<bool>& running, const std::function<void(float)>& progress_callback);
+// hInternet có thể truyền từ ngoài vào để tái sử dụng kết nối (HTTP Keep-Alive), nếu truyền nullptr sẽ tự mở
+bool DownloadFile(void* hInternet, const std::wstring& url, const std::wstring& dest_path, const std::atomic<bool>& running, const std::function<void(float)>& progress_callback);
 
 }  // namespace launcher::update

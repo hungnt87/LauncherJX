@@ -2,10 +2,12 @@
 #include "update.h"
 
 #include <windows.h>
+#include <wininet.h>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <vector>
 
 LauncherApp::LauncherApp() = default;
 
@@ -101,7 +103,7 @@ void LauncherApp::RunCheckWorker() {
     const std::wstring temp_version_path = exe_dir_ + L"\\tmp\\version.json";
     const std::wstring remote_version_url = launcher::update::kManifestUrl;
 
-    if (!launcher::update::DownloadFile(remote_version_url, temp_version_path, running_, nullptr)) {
+    if (!launcher::update::DownloadFile(nullptr, remote_version_url, temp_version_path, running_, nullptr)) {
         launcher::update::UpdateSnapshot done_snapshot;
         done_snapshot.progress = 1.0f;
         done_snapshot.phase = launcher::update::UpdatePhase::Done;
@@ -208,38 +210,74 @@ void LauncherApp::RunUpdateWorker() {
     launcher::update::UpdateSnapshot downloading_snapshot;
     downloading_snapshot.progress = 0.0f;
     downloading_snapshot.phase = launcher::update::UpdatePhase::Downloading;
-    downloading_snapshot.message = "Tim thay " + std::to_string(files_to_update.size()) + " file can cap nhat. Dang tai...";
+    downloading_snapshot.message = "Tim thay " + std::to_string(files_to_update.size()) + " file can cap nhat. Dang tai bang 4 luong...";
     SetSnapshot(downloading_snapshot);
 
     std::wstring wversion = launcher::update::Utf8ToWstring(server_manifest_.version);
-    for (size_t idx = 0; idx < files_to_update.size(); ++idx) {
-        if (!running_) {
-            break;
-        }
 
-        const auto& file = files_to_update[idx];
-        std::wstring wname = launcher::update::Utf8ToWstring(file.name);
-        std::wstring file_url = launcher::update::kServerRawPrefix + wversion + L"/patch/" + wname;
-        std::wstring temp_file_path = (std::filesystem::path(exe_dir_) / L"tmp" / wname).wstring();
+    // Tải đa luồng song song
+    const size_t kNumThreads = 4;
+    std::vector<std::thread> download_threads;
+    std::atomic<size_t> next_file_idx{0};
+    std::atomic<size_t> files_finished{0};
+    std::atomic<bool> download_failed{false};
+    std::string error_message;
+    std::mutex error_mutex;
 
-        auto progress_callback = [&](float file_progress) {
-            const float progress = (static_cast<float>(idx) + file_progress) / static_cast<float>(files_to_update.size());
-            launcher::update::UpdateSnapshot progress_snapshot;
-            progress_snapshot.progress = progress;
-            progress_snapshot.phase = launcher::update::UpdatePhase::Downloading;
-            progress_snapshot.message = "Dang tai (" + std::to_string(idx + 1) + "/" + std::to_string(files_to_update.size()) + "): " + file.name;
-            SetSnapshot(progress_snapshot);
-        };
-
-        if (!launcher::update::DownloadFile(file_url, temp_file_path, running_, progress_callback)) {
-            if (running_) {
-                launcher::update::UpdateSnapshot error_snapshot;
-                error_snapshot.phase = launcher::update::UpdatePhase::Error;
-                error_snapshot.message = "Loi tai file: " + file.name + " (Error: " + std::to_string(GetLastError()) + ")";
-                SetSnapshot(error_snapshot);
+    for (size_t t = 0; t < kNumThreads; ++t) {
+        download_threads.emplace_back([&]() {
+            HINTERNET hInternet = InternetOpenW(L"LauncherJX/1.0", INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0);
+            if (!hInternet) {
+                download_failed = true;
+                return;
             }
-            return;
+
+            while (running_ && !download_failed) {
+                size_t idx = next_file_idx.fetch_add(1);
+                if (idx >= files_to_update.size()) {
+                    break;
+                }
+
+                const auto& file = files_to_update[idx];
+                std::wstring wname = launcher::update::Utf8ToWstring(file.name);
+                std::wstring file_url = launcher::update::kServerRawPrefix + wversion + L"/patch/" + wname;
+                std::wstring temp_file_path = (std::filesystem::path(exe_dir_) / L"tmp" / wname).wstring();
+
+                if (!launcher::update::DownloadFile(hInternet, file_url, temp_file_path, running_, nullptr)) {
+                    if (running_) {
+                        std::lock_guard<std::mutex> lock(error_mutex);
+                        download_failed = true;
+                        error_message = "Loi tai file: " + file.name + " (Error: " + std::to_string(GetLastError()) + ")";
+                    }
+                    break;
+                }
+
+                size_t finished = files_finished.fetch_add(1) + 1;
+
+                float progress = static_cast<float>(finished) / files_to_update.size();
+                launcher::update::UpdateSnapshot progress_snapshot;
+                progress_snapshot.progress = progress;
+                progress_snapshot.phase = launcher::update::UpdatePhase::Downloading;
+                progress_snapshot.message = "Dang tai: " + std::to_string(finished) + "/" + std::to_string(files_to_update.size()) + " file...";
+                SetSnapshot(progress_snapshot);
+            }
+
+            InternetCloseHandle(hInternet);
+        });
+    }
+
+    for (auto& thread : download_threads) {
+        if (thread.joinable()) {
+            thread.join();
         }
+    }
+
+    if (download_failed) {
+        launcher::update::UpdateSnapshot error_snapshot;
+        error_snapshot.phase = launcher::update::UpdatePhase::Error;
+        error_snapshot.message = error_message;
+        SetSnapshot(error_snapshot);
+        return;
     }
 
     if (running_) {

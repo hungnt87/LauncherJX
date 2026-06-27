@@ -254,20 +254,28 @@ std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const M
     return files_to_update;
 }
 
-bool DownloadFile(const std::wstring& url, const std::wstring& dest_path, const std::atomic<bool>& running, const std::function<void(float)>& progress_callback) {
+bool DownloadFile(void* hInternet, const std::wstring& url, const std::wstring& dest_path, const std::atomic<bool>& running, const std::function<void(float)>& progress_callback) {
     // Đảm bảo thư mục cha tồn tại
     std::filesystem::path dest(dest_path);
     if (dest.has_parent_path()) {
         std::filesystem::create_directories(dest.parent_path());
     }
 
-    HINTERNET hInternet = InternetOpenW(L"LauncherJX/1.0", INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0);
-    if (!hInternet) return false;
+    HINTERNET active_hInternet = reinterpret_cast<HINTERNET>(hInternet);
+    HINTERNET internal_hInternet = nullptr;
+
+    if (!active_hInternet) {
+        internal_hInternet = InternetOpenW(L"LauncherJX/1.0", INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0);
+        active_hInternet = internal_hInternet;
+    }
+    if (!active_hInternet) return false;
 
     DWORD flags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_SECURE;
-    HINTERNET hUrl = InternetOpenUrlW(hInternet, url.c_str(), nullptr, 0, flags, 0);
+    HINTERNET hUrl = InternetOpenUrlW(active_hInternet, url.c_str(), nullptr, 0, flags, 0);
     if (!hUrl) {
-        InternetCloseHandle(hInternet);
+        if (internal_hInternet) {
+            InternetCloseHandle(internal_hInternet);
+        }
         return false;
     }
 
@@ -278,7 +286,9 @@ bool DownloadFile(const std::wstring& url, const std::wstring& dest_path, const 
         if (statusCode < 200 || statusCode >= 300) {
             SetLastError(statusCode); // Thiết lập LastError bằng HTTP status code để hiển thị
             InternetCloseHandle(hUrl);
-            InternetCloseHandle(hInternet);
+            if (internal_hInternet) {
+                InternetCloseHandle(internal_hInternet);
+            }
             return false;
         }
     }
@@ -290,7 +300,9 @@ bool DownloadFile(const std::wstring& url, const std::wstring& dest_path, const 
     std::ofstream file(dest_path, std::ios::binary);
     if (!file.is_open()) {
         InternetCloseHandle(hUrl);
-        InternetCloseHandle(hInternet);
+        if (internal_hInternet) {
+            InternetCloseHandle(internal_hInternet);
+        }
         return false;
     }
 
@@ -308,7 +320,9 @@ bool DownloadFile(const std::wstring& url, const std::wstring& dest_path, const 
 
     file.close();
     InternetCloseHandle(hUrl);
-    InternetCloseHandle(hInternet);
+    if (internal_hInternet) {
+        InternetCloseHandle(internal_hInternet);
+    }
 
     if (!running) {
         // Xóa file tải dở nếu bị hủy giữa chừng
