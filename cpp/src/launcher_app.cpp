@@ -1,5 +1,6 @@
 #include "launcher_app.h"
 
+#include <windows.h>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -100,12 +101,12 @@ void LauncherApp::RunUpdateWorker() {
     SetSnapshot(download_manifest_snapshot);
 
     const std::wstring temp_version_path = exe_dir_ + L"\\tmp\\version.json";
-    const std::wstring remote_version_url = launcher::update::kServerBaseUrl + L"version.json";
+    const std::wstring remote_version_url = launcher::update::kManifestUrl;
 
     if (!launcher::update::DownloadFile(remote_version_url, temp_version_path, running_, nullptr)) {
         launcher::update::UpdateSnapshot error_snapshot;
         error_snapshot.phase = launcher::update::UpdatePhase::Error;
-        error_snapshot.message = "Khong the tai phien ban moi tu server.";
+        error_snapshot.message = "Khong the tai phien ban moi tu server. (Error: " + std::to_string(GetLastError()) + ")";
         SetSnapshot(error_snapshot);
         return;
     }
@@ -175,6 +176,7 @@ void LauncherApp::RunUpdateWorker() {
     downloading_snapshot.message = "Dang tai ban cap nhat...";
     SetSnapshot(downloading_snapshot);
 
+    std::wstring wversion = launcher::update::Utf8ToWstring(manifest.version);
     for (size_t idx = 0; idx < files_to_update.size(); ++idx) {
         if (!running_) {
             break;
@@ -182,7 +184,7 @@ void LauncherApp::RunUpdateWorker() {
 
         const auto& file = files_to_update[idx];
         std::wstring wname = launcher::update::Utf8ToWstring(file.name);
-        std::wstring file_url = launcher::update::kServerBaseUrl + wname;
+        std::wstring file_url = launcher::update::kServerRawPrefix + wversion + L"/patch/" + wname;
         std::wstring temp_file_path = (std::filesystem::path(exe_dir_) / L"tmp" / wname).wstring();
 
         // Callback cập nhật tiến trình tổng
@@ -199,7 +201,7 @@ void LauncherApp::RunUpdateWorker() {
             if (running_) {
                 launcher::update::UpdateSnapshot error_snapshot;
                 error_snapshot.phase = launcher::update::UpdatePhase::Error;
-                error_snapshot.message = "Loi tai file: " + file.name;
+                error_snapshot.message = "Loi tai file: " + file.name + " (Error: " + std::to_string(GetLastError()) + ")";
                 SetSnapshot(error_snapshot);
             }
             return;

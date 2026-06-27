@@ -7,8 +7,10 @@
 
 namespace launcher::update {
 
-// Base URL trên GitHub để tải tài nguyên game
-const std::wstring kServerBaseUrl = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/main/patch/";
+// URL tải manifest version.json chính thức từ nhánh main
+const std::wstring kManifestUrl = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/main/patch/version.json";
+// Tiền tố URL để tải các file game theo Tag phiên bản
+const std::wstring kServerRawPrefix = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/";
 
 struct ManifestSource {
     std::wstring path;
