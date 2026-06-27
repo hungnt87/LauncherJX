@@ -1,16 +1,10 @@
 #include "ui.h"
-#include "update.h"
-#include "imgui.h"
-#include "imgui_impl_win32.h"
-#include "imgui_impl_dx11.h"
 
-#include <atomic>
-#include <chrono>
-#include <fstream>
-#include <iterator>
-#include <mutex>
-#include <string>
-#include <thread>
+#include "launcher_app.h"
+
+#include "imgui.h"
+#include "imgui_impl_dx11.h"
+#include "imgui_impl_win32.h"
 
 #include <d3d11.h>
 #include <gdiplus.h>
@@ -28,12 +22,6 @@ int g_bannerHeight = 0;
 int g_logoWidth = 0;
 int g_logoHeight = 0;
 
-std::string g_versionString = "v1.0.0";
-launcher::update::UpdateSnapshot g_updateSnapshot;
-std::mutex g_updateSnapshotMutex;
-std::atomic<bool> g_appRunning{true};
-std::thread g_updateThread;
-
 std::wstring GetExecutablePath() {
     wchar_t buffer[MAX_PATH];
     GetModuleFileNameW(nullptr, buffer, MAX_PATH);
@@ -43,40 +31,6 @@ std::wstring GetExecutablePath() {
         return path.substr(0, pos);
     }
     return L".";
-}
-
-launcher::update::UpdateSnapshot GetUpdateSnapshot() {
-    std::lock_guard<std::mutex> lock(g_updateSnapshotMutex);
-    return g_updateSnapshot;
-}
-
-void SetUpdateSnapshot(const launcher::update::UpdateSnapshot& snapshot) {
-    std::lock_guard<std::mutex> lock(g_updateSnapshotMutex);
-    g_updateSnapshot = snapshot;
-}
-
-void UpdateSnapshotProgress(float progress) {
-    std::lock_guard<std::mutex> lock(g_updateSnapshotMutex);
-    g_updateSnapshot.progress = progress;
-}
-
-void UpdateSnapshotPhase(launcher::update::UpdatePhase phase) {
-    std::lock_guard<std::mutex> lock(g_updateSnapshotMutex);
-    g_updateSnapshot.phase = phase;
-}
-
-void UpdateSnapshotMessage(const std::string& message) {
-    std::lock_guard<std::mutex> lock(g_updateSnapshotMutex);
-    g_updateSnapshot.message = message;
-}
-
-std::string ReadFileText(const std::wstring& path) {
-    std::ifstream file(path, std::ios::binary);
-    if (!file.is_open()) {
-        return "";
-    }
-
-    return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
 
 bool LoadTextureFromImage(const wchar_t* filename, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height) {
@@ -148,25 +102,6 @@ void InitUI(ID3D11Device* device, ID3D11DeviceContext* context, HWND hWnd) {
     LoadTextureFromImage(bannerPath.c_str(), &g_bannerTexture, &g_bannerWidth, &g_bannerHeight);
     LoadTextureFromImage(logoPath.c_str(), &g_logoTexture, &g_logoWidth, &g_logoHeight);
 
-    const std::wstring versionPath = exeDir + L"\\launcher_res\\version.json";
-    const std::string jsonContent = ReadFileText(versionPath);
-    if (!jsonContent.empty()) {
-        launcher::update::ManifestSource source;
-        source.path = versionPath;
-        source.content = jsonContent;
-
-        launcher::update::Manifest manifest;
-        std::string error;
-        if (launcher::update::ParseManifest(source, &manifest, &error)) {
-            g_versionString = manifest.version;
-        } else {
-            launcher::update::UpdateSnapshot snapshot;
-            snapshot.phase = launcher::update::UpdatePhase::Error;
-            snapshot.message = error;
-            SetUpdateSnapshot(snapshot);
-        }
-    }
-
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeui.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesVietnamese());
 
@@ -199,7 +134,7 @@ void InitUI(ID3D11Device* device, ID3D11DeviceContext* context, HWND hWnd) {
     style.Colors[ImGuiCol_TabActive] = ImVec4(0.00f, 0.40f, 0.40f, 1.00f);
 }
 
-void RenderUI() {
+void RenderUI(LauncherApp& app) {
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(ImVec2(960, 600));
 
@@ -215,7 +150,7 @@ void RenderUI() {
     }
     ImGui::SameLine();
     ImGui::SetCursorPosY(10);
-    const std::string titleText = "LauncherJX - " + g_versionString;
+    const std::string titleText = "LauncherJX - " + app.VersionString();
     ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "%s", titleText.c_str());
 
     ImGui::SetCursorPos(ImVec2(890, 6));
@@ -286,7 +221,7 @@ void RenderUI() {
         ImGui::EndTabBar();
     }
 
-    const launcher::update::UpdateSnapshot snapshot = GetUpdateSnapshot();
+    const launcher::update::UpdateSnapshot snapshot = app.Snapshot();
 
     ImGui::SetCursorPos(ImVec2(12, 515));
     if (snapshot.phase == launcher::update::UpdatePhase::Idle) {
@@ -311,86 +246,7 @@ void RenderUI() {
     ImGui::SetCursorPos(ImVec2(828, 535));
     if (snapshot.phase == launcher::update::UpdatePhase::Idle || snapshot.phase == launcher::update::UpdatePhase::Error) {
         if (ImGui::Button("UPDATE", ImVec2(120, 36))) {
-            if (g_updateThread.joinable()) {
-                g_updateThread.join();
-            }
-
-            launcher::update::UpdateSnapshot startSnapshot;
-            startSnapshot.progress = 0.0f;
-            startSnapshot.phase = launcher::update::UpdatePhase::Checking;
-            startSnapshot.message = "Dang kiem tra ban cap nhat...";
-            SetUpdateSnapshot(startSnapshot);
-
-            g_updateThread = std::thread([]() {
-                const std::wstring exeDir = GetExecutablePath();
-                const std::wstring versionPath = exeDir + L"\\launcher_res\\version.json";
-                const std::string jsonContent = ReadFileText(versionPath);
-                if (jsonContent.empty()) {
-                    launcher::update::UpdateSnapshot errorSnapshot;
-                    errorSnapshot.phase = launcher::update::UpdatePhase::Error;
-                    errorSnapshot.message = "Khong mo duoc version.json";
-                    SetUpdateSnapshot(errorSnapshot);
-                    return;
-                }
-
-                launcher::update::ManifestSource source;
-                source.path = versionPath;
-                source.content = jsonContent;
-
-                launcher::update::Manifest manifest;
-                std::string error;
-                if (!launcher::update::ParseManifest(source, &manifest, &error)) {
-                    launcher::update::UpdateSnapshot errorSnapshot;
-                    errorSnapshot.phase = launcher::update::UpdatePhase::Error;
-                    errorSnapshot.message = error;
-                    SetUpdateSnapshot(errorSnapshot);
-                    return;
-                }
-
-                UpdateSnapshotMessage("Dang kiem tra cac file...");
-                const auto filesToUpdate = launcher::update::CollectFilesToUpdate(exeDir, manifest);
-                if (filesToUpdate.empty()) {
-                    launcher::update::UpdateSnapshot doneSnapshot;
-                    doneSnapshot.progress = 1.0f;
-                    doneSnapshot.phase = launcher::update::UpdatePhase::Done;
-                    doneSnapshot.message = "Cap nhat hoan tat! He thong da san sang.";
-                    SetUpdateSnapshot(doneSnapshot);
-                    return;
-                }
-
-                UpdateSnapshotPhase(launcher::update::UpdatePhase::Downloading);
-                UpdateSnapshotMessage("Dang tai ban cap nhat...");
-
-                for (size_t idx = 0; idx < filesToUpdate.size(); ++idx) {
-                    if (!g_appRunning) {
-                        break;
-                    }
-
-                    for (int i = 0; i <= 100; ++i) {
-                        if (!g_appRunning) {
-                            break;
-                        }
-
-                        const float progress = (static_cast<float>(idx) + static_cast<float>(i) / 100.0f) /
-                                               static_cast<float>(filesToUpdate.size());
-                        UpdateSnapshotProgress(progress);
-                        std::this_thread::sleep_for(std::chrono::milliseconds(20));
-                    }
-
-                    std::ofstream outFile(filesToUpdate[idx], std::ios::binary);
-                    if (outFile.is_open()) {
-                        outFile << "Phien ban moi nhat da duoc tai xuong.";
-                    }
-                }
-
-                if (g_appRunning) {
-                    launcher::update::UpdateSnapshot doneSnapshot;
-                    doneSnapshot.progress = 1.0f;
-                    doneSnapshot.phase = launcher::update::UpdatePhase::Done;
-                    doneSnapshot.message = "Cap nhat hoan tat! He thong da san sang.";
-                    SetUpdateSnapshot(doneSnapshot);
-                }
-            });
+            app.StartUpdate();
         }
     } else if (snapshot.phase == launcher::update::UpdatePhase::Checking || snapshot.phase == launcher::update::UpdatePhase::Downloading) {
         ImGui::BeginDisabled();
@@ -407,10 +263,6 @@ void RenderUI() {
 }
 
 void CleanupUI() {
-    g_appRunning = false;
-    if (g_updateThread.joinable()) {
-        g_updateThread.join();
-    }
     if (g_bannerTexture) {
         g_bannerTexture->Release();
         g_bannerTexture = nullptr;
