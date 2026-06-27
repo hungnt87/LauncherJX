@@ -1,0 +1,76 @@
+MinLevel	MaxLevel	BestPhase	Content
+1	1	1	Hoan nghªnh b¹n tham gia thÕ giíi Vâ L©m TruyÒn Kú. B¹n cã thÓ nhÊn <F1> ®Ó xem h­íng dÉn cña trß ch¬i.
+1	1	1	"H­íng dÉn: NhÊn <F2> ®Ó tïy chän ®é s¸ng, nh¹c nÒn, ©m thanh..."
+1	1	1	"H­íng dÉn: NhÊn <F3> ®Ó xem thuéc tİnh, tin tøc trang bŞ mµ b¹n ®ang sö dông."
+1	1	1	"H­íng dÉn: NhÊn <F4> ®Ó xem vËt phÈm, sè tiÒn mµ b¹n cã trong hµnh trang."
+1	1	1	H­íng dÉn: NhÊn <F12> ®Ó xem chi tiÕt nhiÖm vô ®ang lµm.
+1	1	1	"H­íng dÉn: B¹n muèn t¸n gÉu cïng víi ng­êi ch¬i kh¸c, nhÊn phİm <Enter>, nhËp vµo néi dung mµ b¹n muèn nãi, nhÊn thªm lÇn n÷a ®Ó göi tin."
+1	1	1	Nh¾c nhë: NhÊn <F7> ®Ó hiÓn thŞ tªn cña nh©n vËt hoÆc npc; nhÊn <F8>®Ó hiÓn thŞ m¸u cña nh©n vËt hoÆc npc
+1	1	1	H­íng dÉn: NhÊn <Alt> vµ kho¶ng tr¾ng ®Ó hiÓn thŞ tªn cña vËt phÈm trªn mÆt ®Êt.
+1	1	1	"H­íng dÉn: Khi Sinh lùc, Néi lùc, ThÓ lùc kh«ng ®ñ, b¹n cã thÓ nhÊn phİm <V> ®Ó ngåi xuèng, nhÊn l¹i ch÷ <V> sÏ trë vÒ tr¹ng th¸i ban ®Çu."
+1	1	1	T©n Thñ cÇn biÕt: Thanh mµu ®á trªn thanh tr¹ng th¸i ®Ó chØ Sinh mÖnh; thanh mµu xanh chØ Néi lùc; thanh mµu xanh lôc chØ ThÓ lùc; thanh mµu x¸m chØ ®iÓm kinh nghiÖm.
+1	1	1	"T©n Thñ cÇn biÕt: Khi nh©n vËt cña b¹n chÕt sÏ tù ®éng vÒ thµnh hoÆc th«n mµ b¹n võa ®Õn tr­íc ®ã, mÊt ®i mét kho¶n tiÒn vµ ®iÓm kinh nghiÖm."
+1	1	1	Nh¾c nhë: NhÊn phİm <R> ®Ó chuyÓn ®æi gi÷a Ch¹y bé vµ ®i bé!
+1	1	1	"H­íng dÉn: NhÊn phİm <Tab> ®Ó ®ãng më b¶n ®å nhá gãc ph¶i cöa sæ. NhÊn gi÷ chuét ph¶i kĞo lªn, xuèng, tr¸i, ph¶i ®Ó xem ph¹m vi  toµn b¶n ®å."
+1	1	1	T©n thñ cÇn biÕt: Ng­êi ch¬i tõ cÊp 1 - 20 cã thÓ ®Õn gÆp Long Ngò t¹i c¸c T©n Thñ th«n ®Ó tiÕp nhËn lµm nhiÖm vô s¬ nhËp.
+1	1	1	"H­íng dÉn: Hoµn thµnh nhiÖm vô D· TÈu, b¹n cã thÓ nhËn ®­îc phÇn th­ëng: tiÒn, ®iÓm kinh nghiÖm, B¶o Th¹ch...! B¹n cã thÓ ®Õn gÆp D· TÈu t¹i c¸c T©n Thñ th«n hoÆc c¸c thµnh thŞ ®Ó tiÕp nhËn nhiÖm vô."
+1	1	1	"H­íng dÉn: B¹n cã thÓ sö dông S­ ®å thiÕp ®Ó b¸i ng­êi trªn cÊp 80 lµm s­ phô, sau khi b¸i s­ b¹n sÏ nhËn ®­îc nhiÒu n¨ng lùc ®Æc biÖt."
+1	1	1	"H­íng dÉn: B¹n cã thÓ ®Õn gÆp ThÇn Bİ Th­¬ng Nh©n ë T­¬ng D­¬ng dïng ®iÓm ""Phóc Duyªn"" ®Ó ®æi c¸c B¶o vËt, ®Õn gÆp Vâ L©m TruyÒn Nh©n ®Ó xem chi tiÕt."
+1	1	1	"H­íng dÉn: Sau mçi 12 giê b¹n cã thÓ ®Õn gÆp Vâ L©m TruyÒn Nh©n t¹i c¸c thµnh thŞ ®Ó lÊy ®iÓm ""Danh Väng""."
+1	1	1	T©n thñ cÇn biÕt: Khi ®Õn cÊp 10 cã thÓ ®Õn c¸c T©n Thñ th«n gÆp ®Ö tö tiÕp dÉn c¸c m«n ph¸i ®Ó xin gia nhËp m«n ph¸i.
+1	1	1	"H­íng dÉn: Hoµn thµnh nhiÖm vô cÊp 10 gia nhËp m«n ph¸i b¹n sÏ häc ®­îc vâ c«ng t­¬ng øng, nhÊn phİm <F1> ®Ó xem h­íng dÉn chi tiÕt."
+1	1	1	"Hoan nghªnh b¹n gia nhËp thÕ giíi Vâ L©m TruyÒn Kú, nhÊn <F1> ®Ó xem th«ng tin h­íng dÉn trß ch¬i."
+1	1	1	H­íng dÉn: NhÊn <F5> ®Ó xem tÊt c¶ nh÷ng vâ c«ng mµ b¹n ®· häc qua.
+1	1	1	"H­íng dÉn: NhÊn <F6> ®Ó xem danh s¸ch th«ng tin vÒ h¶o h÷u, th©n nh©n, phèi ngÉu, cõu nh©n...NhÊn <Ctrl> vµ chuét tr¸i ®Ó t¸n gÉu cïng víi tªn ng­êi ®· chän. "
+1	1	1	H­íng dÉn: NhÊn <F12> ®Ó xem chi tiÕt nhiÖm vô ®ang lµm.
+1	1	1	"H­íng dÉn: NÕu b¹n kh«ng muèn mét m×nh ®¸nh thó, b¹n cã thÓ nhÊn phİm <P> ®Ó më giao diÖn tæ ®éi, råi  kÕt tæ ®éi cïng víi nh÷ng ng­êi ch¬i xung quanh cïng luyÖn c«ng"
+1	1	1	"H­íng dÉn: NhÊn gi÷ <Ctrl> vµ chuét ph¶i vµo ng­êi ch¬i bÊt kú ®Ó lùa chän xem tin tøc, kÕt h¶o h÷u, t¸n gÉu, tæ ®éi, theo sau, giao dich..."
+1	1	1	"H­íng dÉn: Khi b¹n cÇn giao dŞch tiÒn hoÆc vËt phÈm víi ng­êi ch¬i kh¸c, tr­íc tiªn nhÊn phİm <T> më giao dŞch, sau ®ã nhÊn <Ctrl> vµ nhÊn chuét ph¶i vµo ng­êi ch¬i, chän môc giao dŞch lµ cã thÓ tiÕn hµnh"
+1	1	1	H­íng dÉn: NhÊn chuét tr¸i vµo qu¸i thó sÏ liªn tôc xuÊt chiªu;  nhÊn chuét ®Ó ®¸nh tõng ph¸t mét
+1	1	1	"Thao t¸c: NhÊn chuét vµo sè Täa ®é d­íi gãc tr¸i b¶n ®å nhá, nhËp täa ®é muèn ®Õn. NhÊn <Enter>, sau ®ã cø theo ®­êng chØ mµu vµng trªn b¶n ®å nhá ®i ®Õn vŞ trİ ®· x¸c ®Şnh!"
+1	1	1	"H­íng dÉn: B¹n cã thÓ sö dông S­ ®å thiÕp ®Ó b¸i ng­êi trªn cÊp 80 lµm s­ phô, sau khi b¸i s­ b¹n sÏ nhËn ®­îc nhiÒu n¨ng lùc ®Æc biÖt."
+1	1	1	T©n thñ cÇn biÕt: §èi tho¹i víi NPC r­¬ng chøa ®å ®Ó cÊt tiÒn vµ c¸c trang bŞ hiÖn kh«ng dïng vµo r­¬ng.
+1	1	1	T©n thñ cÇn biÕt: Ng­êi ch¬i tõ cÊp 1 - 20 cã thÓ ®Õn gÆp Long Ngò t¹i c¸c T©n Thñ th«n ®Ó tiÕp nhËn lµm nhiÖm vô s¬ nhËp.
+1	1	1	"H­íng dÉn: Hoµn thµnh nhiÖm vô D· TÈu, b¹n cã thÓ nhËn ®­îc phÇn th­ëng: tiÒn, ®iÓm kinh nghiÖm, B¶o Th¹ch...! B¹n cã thÓ ®Õn gÆp D· TÈu t¹i c¸c T©n Thñ th«n hoÆc c¸c thµnh thŞ ®Ó tiÕp nhËn nhiÖm vô."
+1	1	1	"H­íng dÉn: B¹n cã thÓ sö dông S­ ®å thiÕp ®Ó b¸i ng­êi trªn cÊp 80 lµm s­ phô, sau khi b¸i s­ b¹n sÏ nhËn ®­îc nhiÒu n¨ng lùc ®Æc biÖt."
+1	1	1	"H­íng dÉn: B¹n cã thÓ ®Õn gÆp ThÇn Bİ Th­¬ng Nh©n ë T­¬ng D­¬ng dïng ®iÓm ""Phóc Duyªn"" ®Ó ®æi c¸c B¶o vËt, ®Õn gÆp Vâ L©m TruyÒn Nh©n ®Ó xem chi tiÕt."
+1	1	1	"H­íng dÉn: Sau mçi 12 giê b¹n cã thÓ ®Õn gÆp Vâ L©m TruyÒn Nh©n t¹i c¸c thµnh thŞ ®Ó lÊy ®iÓm ""Danh Väng""."
+1	1	1	"H­íng dÉn: Hoµn thµnh nhiÖm vô cÊp 20 b¹n sÏ häc ®­îc vâ c«ng t­¬ng øng, nhÊn phİm <F1> ®Ó xem h­íng dÉn chi tiÕt."
+1	1	1	H­íng dÉn: NhÊn <F12> ®Ó xem chi tiÕt nhiÖm vô ®ang lµm.
+1	1	1	Nh¾c nhë: sau khi ®¹t cÊp 20 b¹n cã thÓ ®Õn c¸c thµnh thŞ ®Ó mua ngùa. NhÊn <M> ®Ó lªn hoÆc xuèng ngùa!
+1	1	1	Nh¾c nhë: NhÊn phİm <Page Up/Down> ®Ó chuyÓn ®æi gi÷a c¸c tÇn sè t¸n gÉu!
+1	1	1	H­íng dÉn: NhÊn <Delete> ®Ó xãa c¸c dßng t¸n gÉu.
+1	1	1	"H­íng dÉn: NhÊn gi÷ <Alt> vµ chuét ph¶i ®Ó chän c¸c c©u t¸n gÉu mÆc ®Şnh ""mØm c­êi"", ""dùa vµo"", ""theo ta""..."
+1	1	1	"H­íng dÉn: NhÊn gi÷ <Ctrl> vµ chuét ph¶i vµo ng­êi ch¬i bÊt kú ®Ó lùa chän xem tin tøc, kÕt h¶o h÷u, t¸n gÉu, tæ ®éi, theo sau, giao dich..."
+1	1	1	H­íng dÉn: NhÊn chuét tr¸i vµo qu¸i thó sÏ liªn tôc xuÊt chiªu;  nhÊn chuét ®Ó ®¸nh tõng ph¸t mét
+1	1	1	"Thao t¸c kü n¨ng: NhÊp chuét tr¸i vµo biÓu t­îng kü n¨ng ë gãc ph¶i mµn h×nh, sau ®ã chØ chuét vµo 1 kü n¨ng bÊt kú, Ên c¸c phİm <Q>,<W>,<E>,<A>,<S>,<D>,<Z>,<X>,<C>,<F>,<G> ®Ó thiÕt ®Şnh chøc n¨ng chuyÓn ®æi nhanh c¸c kü n¨ng"
+1	1	1	"Thao t¸c: B¹n cã thÓ bá m¸u, d­îc phÈm còng nh­ thæ ®Şa phï vµo biÓu t­îng phİa gãc tr¸i cöa sæ, sau ®ã chØ cÇn nhÊn phİm <1>, <2>, <3> lµ cã thÓ sö dông nhanh."
+1	1	1	"Thao t¸c: NhÊn chuét vµo sè Täa ®é d­íi gãc tr¸i b¶n ®å nhá, nhËp täa ®é muèn ®Õn. NhÊn <Enter>, sau ®ã cø theo ®­êng chØ mµu vµng trªn b¶n ®å nhá ®i ®Õn vŞ trİ ®· x¸c ®Şnh!"
+1	1	1	Kim Ngäc l­¬ng duyªn: Khi b¹n ®¹t cÊp 20 lµ cã thÓ ®Õn NguyÖt L·o ë Giang T©n Th«n ®Ó xin kÕt duyªn cïng ng­êi t©m ı víi m×nh.
+1	1	1	"HØ KÕt Kim Lan: Khi b¹n cïng víi ng­êi kh¸c t©m ®Çu ı hîp, chØ cÇn ®Õn gÆp TÜnh §èc §¹i S­ t¹i Nam Nh¹c trÊn ®Ó b¸i kÕt Kim Lan."
+1	1	1	"H­íng dÉn: NhiÖm vô Hoµng Kim ®em l¹i cho b¹n nhiÒu phÇn th­ëng hÊp dÉn: trang bŞ hoµng kim, ®iÓm kinh nghiÖm cïng nh÷ng t×nh tiÕt ly kú hÊp dÉn kh¸c...Cã thÓ ®Õn gÆp Long Ngò t¹i c¸c T©n Thñ th«n ®Ó tiÕp nhËn nhiÖm vô."
+1	1	1	"H­íng dÉn: Trong nhiÖm vô phô tuyÕn, b¹n cã thÓ nhËn nhiÒu phÇn th­ëng phong phó nh­ c¸c lo¹i b¶o vËt, trang bŞ HuyÒn Tinh, ®iÓm kinh nghiÖm! B¹n cã thÓ ®Õn Ph­îng T­êng gÆp Ng¹o V©n T«ng (198, 206) ®Ó nhËn nhiÖm vô chİnh ph¸i; ®Õn L©m An gÆp LiÔu Nam V©n (171, 190) ®Ó nhËn nhiÖm vô trung lËp; ®Õn BiÖn Kinh gÆp Th¸c B¹t Hoµi Xuyªn (209, 190) ®Ó tiÕp nhËn nhiÖm vô tµ ph¸i."
+1	1	1	"H­íng dÉn: Hoµn thµnh nhiÖm vô D· TÈu, b¹n cã thÓ nhËn ®­îc phÇn th­ëng: tiÒn, ®iÓm kinh nghiÖm, B¶o Th¹ch...! B¹n cã thÓ ®Õn gÆp D· TÈu t¹i c¸c T©n Thñ th«n hoÆc c¸c thµnh thŞ ®Ó tiÕp nhËn nhiÖm vô."
+1	1	1	H­íng dÉn: B¹n cã thÓ nhËn chuyÓn th­ ë DŞch Quan ®Ó cã ®­îc ®iÓm danh väng.
+1	1	1	H­íng dÉn: Khi ®Õn cÊp 20 cã thÓ t¸n gÉu trªn tÇn sè thµnh thŞ.
+1	1	1	"H­íng dÉn: Hoµn thµnh nhiÖm vô cÊp 30 b¹n sÏ häc ®­îc vâ c«ng t­¬ng øng, nhÊn phİm <F1> ®Ó xem h­íng dÉn chi tiÕt."
+1	1	1	H­íng dÉn: NhÊn gi÷ phİm <Ctrl> vµ nhÊn chuét tr¸i lªn ng­êi ch¬i cã rao b¸n ®Ó xem th«ng tin nh÷ng vËt phÈm muèn mua.
+1	1	1	H­íng dÉn: Khi muèn giao ®Êu víi ng­êi kh¸c h·y bËt <F9>.
+1	1	1	"H­íng dÉn: NhÊn biÓu t­îng nhá thø ba phİa d­íi gãc ph¶i b¶n ®å nhá ®Ó xem ""B¶n ®å Vâ L©m""; nhÊn biÓu t­îng nhá kÕ tiÕp ph¸i d­íi gãc ph¶i b¶n ®å nhá ®Ó xem ""B¶n ®å c¸c mª cung, s¬n ®éng"""
+1	1	1	"H­íng dÉn: NhiÖm vô Hoµng Kim ®em l¹i cho b¹n nhiÒu phÇn th­ëng hÊp dÉn: trang bŞ hoµng kim, ®iÓm kinh nghiÖm cïng nh÷ng t×nh tiÕt ly kú hÊp dÉn kh¸c...Cã thÓ ®Õn gÆp Long Ngò t¹i c¸c T©n Thñ th«n ®Ó tiÕp nhËn nhiÖm vô."
+1	1	1	"H­íng dÉn: Trong nhiÖm vô phô tuyÕn, b¹n cã thÓ nhËn nhiÒu phÇn th­ëng phong phó nh­ c¸c lo¹i b¶o vËt, trang bŞ HuyÒn Tinh, ®iÓm kinh nghiÖm! B¹n cã thÓ ®Õn Ph­îng T­êng gÆp Ng¹o V©n T«ng (198, 206) ®Ó nhËn nhiÖm vô chİnh ph¸i; ®Õn L©m An gÆp LiÔu Nam V©n (171, 190) ®Ó nhËn nhiÖm vô trung lËp; ®Õn BiÖn Kinh gÆp Th¸c B¹t Hoµi Xuyªn (209, 190) ®Ó tiÕp nhËn nhiÖm vô tµ ph¸i."
+1	1	1	"H­íng dÉn: Hoµn thµnh nhiÖm vô D· TÈu, b¹n cã thÓ nhËn ®­îc phÇn th­ëng: tiÒn, ®iÓm kinh nghiÖm, B¶o Th¹ch...! B¹n cã thÓ ®Õn gÆp D· TÈu t¹i c¸c T©n Thñ th«n hoÆc c¸c thµnh thŞ ®Ó tiÕp nhËn nhiÖm vô."
+1	1	1	H­íng dÉn: Khi ®Õn cÊp 30 b¹n cã thÓ t¸n gÉu trªn tÇn sè thÕ giíi.
+1	1	1	Nh¾c nhë: Ng­êi ch¬i tõ cÊp 40-60 cã thÓ tham gia chiÕn tr­êng Tèng Kim S¬ cÊp. Cã thÓ sö dông Tèng Kim chiªu th­ ®Ó trùc tiÕp ®Õn ®Şa ®iÓm b¸o danh!
+1	1	1	"H­íng dÉn: T¹i thî rÌn ë c¸c thµnh thŞ lín vµ c¸c T©n Thñ th«n, b¹n cã thÓ n©ng cÊp huyÒn tinh kho¸ng th¹ch, c¸c thuéc tİnh kho¸ng th¹ch, thuéc tİnh ma ph¸p cña trang bŞ xanh, chÕ t¹o Trang bŞ HuyÒn Tinh, kh¶m n¹m trang bŞ HuyÒn Tinh vµ hîp thµnh trang bŞ hoµng kim."
+1	1	1	"H­íng dÉn: Hoµn thµnh nhiÖm vô cÊp 40 b¹n sÏ häc ®­îc vâ c«ng t­¬ng øng, nhÊn phİm <F1> ®Ó xem h­íng dÉn chi tiÕt."
+1	1	1	"H­íng dÉn: NhiÖm vô Hoµng Kim ®em l¹i cho b¹n nhiÒu phÇn th­ëng hÊp dÉn: trang bŞ hoµng kim, ®iÓm kinh nghiÖm cïng nh÷ng t×nh tiÕt ly kú hÊp dÉn kh¸c...Cã thÓ ®Õn gÆp Long Ngò t¹i c¸c T©n Thñ th«n ®Ó tiÕp nhËn nhiÖm vô."
+1	1	1	"H­íng dÉn: Trong nhiÖm vô phô tuyÕn, b¹n cã thÓ nhËn nhiÒu phÇn th­ëng phong phó nh­ c¸c lo¹i b¶o vËt, trang bŞ HuyÒn Tinh, ®iÓm kinh nghiÖm! B¹n cã thÓ ®Õn Ph­îng T­êng gÆp Ng¹o V©n T«ng (198, 206) ®Ó nhËn nhiÖm vô chİnh ph¸i; ®Õn L©m An gÆp LiÔu Nam V©n (171, 190) ®Ó nhËn nhiÖm vô trung lËp; ®Õn BiÖn Kinh gÆp Th¸c B¹t Hoµi Xuyªn (209, 190) ®Ó tiÕp nhËn nhiÖm vô tµ ph¸i."
+1	1	1	"H­íng dÉn: Hoµn thµnh nhiÖm vô D· TÈu, b¹n cã thÓ nhËn ®­îc phÇn th­ëng: tiÒn, ®iÓm kinh nghiÖm, B¶o Th¹ch...! B¹n cã thÓ ®Õn gÆp D· TÈu t¹i c¸c T©n Thñ th«n hoÆc c¸c thµnh thŞ ®Ó tiÕp nhËn nhiÖm vô."
+1	1	1	"H­íng dÉn Tèng Kim §¹i chiÕn: B¸o danh lóc 11:00, 13:00, 15:00, 17:00, 19:00, 21:00, 23:00 mçi ngµy. KÕt thóc 30 phót b¸o danh lËp tøc khai chiÕn, mçi trËn kĞo dµi 90 phót."
+1	1	1	"H­íng dÉn Tèng Kim §¹i chiÕn: B¹n cã thÓ tİch lòy ®iÓm th¾ng lîi th«ng qua hoµn thµnh c¸c sø mÖnh: ""liªn tr¶m"",""®o¹t kú"", ""b¶o vÖ Nguyªn so¸i""..."
+1	1	1	"H­íng dÉn Tèng Kim §¹i chiÕn: Tr­íc khi Tèng Kim khai chiÕn, b¹n cã thÓ dïng ®iÓm tİch lòy ®Õn Qu©n Nhu quan ®Ó ®æi lÊy kinh nghiÖm hoÆc dïng ®iÓm tİch lòy mua c¸c dông cô chuyªn dïng cho Tèng Kim, §å phæ Hoµng Kim,c¸c kho¸ng th¹ch..."
+1	1	1	"H­íng dÉn Tèng Kim §¹i chiÕn: Trong lóc tham chiÕn, cã thÓ nhÊn phİm <~> (phİa trªn phİm Tab) ®Ó xem c¸c tin tøc chiÕn sù míi nhÊt"
+1	1	1	"H­íng dÉn: Hoµn thµnh nhiÖm vô cÊp 50 b¹n sÏ häc ®­îc vâ c«ng t­¬ng øng, nhÊn phİm <F1> ®Ó xem h­íng dÉn chi tiÕt."
+1	1	1	"H­íng dÉn: Khi ®¹t ®Õn ®¼ng cÊp 50, b¹n cã thÓ hoµn thµnh ""nhiÖm vô xuÊt s­"" cña m«n ph¸i (nhÊn phİm <F1> ®Ó xem h­íng dÉn chi tiÕt) , sau khi hoµn thµnh nhiÖm vô xuÊt s­ cã thÓ gia nhËp bang ph¸i."
+1	1	1	"H­íng dÉn: T¹i thî rÌn ë c¸c thµnh thŞ lín vµ c¸c T©n Thñ th«n, b¹n cã thÓ n©ng cÊp huyÒn tinh kho¸ng th¹ch, c¸c thuéc tİnh kho¸ng th¹ch, thuéc tİnh ma ph¸p cña trang bŞ xanh, chÕ t¹o Trang bŞ HuyÒn Tinh, kh¶m n¹m trang bŞ HuyÒn Tinh vµ hîp thµnh trang bŞ hoµng kim."
