@@ -292,7 +292,7 @@ void LauncherApp::RunUpdateWorker() {
                 std::wstring temp_file_path;
 
                 if (task.is_zip) {
-                    file_url = launcher::update::kServerRawPrefix + wversion + L"/zips/" + wname;
+                    file_url = L"https://github.com/hungnt87/LauncherJX/releases/download/" + wversion + L"/" + wname;
                     temp_file_path = (std::filesystem::path(exe_dir_) / L"tmp" / wname).wstring();
                 } else {
                     std::string encoded_name = launcher::update::UrlEncode(task.name);
