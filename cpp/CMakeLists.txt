@@ -82,20 +82,3 @@ add_custom_command(TARGET LauncherJX POST_BUILD
             $<TARGET_FILE_DIR:LauncherJX>/launcher_res
     VERBATIM
 )
-
-add_executable(update_module_smoke
-    tests/update_module_smoke.cpp
-    src/update.cpp
-)
-
-target_include_directories(update_module_smoke
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-target_link_libraries(update_module_smoke
-    PRIVATE
-        advapi32
-)
-
-target_compile_definitions(update_module_smoke PRIVATE UNICODE _UNICODE)
