@@ -35,6 +35,7 @@ void TestUrlEncode() {
     assert(UrlEncode("data-txt_1.0.txt") == "data-txt_1.0.txt");
     assert(UrlEncode("script/½ð.lua") == "script/%C2%BD%C3%B0.lua");
     assert(UrlEncode("script/skill/gaibang/½ðÎÚÓ³Ñ©.lua") == "script/skill/gaibang/%C2%BD%C3%B0%C3%8E%C3%9A%C3%93%C2%B3%C3%91%C2%A9.lua");
+    assert(UrlEncode("script/skill/kunlun/ÎåÀ×Õý·¨.lua") == "script/skill/kunlun/%C3%8E%C3%A5%C3%80%C3%97%C3%95%C3%BD%C2%B7%C2%A8.lua");
 
     std::cout << "All UrlEncode tests passed successfully!" << std::endl;
 }

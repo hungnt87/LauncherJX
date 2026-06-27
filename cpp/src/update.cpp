@@ -244,16 +244,18 @@ std::string UrlEncode(const std::string& value) {
     escaped.setf(std::ios::hex, std::ios::basefield);
 
     for (std::string::const_iterator i = value.begin(), n = value.end(); i != n; ++i) {
-        std::string::value_type c = (*i);
+        unsigned char c = static_cast<unsigned char>(*i);
 
-        // Giữ nguyên alphanumeric và một số ký tự an toàn đặc biệt
-        // Dấu gạch chéo '/' dùng để phân chia thư mục trong file.name nên KHÔNG ĐƯỢC mã hóa
-        if (std::isalnum(static_cast<unsigned char>(c)) || c == '-' || c == '_' || c == '.' || c == '~' || c == '/') {
-            escaped << c;
+        // Kiểm tra ký tự ASCII an toàn thủ công, độc lập với locale hệ thống
+        if ((c >= 'a' && c <= 'z') ||
+            (c >= 'A' && c <= 'Z') ||
+            (c >= '0' && c <= '9') ||
+            c == '-' || c == '_' || c == '.' || c == '~' || c == '/') {
+            escaped << static_cast<char>(c);
             continue;
         }
 
-        escaped << '%' << std::setw(2) << std::uppercase << int(static_cast<unsigned char>(c));
+        escaped << '%' << std::setw(2) << std::uppercase << int(c);
     }
 
     return escaped.str();
