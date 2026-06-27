@@ -1,0 +1,21 @@
+# Cấu hình tự động release bằng release-skills
+version:
+  file: patch/version.json
+  path: $.version
+
+changelog:
+  files:
+    - path: CHANGELOG.md
+      lang: en
+
+tag:
+  prefix: v
+  sign: false
+
+# Tự động chạy script generate_manifest.py với tag phiên bản mới
+hooks:
+  prepare_artifact: "python {project_root}/tools/generate_manifest.py {version}"
+
+# Đảm bảo file version.json đã cập nhật được đưa vào release commit
+include:
+  - patch/version.json

@@ -4,7 +4,7 @@ Tài liệu này đặc tả thiết kế kỹ thuật cho tính năng tự đ�
 
 ## 1. Yêu cầu Hệ thống
 
-1. **Tự động kiểm tra phiên bản lúc khởi động:** Khi mở ứng dụng, thực hiện tải file `version.json` từ server về một vị trí tạm để so sánh phiên bản (SemVer).
+1. **Tự động kiểm tra phiên bản lúc khởi động:** Khi mở ứng dụng, thực hiện tải file `version.json` từ GitHub Release mới nhất về một vị trí tạm để so sánh phiên bản (SemVer).
 2. **Cập nhật bất đồng bộ (Non-blocking UI):** Quá trình kiểm tra phiên bản diễn ra ngầm dưới background thread để tránh đơ giao diện người dùng.
 3. **So sánh phiên bản thông minh (SemVer):** Hỗ trợ so sánh phiên bản theo định dạng SemVer như `v1.0.0`, `v1.0.1` để quyết định xem có cập nhật hay không.
 4. **Tải và cài đặt an toàn:** 

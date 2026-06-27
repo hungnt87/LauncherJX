@@ -66,9 +66,14 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Warning reading current version.json: {e}")
             
+    import sys
     print(f"Thu muc patch phat hien tai: {patch_dir}")
-    new_version = input(f"Nhap phien ban moi (Nhan Enter de giu nguyen [{old_version}]): ").strip()
-    if not new_version:
-        new_version = old_version
+    if len(sys.argv) > 1:
+        new_version = sys.argv[1].strip()
+        print(f"Su dung phien ban tu dong lenh: {new_version}")
+    else:
+        new_version = input(f"Nhap phien ban moi (Nhan Enter de giu nguyen [{old_version}]): ").strip()
+        if not new_version:
+            new_version = old_version
         
     generate_manifest(patch_dir, new_version)
