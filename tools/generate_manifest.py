@@ -34,6 +34,9 @@ def generate_manifest(patch_dir, version):
     }
     
     # 1. Quét và nén các thư mục con cấp 1
+    zips_dir = os.path.abspath(os.path.join(patch_dir, "..", "zips"))
+    os.makedirs(zips_dir, exist_ok=True)
+
     for item in os.listdir(patch_dir):
         sub_dir_path = os.path.join(patch_dir, item)
         if os.path.isdir(sub_dir_path):
@@ -41,7 +44,7 @@ def generate_manifest(patch_dir, version):
             if sub_dir.startswith('.') or sub_dir == "tmp":
                 continue
                 
-            zip_path = os.path.join(patch_dir, f"{sub_dir}.zip")
+            zip_path = os.path.join(zips_dir, f"{sub_dir}.zip")
             zip_directory(sub_dir_path, zip_path, patch_dir)
             
             # Quét các file trong thư mục con này để tính hash và add vào manifest
