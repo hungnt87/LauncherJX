@@ -20,6 +20,7 @@ set(IMGUI_DIR ${imgui_SOURCE_DIR})
 add_executable(LauncherJX WIN32
     src/main.cpp
     src/ui.cpp
+    src/update.cpp
     resources/app.rc
     ${IMGUI_DIR}/imgui.cpp
     ${IMGUI_DIR}/imgui_draw.cpp
@@ -45,6 +46,7 @@ target_link_libraries(LauncherJX
         gdiplus
         d3d11
         d3dcompiler
+        advapi32
 )
 
 # Sao chep file anh resources vao cac thu muc build
@@ -69,3 +71,18 @@ target_link_options(LauncherJX PRIVATE "/MANIFEST:NO")
 target_compile_options(LauncherJX PRIVATE "/utf-8")
 
 target_compile_definitions(LauncherJX PRIVATE UNICODE _UNICODE)
+
+add_executable(update_module_smoke
+    tests/update_module_smoke.cpp
+    src/update.cpp
+)
+
+target_include_directories(update_module_smoke
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(update_module_smoke
+    PRIVATE
+        advapi32
+)
