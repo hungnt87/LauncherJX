@@ -2,6 +2,8 @@
 #include <windowsx.h>
 #include <d3d11.h>
 #include <gdiplus.h>
+
+#include "launcher_app.h"
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
@@ -22,6 +24,21 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // ImGui WndProc handler
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+namespace {
+
+std::wstring GetExecutablePath() {
+    wchar_t buffer[MAX_PATH];
+    GetModuleFileNameW(nullptr, buffer, MAX_PATH);
+    std::wstring path(buffer);
+    const size_t pos = path.find_last_of(L"\\/");
+    if (pos != std::wstring::npos) {
+        return path.substr(0, pos);
+    }
+    return L".";
+}
+
+}  // namespace
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand) {
     // Khoi tao GDI+ (dung de load anh banner/logo)
@@ -77,6 +94,9 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand) {
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
 
+    LauncherApp app;
+    app.Initialize(GetExecutablePath());
+
     // Khoi tao Giao dien va nap Texture
     InitUI(g_pd3dDevice, g_pd3dDeviceContext, hwnd);
 
@@ -99,7 +119,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand) {
         ImGui::NewFrame();
 
         // Ve UI
-        RenderUI();
+        RenderUI(app);
 
         // Rendering D3D11
         ImGui::Render();
@@ -112,6 +132,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand) {
     }
 
     // Cleanup
+    app.Shutdown();
     CleanupUI();
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
