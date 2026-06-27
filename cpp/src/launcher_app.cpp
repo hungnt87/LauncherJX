@@ -51,13 +51,13 @@ void LauncherApp::Initialize(const std::wstring& exe_dir) {
     launcher::update::UpdateSnapshot ready_snapshot;
     ready_snapshot.progress = 0.0f;
     ready_snapshot.phase = launcher::update::UpdatePhase::Checking;
-    ready_snapshot.message = "Dang kiem tra ban cap nhat tu server...";
+    ready_snapshot.message = "Đang kiểm tra bản cập nhật từ máy chủ...";
     SetSnapshot(ready_snapshot);
 
     if (check_thread_.joinable()) {
         check_thread_.join();
     }
-    changelog_content_ = "Dang tai thong tin cap nhat tu GitHub...";
+    changelog_content_ = "Đang tải thông tin cập nhật từ GitHub...";
     LoadResolutionSettings();
     LoadJx1ModSettings();
     check_thread_ = std::thread(&LauncherApp::RunCheckWorker, this);
@@ -74,7 +74,7 @@ void LauncherApp::StartUpdate() {
     launcher::update::UpdateSnapshot start_snapshot;
     start_snapshot.progress = 0.0f;
     start_snapshot.phase = launcher::update::UpdatePhase::Checking;
-    start_snapshot.message = "Dang kiem tra cac file can cap nhat...";
+    start_snapshot.message = "Đang kiểm tra các tệp cần cập nhật...";
     SetSnapshot(start_snapshot);
 
     update_thread_ = std::thread(&LauncherApp::RunUpdateWorker, this);
@@ -117,7 +117,7 @@ void LauncherApp::LoadChangelog() {
         if (file.is_open()) {
             changelog_content_ = std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
             if (changelog_content_.empty()) {
-                changelog_content_ = "Thong tin cap nhat trong.";
+                changelog_content_ = "Thông tin cập nhật trống.";
             }
             file.close();
         }
@@ -125,7 +125,7 @@ void LauncherApp::LoadChangelog() {
             std::filesystem::remove(temp_changelog_path);
         } catch (...) {}
     } else {
-        changelog_content_ = "Khong the tai thong tin cap nhat tu GitHub. Vui long kiem tra ket noi.";
+        changelog_content_ = "Không thể tải thông tin cập nhật từ GitHub. Vui lòng kiểm tra kết nối.";
     }
 }
 
@@ -138,7 +138,7 @@ void LauncherApp::RunCheckWorker() {
         launcher::update::UpdateSnapshot done_snapshot;
         done_snapshot.progress = 1.0f;
         done_snapshot.phase = launcher::update::UpdatePhase::Done;
-        done_snapshot.message = "Khong the ket noi den server de kiem tra ban cap nhat. Su dung phien ban hien tai (" + version_string_ + ").";
+        done_snapshot.message = "Không thể kết nối đến máy chủ để kiểm tra bản cập nhật. Sử dụng phiên bản hiện tại (" + version_string_ + ").";
         SetSnapshot(done_snapshot);
         has_update_ = false;
         return;
@@ -156,7 +156,7 @@ void LauncherApp::RunCheckWorker() {
         launcher::update::UpdateSnapshot done_snapshot;
         done_snapshot.progress = 1.0f;
         done_snapshot.phase = launcher::update::UpdatePhase::Done;
-        done_snapshot.message = "Loi doc thong tin phien ban server. Su dung phien ban hien tai (" + version_string_ + ").";
+        done_snapshot.message = "Lỗi đọc thông tin phiên bản máy chủ. Sử dụng phiên bản hiện tại (" + version_string_ + ").";
         SetSnapshot(done_snapshot);
         has_update_ = false;
         return;
@@ -172,7 +172,7 @@ void LauncherApp::RunCheckWorker() {
         launcher::update::UpdateSnapshot done_snapshot;
         done_snapshot.progress = 1.0f;
         done_snapshot.phase = launcher::update::UpdatePhase::Done;
-        done_snapshot.message = "Loi phan tich thong tin phien ban server. Su dung phien ban hien tai (" + version_string_ + ").";
+        done_snapshot.message = "Lỗi phân tích thông tin phiên bản máy chủ. Sử dụng phiên bản hiện tại (" + version_string_ + ").";
         SetSnapshot(done_snapshot);
         has_update_ = false;
         return;
@@ -186,7 +186,7 @@ void LauncherApp::RunCheckWorker() {
         launcher::update::UpdateSnapshot ready_snapshot;
         ready_snapshot.progress = 0.0f;
         ready_snapshot.phase = launcher::update::UpdatePhase::Idle;
-        ready_snapshot.message = "Co ban cap nhat moi: " + manifest.version + " (Hien tai: " + version_string_ + "). Bam UPDATE de cap nhat.";
+        ready_snapshot.message = "Có bản cập nhật mới: " + manifest.version + " (Hiện tại: " + version_string_ + "). Bấm CẬP NHẬT để cập nhật.";
         SetSnapshot(ready_snapshot);
     } else {
         // Kể cả khi phiên bản bằng hoặc nhỏ hơn server, vẫn quét kiểm tra tính toàn vẹn của các file game
@@ -207,8 +207,8 @@ void LauncherApp::RunCheckWorker() {
             launcher::update::UpdateSnapshot integrity_snapshot;
             integrity_snapshot.progress = 0.0f;
             integrity_snapshot.phase = launcher::update::UpdatePhase::Idle;
-            integrity_snapshot.message = "Phat hien " + std::to_string(files_to_update.size()) + 
-                                         " file game bi loi/thieu (Vi du: " + examples + "). Bam UPDATE de sua loi game.";
+            integrity_snapshot.message = "Phát hiện " + std::to_string(files_to_update.size()) + 
+                                         " tệp game bị lỗi/thiếu (Ví dụ: " + examples + "). Bấm CẬP NHẬT để sửa lỗi game.";
             SetSnapshot(integrity_snapshot);
         } else {
             has_update_ = false;
@@ -219,7 +219,7 @@ void LauncherApp::RunCheckWorker() {
             launcher::update::UpdateSnapshot done_snapshot;
             done_snapshot.progress = 1.0f;
             done_snapshot.phase = launcher::update::UpdatePhase::Done;
-            done_snapshot.message = "Game da o phien ban moi nhat (" + version_string_ + ")! (Da quet " + std::to_string(manifest.files.size()) + " file toan ven)";
+            done_snapshot.message = "Game đã ở phiên bản mới nhất (" + version_string_ + ")! (Đã quét " + std::to_string(manifest.files.size()) + " tệp toàn vẹn)";
             SetSnapshot(done_snapshot);
         }
     }
@@ -237,7 +237,7 @@ void LauncherApp::RunUpdateWorker() {
     launcher::update::UpdateSnapshot checking_snapshot;
     checking_snapshot.progress = 0.0f;
     checking_snapshot.phase = launcher::update::UpdatePhase::Checking;
-    checking_snapshot.message = "Dang kiem tra cac file tai: " + check_path_utf8;
+    checking_snapshot.message = "Đang kiểm tra các tệp tại: " + check_path_utf8;
     SetSnapshot(checking_snapshot);
 
     const auto files_to_update = launcher::update::CollectFilesToUpdate(exe_dir_, server_manifest_);
@@ -256,7 +256,7 @@ void LauncherApp::RunUpdateWorker() {
         launcher::update::UpdateSnapshot done_snapshot;
         done_snapshot.progress = 1.0f;
         done_snapshot.phase = launcher::update::UpdatePhase::Done;
-        done_snapshot.message = "Game da o phien ban moi nhat (" + version_string_ + ")! (Da quet " + std::to_string(server_manifest_.files.size()) + " file)";
+        done_snapshot.message = "Game đã ở phiên bản mới nhất (" + version_string_ + ")! (Đã quét " + std::to_string(server_manifest_.files.size()) + " tệp)";
         SetSnapshot(done_snapshot);
         return;
     }
@@ -304,7 +304,7 @@ void LauncherApp::RunUpdateWorker() {
         launcher::update::UpdateSnapshot done_snapshot;
         done_snapshot.progress = 1.0f;
         done_snapshot.phase = launcher::update::UpdatePhase::Done;
-        done_snapshot.message = "Game da o phien ban moi nhat (" + version_string_ + ")! (Da quet " + std::to_string(server_manifest_.files.size()) + " file)";
+        done_snapshot.message = "Game đã ở phiên bản mới nhất (" + version_string_ + ")! (Đã quét " + std::to_string(server_manifest_.files.size()) + " tệp)";
         SetSnapshot(done_snapshot);
         return;
     }
@@ -312,7 +312,7 @@ void LauncherApp::RunUpdateWorker() {
     launcher::update::UpdateSnapshot downloading_snapshot;
     downloading_snapshot.progress = 0.0f;
     downloading_snapshot.phase = launcher::update::UpdatePhase::Downloading;
-    downloading_snapshot.message = "Dang tai " + std::to_string(zips_to_download.size()) + " file zip va " + std::to_string(direct_files_to_download.size()) + " file le...";
+    downloading_snapshot.message = "Đang tải " + std::to_string(zips_to_download.size()) + " tệp zip và " + std::to_string(direct_files_to_download.size()) + " tệp lẻ...";
     SetSnapshot(downloading_snapshot);
 
     std::wstring wversion = launcher::update::Utf8ToWstring(server_manifest_.version);
@@ -359,7 +359,7 @@ void LauncherApp::RunUpdateWorker() {
                     if (running_) {
                         std::lock_guard<std::mutex> lock(error_mutex);
                         download_failed = true;
-                        error_message = "Loi tai file: " + task.name + " (Error: " + std::to_string(GetLastError()) + ")";
+                        error_message = "Lỗi tải tệp: " + task.name + " (Lỗi: " + std::to_string(GetLastError()) + ")";
                     }
                     break;
                 }
@@ -370,7 +370,7 @@ void LauncherApp::RunUpdateWorker() {
                 launcher::update::UpdateSnapshot progress_snapshot;
                 progress_snapshot.progress = progress;
                 progress_snapshot.phase = launcher::update::UpdatePhase::Downloading;
-                progress_snapshot.message = "Dang tai: " + std::to_string(finished) + "/" + std::to_string(download_tasks.size()) + " goi cap nhat...";
+                progress_snapshot.message = "Đang tải: " + std::to_string(finished) + "/" + std::to_string(download_tasks.size()) + " gói cập nhật...";
                 SetSnapshot(progress_snapshot);
             }
 
@@ -396,7 +396,7 @@ void LauncherApp::RunUpdateWorker() {
         launcher::update::UpdateSnapshot installing_snapshot;
         installing_snapshot.progress = 0.9f;
         installing_snapshot.phase = launcher::update::UpdatePhase::Downloading;
-        installing_snapshot.message = "Dang giai nen va cai dat ban cap nhat...";
+        installing_snapshot.message = "Đang giải nén và cài đặt bản cập nhật...";
         SetSnapshot(installing_snapshot);
 
         try {
@@ -406,7 +406,7 @@ void LauncherApp::RunUpdateWorker() {
                 std::wstring zip_path = (std::filesystem::path(exe_dir_) / L"tmp" / wzip_name).wstring();
 
                 if (!launcher::update::UnzipFile(zip_path, exe_dir_)) {
-                    throw std::runtime_error("Khong the giai nen goi: " + zip_name);
+                    throw std::runtime_error("Không thể giải nén gói: " + zip_name);
                 }
             }
 
@@ -437,17 +437,17 @@ void LauncherApp::RunUpdateWorker() {
             launcher::update::UpdateSnapshot done_snapshot;
             done_snapshot.progress = 1.0f;
             done_snapshot.phase = launcher::update::UpdatePhase::Done;
-            done_snapshot.message = "Cap nhat hoan tat! He thong da san sang.";
+            done_snapshot.message = "Cập nhật hoàn tất! Hệ thống đã sẵn sàng.";
             SetSnapshot(done_snapshot);
         } catch (const std::exception& ex) {
             launcher::update::UpdateSnapshot error_snapshot;
             error_snapshot.phase = launcher::update::UpdatePhase::Error;
-            error_snapshot.message = std::string("Loi cai dat: ") + ex.what();
+            error_snapshot.message = std::string("Lỗi cài đặt: ") + ex.what();
             SetSnapshot(error_snapshot);
         } catch (...) {
             launcher::update::UpdateSnapshot error_snapshot;
             error_snapshot.phase = launcher::update::UpdatePhase::Error;
-            error_snapshot.message = "Loi cai dat khong xac dinh.";
+            error_snapshot.message = "Lỗi cài đặt không xác định.";
             SetSnapshot(error_snapshot);
         }
     }
