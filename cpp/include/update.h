@@ -8,7 +8,7 @@
 namespace launcher::update {
 
 // Base URL trên GitHub để tải tài nguyên game
-const std::wstring kServerBaseUrl = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/main/cpp/resources/";
+const std::wstring kServerBaseUrl = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/main/patch/";
 
 struct ManifestSource {
     std::wstring path;

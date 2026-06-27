@@ -16,7 +16,7 @@ void LauncherApp::Initialize(const std::wstring& exe_dir) {
     version_string_.clear();
     running_ = true;
 
-    const std::wstring version_path = exe_dir_ + L"\\launcher_res\\version.json";
+    const std::wstring version_path = exe_dir_ + L"\\version.json";
     const std::string json_content = [&] {
         std::ifstream file(version_path, std::ios::binary);
         if (!file.is_open()) {
@@ -99,7 +99,7 @@ void LauncherApp::RunUpdateWorker() {
     download_manifest_snapshot.message = "Dang tai cau hinh cap nhat tu server...";
     SetSnapshot(download_manifest_snapshot);
 
-    const std::wstring temp_version_path = exe_dir_ + L"\\update_temp\\version.json";
+    const std::wstring temp_version_path = exe_dir_ + L"\\tmp\\version.json";
     const std::wstring remote_version_url = launcher::update::kServerBaseUrl + L"version.json";
 
     if (!launcher::update::DownloadFile(remote_version_url, temp_version_path, running_, nullptr)) {
@@ -152,10 +152,10 @@ void LauncherApp::RunUpdateWorker() {
     if (files_to_update.empty()) {
         // Đồng bộ file version.json kể cả khi không cần tải file nào khác
         try {
-            std::filesystem::path dest_ver = std::filesystem::path(exe_dir_) / L"launcher_res" / L"version.json";
+            std::filesystem::path dest_ver = std::filesystem::path(exe_dir_) / L"version.json";
             std::filesystem::create_directories(dest_ver.parent_path());
             std::filesystem::copy_file(temp_version_path, dest_ver, std::filesystem::copy_options::overwrite_existing);
-            std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"update_temp");
+            std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"tmp");
         } catch (...) {}
 
         version_string_ = manifest.version;
@@ -168,7 +168,7 @@ void LauncherApp::RunUpdateWorker() {
         return;
     }
 
-    // 4. Tải các file cập nhật về update_temp
+    // 4. Tải các file cập nhật về tmp
     launcher::update::UpdateSnapshot downloading_snapshot;
     downloading_snapshot.progress = 0.0f;
     downloading_snapshot.phase = launcher::update::UpdatePhase::Downloading;
@@ -183,7 +183,7 @@ void LauncherApp::RunUpdateWorker() {
         const auto& file = files_to_update[idx];
         std::wstring wname = launcher::update::Utf8ToWstring(file.name);
         std::wstring file_url = launcher::update::kServerBaseUrl + wname;
-        std::wstring temp_file_path = (std::filesystem::path(exe_dir_) / L"update_temp" / wname).wstring();
+        std::wstring temp_file_path = (std::filesystem::path(exe_dir_) / L"tmp" / wname).wstring();
 
         // Callback cập nhật tiến trình tổng
         auto progress_callback = [&](float file_progress) {
@@ -206,7 +206,7 @@ void LauncherApp::RunUpdateWorker() {
         }
     }
 
-    // 5. Cài đặt các file cập nhật từ update_temp sang launcher_res
+    // 5. Cài đặt các file cập nhật từ tmp sang cùng cấp với Launcher
     if (running_) {
         launcher::update::UpdateSnapshot copying_snapshot;
         copying_snapshot.progress = 0.95f;
@@ -218,8 +218,8 @@ void LauncherApp::RunUpdateWorker() {
             // Copy các file game
             for (const auto& file : files_to_update) {
                 std::wstring wname = launcher::update::Utf8ToWstring(file.name);
-                std::filesystem::path temp_path = std::filesystem::path(exe_dir_) / L"update_temp" / wname;
-                std::filesystem::path dest_path = std::filesystem::path(exe_dir_) / L"launcher_res" / wname;
+                std::filesystem::path temp_path = std::filesystem::path(exe_dir_) / L"tmp" / wname;
+                std::filesystem::path dest_path = std::filesystem::path(exe_dir_) / wname;
 
                 if (dest_path.has_parent_path()) {
                     std::filesystem::create_directories(dest_path.parent_path());
@@ -228,12 +228,12 @@ void LauncherApp::RunUpdateWorker() {
             }
 
             // Copy file version.json chính thức để lưu version mới
-            std::filesystem::path temp_ver = std::filesystem::path(exe_dir_) / L"update_temp" / L"version.json";
-            std::filesystem::path dest_ver = std::filesystem::path(exe_dir_) / L"launcher_res" / L"version.json";
+            std::filesystem::path temp_ver = std::filesystem::path(exe_dir_) / L"tmp" / L"version.json";
+            std::filesystem::path dest_ver = std::filesystem::path(exe_dir_) / L"version.json";
             std::filesystem::copy_file(temp_ver, dest_ver, std::filesystem::copy_options::overwrite_existing);
 
             // Xóa thư mục tạm
-            std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"update_temp");
+            std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"tmp");
 
             // Lưu version vào bộ nhớ
             version_string_ = manifest.version;

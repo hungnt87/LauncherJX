@@ -196,11 +196,10 @@ std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const M
     std::vector<FileEntry> files_to_update;
 
     const std::filesystem::path root(exe_dir);
-    const std::filesystem::path launcher_res = root / L"launcher_res";
 
     for (const FileEntry& file : manifest.files) {
         std::wstring wname = Utf8ToWstring(file.name);
-        const std::filesystem::path local_path = launcher_res / std::filesystem::path(wname);
+        const std::filesystem::path local_path = root / std::filesystem::path(wname);
         const std::string local_hash = ComputeSha256(local_path.wstring());
         if (local_hash.empty() || ToLowerAscii(local_hash) != ToLowerAscii(file.hash)) {
             files_to_update.push_back(file);
@@ -225,6 +224,17 @@ bool DownloadFile(const std::wstring& url, const std::wstring& dest_path, const 
     if (!hUrl) {
         InternetCloseHandle(hInternet);
         return false;
+    }
+
+    // Kiểm tra HTTP Status Code (ví dụ tránh tải file lỗi 404)
+    DWORD statusCode = 0;
+    DWORD statusCodeSize = sizeof(statusCode);
+    if (HttpQueryInfoW(hUrl, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &statusCode, &statusCodeSize, nullptr)) {
+        if (statusCode < 200 || statusCode >= 300) {
+            InternetCloseHandle(hUrl);
+            InternetCloseHandle(hInternet);
+            return false;
+        }
     }
 
     DWORD contentLength = 0;
