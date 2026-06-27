@@ -89,6 +89,51 @@ std::vector<FileEntry> ExtractFiles(const std::string& json) {
 
 }  // namespace
 
+int CompareSemanticVersion(const std::string& v1, const std::string& v2) {
+    auto cleanup = [](const std::string& version) -> std::string {
+        size_t start = 0;
+        while (start < version.size() && !std::isdigit(static_cast<unsigned char>(version[start]))) {
+            start++;
+        }
+        return version.substr(start);
+    };
+
+    std::string clean_v1 = cleanup(v1);
+    std::string clean_v2 = cleanup(v2);
+
+    auto split = [](const std::string& s) -> std::vector<int> {
+        std::vector<int> parts;
+        std::stringstream ss(s);
+        std::string item;
+        while (std::getline(ss, item, '.')) {
+            try {
+                size_t num_end = 0;
+                int val = std::stoi(item, &num_end);
+                parts.push_back(val);
+            } catch (...) {
+                parts.push_back(0);
+            }
+        }
+        return parts;
+    };
+
+    std::vector<int> parts_v1 = split(clean_v1);
+    std::vector<int> parts_v2 = split(clean_v2);
+
+    size_t max_size = (std::max)(parts_v1.size(), parts_v2.size());
+    for (size_t i = 0; i < max_size; ++i) {
+        int val1 = (i < parts_v1.size()) ? parts_v1[i] : 0;
+        int val2 = (i < parts_v2.size()) ? parts_v2[i] : 0;
+        if (val1 > val2) {
+            return 1;
+        } else if (val1 < val2) {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
 bool ParseManifest(const ManifestSource& source, Manifest* out_manifest, std::string* error) {
     if (out_manifest == nullptr) {
         if (error != nullptr) {

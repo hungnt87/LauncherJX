@@ -41,6 +41,7 @@ struct UpdateSnapshot {
     std::string message;
 };
 
+int CompareSemanticVersion(const std::string& v1, const std::string& v2);
 bool ParseManifest(const ManifestSource& source, Manifest* out_manifest, std::string* error);
 std::string ComputeSha256(const std::wstring& file_path);
 

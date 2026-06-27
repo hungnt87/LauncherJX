@@ -83,3 +83,20 @@ add_custom_command(TARGET LauncherJX POST_BUILD
             $<TARGET_FILE_DIR:LauncherJX>/launcher_res
     VERBATIM
 )
+
+# Thêm target test cho logic update
+add_executable(update_tests
+    tests/update_test.cpp
+    src/update.cpp
+)
+
+target_link_libraries(update_tests
+    PRIVATE
+        launcher_resources
+        common_lib
+        advapi32
+        wininet
+)
+
+target_compile_options(update_tests PRIVATE "/utf-8")
+target_compile_definitions(update_tests PRIVATE UNICODE _UNICODE)

@@ -1,4 +1,5 @@
 #include "launcher_app.h"
+#include "update.h"
 
 #include <windows.h>
 #include <chrono>
@@ -16,6 +17,7 @@ void LauncherApp::Initialize(const std::wstring& exe_dir) {
     exe_dir_ = exe_dir;
     version_string_.clear();
     running_ = true;
+    has_update_ = false;
 
     const std::wstring version_path = exe_dir_ + L"\\version.json";
     const std::string json_content = [&] {
@@ -28,37 +30,37 @@ void LauncherApp::Initialize(const std::wstring& exe_dir) {
     }();
 
     if (json_content.empty()) {
-        launcher::update::UpdateSnapshot error_snapshot;
-        error_snapshot.phase = launcher::update::UpdatePhase::Error;
-        error_snapshot.message = "Khong mo duoc version.json";
-        SetSnapshot(error_snapshot);
-        return;
+        version_string_ = "v0.0.0";
+    } else {
+        launcher::update::ManifestSource source;
+        source.path = version_path;
+        source.content = json_content;
+
+        launcher::update::Manifest manifest;
+        std::string error;
+        if (!launcher::update::ParseManifest(source, &manifest, &error)) {
+            version_string_ = "v0.0.0";
+        } else {
+            version_string_ = manifest.version;
+        }
     }
-
-    launcher::update::ManifestSource source;
-    source.path = version_path;
-    source.content = json_content;
-
-    launcher::update::Manifest manifest;
-    std::string error;
-    if (!launcher::update::ParseManifest(source, &manifest, &error)) {
-        launcher::update::UpdateSnapshot error_snapshot;
-        error_snapshot.phase = launcher::update::UpdatePhase::Error;
-        error_snapshot.message = error;
-        SetSnapshot(error_snapshot);
-        return;
-    }
-
-    version_string_ = manifest.version;
 
     launcher::update::UpdateSnapshot ready_snapshot;
     ready_snapshot.progress = 0.0f;
-    ready_snapshot.phase = launcher::update::UpdatePhase::Idle;
-    ready_snapshot.message = "He thong da san sang. Bam UPDATE de cap nhat game.";
+    ready_snapshot.phase = launcher::update::UpdatePhase::Checking;
+    ready_snapshot.message = "Dang kiem tra ban cap nhat tu server...";
     SetSnapshot(ready_snapshot);
+
+    if (check_thread_.joinable()) {
+        check_thread_.join();
+    }
+    check_thread_ = std::thread(&LauncherApp::RunCheckWorker, this);
 }
 
 void LauncherApp::StartUpdate() {
+    if (!has_update_) {
+        return;
+    }
     if (update_thread_.joinable()) {
         update_thread_.join();
     }
@@ -66,7 +68,7 @@ void LauncherApp::StartUpdate() {
     launcher::update::UpdateSnapshot start_snapshot;
     start_snapshot.progress = 0.0f;
     start_snapshot.phase = launcher::update::UpdatePhase::Checking;
-    start_snapshot.message = "Dang kiem tra ban cap nhat...";
+    start_snapshot.message = "Dang kiem tra cac file can cap nhat...";
     SetSnapshot(start_snapshot);
 
     update_thread_ = std::thread(&LauncherApp::RunUpdateWorker, this);
@@ -74,6 +76,9 @@ void LauncherApp::StartUpdate() {
 
 void LauncherApp::Shutdown() noexcept {
     running_ = false;
+    if (check_thread_.joinable()) {
+        check_thread_.join();
+    }
     if (update_thread_.joinable()) {
         update_thread_.join();
     }
@@ -92,26 +97,20 @@ const std::string& LauncherApp::VersionString() const noexcept {
     return version_string_;
 }
 
-void LauncherApp::RunUpdateWorker() {
-    // 1. Tạo thư mục tạm và tải version.json từ Server
-    launcher::update::UpdateSnapshot download_manifest_snapshot;
-    download_manifest_snapshot.progress = 0.0f;
-    download_manifest_snapshot.phase = launcher::update::UpdatePhase::Checking;
-    download_manifest_snapshot.message = "Dang tai cau hinh cap nhat tu server...";
-    SetSnapshot(download_manifest_snapshot);
-
+void LauncherApp::RunCheckWorker() {
     const std::wstring temp_version_path = exe_dir_ + L"\\tmp\\version.json";
     const std::wstring remote_version_url = launcher::update::kManifestUrl;
 
     if (!launcher::update::DownloadFile(remote_version_url, temp_version_path, running_, nullptr)) {
-        launcher::update::UpdateSnapshot error_snapshot;
-        error_snapshot.phase = launcher::update::UpdatePhase::Error;
-        error_snapshot.message = "Khong the tai phien ban moi tu server. (Error: " + std::to_string(GetLastError()) + ")";
-        SetSnapshot(error_snapshot);
+        launcher::update::UpdateSnapshot done_snapshot;
+        done_snapshot.progress = 1.0f;
+        done_snapshot.phase = launcher::update::UpdatePhase::Done;
+        done_snapshot.message = "Khong the ket noi den server de kiem tra ban cap nhat. Su dung phien ban hien tai (" + version_string_ + ").";
+        SetSnapshot(done_snapshot);
+        has_update_ = false;
         return;
     }
 
-    // 2. Đọc và phân tích file version.json vừa tải
     const std::string json_content = [&] {
         std::ifstream file(temp_version_path, std::ios::binary);
         if (!file.is_open()) {
@@ -121,10 +120,12 @@ void LauncherApp::RunUpdateWorker() {
     }();
 
     if (json_content.empty()) {
-        launcher::update::UpdateSnapshot error_snapshot;
-        error_snapshot.phase = launcher::update::UpdatePhase::Error;
-        error_snapshot.message = "Loi doc version.json tu server";
-        SetSnapshot(error_snapshot);
+        launcher::update::UpdateSnapshot done_snapshot;
+        done_snapshot.progress = 1.0f;
+        done_snapshot.phase = launcher::update::UpdatePhase::Done;
+        done_snapshot.message = "Loi doc thong tin phien ban server. Su dung phien ban hien tai (" + version_string_ + ").";
+        SetSnapshot(done_snapshot);
+        has_update_ = false;
         return;
     }
 
@@ -135,14 +136,40 @@ void LauncherApp::RunUpdateWorker() {
     launcher::update::Manifest manifest;
     std::string error;
     if (!launcher::update::ParseManifest(source, &manifest, &error)) {
-        launcher::update::UpdateSnapshot error_snapshot;
-        error_snapshot.phase = launcher::update::UpdatePhase::Error;
-        error_snapshot.message = "Loi phan tich manifest: " + error;
-        SetSnapshot(error_snapshot);
+        launcher::update::UpdateSnapshot done_snapshot;
+        done_snapshot.progress = 1.0f;
+        done_snapshot.phase = launcher::update::UpdatePhase::Done;
+        done_snapshot.message = "Loi phan tich thong tin phien ban server. Su dung phien ban hien tai (" + version_string_ + ").";
+        SetSnapshot(done_snapshot);
+        has_update_ = false;
         return;
     }
 
-    // 3. Kiểm tra các file cần cập nhật
+    int comp = launcher::update::CompareSemanticVersion(manifest.version, version_string_);
+    if (comp > 0) {
+        server_manifest_ = manifest;
+        has_update_ = true;
+
+        launcher::update::UpdateSnapshot ready_snapshot;
+        ready_snapshot.progress = 0.0f;
+        ready_snapshot.phase = launcher::update::UpdatePhase::Idle;
+        ready_snapshot.message = "Co ban cap nhat moi: " + manifest.version + " (Hien tai: " + version_string_ + "). Bam UPDATE de cap nhat.";
+        SetSnapshot(ready_snapshot);
+    } else {
+        has_update_ = false;
+        try {
+            std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"tmp");
+        } catch (...) {}
+
+        launcher::update::UpdateSnapshot done_snapshot;
+        done_snapshot.progress = 1.0f;
+        done_snapshot.phase = launcher::update::UpdatePhase::Done;
+        done_snapshot.message = "Game da o phien ban moi nhat (" + version_string_ + ")! (Da quet " + std::to_string(manifest.files.size()) + " file)";
+        SetSnapshot(done_snapshot);
+    }
+}
+
+void LauncherApp::RunUpdateWorker() {
     std::string check_path_utf8 = [&] {
         std::string res;
         int size_needed = WideCharToMultiByte(CP_UTF8, 0, exe_dir_.c_str(), (int)exe_dir_.size(), nullptr, 0, nullptr, nullptr);
@@ -157,34 +184,34 @@ void LauncherApp::RunUpdateWorker() {
     checking_snapshot.message = "Dang kiem tra cac file tai: " + check_path_utf8;
     SetSnapshot(checking_snapshot);
 
-    const auto files_to_update = launcher::update::CollectFilesToUpdate(exe_dir_, manifest);
+    const auto files_to_update = launcher::update::CollectFilesToUpdate(exe_dir_, server_manifest_);
     if (files_to_update.empty()) {
-        // Đồng bộ file version.json kể cả khi không cần tải file nào khác
         try {
             std::filesystem::path dest_ver = std::filesystem::path(exe_dir_) / L"version.json";
             std::filesystem::create_directories(dest_ver.parent_path());
+            std::filesystem::path temp_version_path = std::filesystem::path(exe_dir_) / L"tmp" / L"version.json";
             std::filesystem::copy_file(temp_version_path, dest_ver, std::filesystem::copy_options::overwrite_existing);
             std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"tmp");
         } catch (...) {}
 
-        version_string_ = manifest.version;
+        version_string_ = server_manifest_.version;
+        has_update_ = false;
 
         launcher::update::UpdateSnapshot done_snapshot;
         done_snapshot.progress = 1.0f;
         done_snapshot.phase = launcher::update::UpdatePhase::Done;
-        done_snapshot.message = "Game da o phien ban moi nhat! (Da quet " + std::to_string(manifest.files.size()) + " file)";
+        done_snapshot.message = "Game da o phien ban moi nhat (" + version_string_ + ")! (Da quet " + std::to_string(server_manifest_.files.size()) + " file)";
         SetSnapshot(done_snapshot);
         return;
     }
 
-    // 4. Tải các file cập nhật về tmp
     launcher::update::UpdateSnapshot downloading_snapshot;
     downloading_snapshot.progress = 0.0f;
     downloading_snapshot.phase = launcher::update::UpdatePhase::Downloading;
     downloading_snapshot.message = "Tim thay " + std::to_string(files_to_update.size()) + " file can cap nhat. Dang tai...";
     SetSnapshot(downloading_snapshot);
 
-    std::wstring wversion = launcher::update::Utf8ToWstring(manifest.version);
+    std::wstring wversion = launcher::update::Utf8ToWstring(server_manifest_.version);
     for (size_t idx = 0; idx < files_to_update.size(); ++idx) {
         if (!running_) {
             break;
@@ -195,7 +222,6 @@ void LauncherApp::RunUpdateWorker() {
         std::wstring file_url = launcher::update::kServerRawPrefix + wversion + L"/patch/" + wname;
         std::wstring temp_file_path = (std::filesystem::path(exe_dir_) / L"tmp" / wname).wstring();
 
-        // Callback cập nhật tiến trình tổng
         auto progress_callback = [&](float file_progress) {
             const float progress = (static_cast<float>(idx) + file_progress) / static_cast<float>(files_to_update.size());
             launcher::update::UpdateSnapshot progress_snapshot;
@@ -216,7 +242,6 @@ void LauncherApp::RunUpdateWorker() {
         }
     }
 
-    // 5. Cài đặt các file cập nhật từ tmp sang cùng cấp với Launcher
     if (running_) {
         launcher::update::UpdateSnapshot copying_snapshot;
         copying_snapshot.progress = 0.95f;
@@ -225,7 +250,6 @@ void LauncherApp::RunUpdateWorker() {
         SetSnapshot(copying_snapshot);
 
         try {
-            // Copy các file game
             for (const auto& file : files_to_update) {
                 std::wstring wname = launcher::update::Utf8ToWstring(file.name);
                 std::filesystem::path temp_path = std::filesystem::path(exe_dir_) / L"tmp" / wname;
@@ -237,16 +261,14 @@ void LauncherApp::RunUpdateWorker() {
                 std::filesystem::copy_file(temp_path, dest_path, std::filesystem::copy_options::overwrite_existing);
             }
 
-            // Copy file version.json chính thức để lưu version mới
             std::filesystem::path temp_ver = std::filesystem::path(exe_dir_) / L"tmp" / L"version.json";
             std::filesystem::path dest_ver = std::filesystem::path(exe_dir_) / L"version.json";
             std::filesystem::copy_file(temp_ver, dest_ver, std::filesystem::copy_options::overwrite_existing);
 
-            // Xóa thư mục tạm
             std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"tmp");
 
-            // Lưu version vào bộ nhớ
-            version_string_ = manifest.version;
+            version_string_ = server_manifest_.version;
+            has_update_ = false;
 
             launcher::update::UpdateSnapshot done_snapshot;
             done_snapshot.progress = 1.0f;

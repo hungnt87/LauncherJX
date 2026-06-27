@@ -43,4 +43,32 @@ def generate_manifest(patch_dir, version):
     print(f"Manifest generated successfully at {manifest_path} with {len(manifest['files'])} files.")
 
 if __name__ == "__main__":
-    generate_manifest("d:/1.DEV/2026/LauncherJX/patch", "v1.0.0")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    patch_dir = os.path.abspath(os.path.join(script_dir, "..", "patch"))
+    
+    if not os.path.exists(patch_dir):
+        print(f"Error: Path '{patch_dir}' does not exist.")
+        # Nếu không có thư mục patch, thử tạo mới
+        try:
+            os.makedirs(patch_dir)
+            print(f"Created patch directory at '{patch_dir}'.")
+        except Exception as e:
+            print(f"Could not create patch directory: {e}")
+            exit(1)
+            
+    version_file = os.path.join(patch_dir, "version.json")
+    old_version = "v1.0.0"
+    if os.path.exists(version_file):
+        try:
+            with open(version_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                old_version = data.get("version", "v1.0.0")
+        except Exception as e:
+            print(f"Warning reading current version.json: {e}")
+            
+    print(f"Thu muc patch phat hien tai: {patch_dir}")
+    new_version = input(f"Nhap phien ban moi (Nhan Enter de giu nguyen [{old_version}]): ").strip()
+    if not new_version:
+        new_version = old_version
+        
+    generate_manifest(patch_dir, new_version)

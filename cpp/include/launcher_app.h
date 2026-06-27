@@ -21,6 +21,7 @@ public:
     const std::string& VersionString() const noexcept;
 
 private:
+    void RunCheckWorker();
     void RunUpdateWorker();
     void SetSnapshot(const launcher::update::UpdateSnapshot& snapshot);
 
@@ -29,5 +30,10 @@ private:
     launcher::update::UpdateSnapshot snapshot_{};
     std::wstring exe_dir_;
     std::string version_string_;
+    
+    launcher::update::Manifest server_manifest_;
+    bool has_update_ = false;
+    
+    std::thread check_thread_;
     std::thread update_thread_;
 };
