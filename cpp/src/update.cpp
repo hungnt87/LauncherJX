@@ -270,9 +270,18 @@ std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const M
     for (const FileEntry& file : manifest.files) {
         std::wstring wname = Utf8ToWstring(file.name);
         const std::filesystem::path local_path = root / std::filesystem::path(wname);
-        const std::string local_hash = ComputeSha256(local_path.wstring());
-        if (local_hash.empty() || ToLowerAscii(local_hash) != ToLowerAscii(file.hash)) {
-            files_to_update.push_back(file);
+        
+        // Đối với các file cấu hình .ini, chỉ tải về nếu chưa tồn tại ở local (không check hash ghi đè cấu hình người chơi)
+        if (local_path.extension() == ".ini" || local_path.extension() == ".INI") {
+            if (!std::filesystem::exists(local_path)) {
+                files_to_update.push_back(file);
+            }
+        } else {
+            // Đối với các file game thông thường, check sự tồn tại và khớp hash SHA-256
+            const std::string local_hash = ComputeSha256(local_path.wstring());
+            if (local_hash.empty() || ToLowerAscii(local_hash) != ToLowerAscii(file.hash)) {
+                files_to_update.push_back(file);
+            }
         }
     }
 
