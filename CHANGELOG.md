@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.3 - 2026-06-27
+
+### Fixes
+- Add missing game executables (config.exe, game.exe) in patch folder by correcting gitignore rules
+
 ## v1.0.2 - 2026-06-27
 
 ### Features
