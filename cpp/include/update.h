@@ -51,6 +51,9 @@ std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const M
 // Hàm tiện ích chuyển đổi UTF-8 string sang std::wstring (Win32)
 std::wstring Utf8ToWstring(const std::string& str);
 
+// Hàm tiện ích mã hóa URL (Percent-encoding) cho tên file chứa ký tự đặc biệt
+std::string UrlEncode(const std::string& value);
+
 // Hàm thực hiện tải file qua WinINet hỗ trợ báo cáo tiến trình và hủy tải
 // hInternet có thể truyền từ ngoài vào để tái sử dụng kết nối (HTTP Keep-Alive), nếu truyền nullptr sẽ tự mở
 bool DownloadFile(void* hInternet, const std::wstring& url, const std::wstring& dest_path, const std::atomic<bool>& running, const std::function<void(float)>& progress_callback);

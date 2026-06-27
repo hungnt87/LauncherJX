@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iterator>
 #include <sstream>
+#include <iomanip>
 
 namespace launcher::update {
 
@@ -235,6 +236,27 @@ std::wstring Utf8ToWstring(const std::string& str) {
     std::wstring wstrTo(size_needed, 0);
     MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
     return wstrTo;
+}
+
+std::string UrlEncode(const std::string& value) {
+    std::ostringstream escaped;
+    escaped.fill('0');
+    escaped.setf(std::ios::hex, std::ios::basefield);
+
+    for (std::string::const_iterator i = value.begin(), n = value.end(); i != n; ++i) {
+        std::string::value_type c = (*i);
+
+        // Giữ nguyên alphanumeric và một số ký tự an toàn đặc biệt
+        // Dấu gạch chéo '/' dùng để phân chia thư mục trong file.name nên KHÔNG ĐƯỢC mã hóa
+        if (std::isalnum(static_cast<unsigned char>(c)) || c == '-' || c == '_' || c == '.' || c == '~' || c == '/') {
+            escaped << c;
+            continue;
+        }
+
+        escaped << '%' << std::setw(2) << std::uppercase << int(static_cast<unsigned char>(c));
+    }
+
+    return escaped.str();
 }
 
 std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const Manifest& manifest) {

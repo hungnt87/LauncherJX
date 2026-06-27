@@ -240,7 +240,11 @@ void LauncherApp::RunUpdateWorker() {
 
                 const auto& file = files_to_update[idx];
                 std::wstring wname = launcher::update::Utf8ToWstring(file.name);
-                std::wstring file_url = launcher::update::kServerRawPrefix + wversion + L"/patch/" + wname;
+                
+                std::string encoded_name = launcher::update::UrlEncode(file.name);
+                std::wstring wencoded_name = launcher::update::Utf8ToWstring(encoded_name);
+
+                std::wstring file_url = launcher::update::kServerRawPrefix + wversion + L"/patch/" + wencoded_name;
                 std::wstring temp_file_path = (std::filesystem::path(exe_dir_) / L"tmp" / wname).wstring();
 
                 if (!launcher::update::DownloadFile(hInternet, file_url, temp_file_path, running_, nullptr)) {
