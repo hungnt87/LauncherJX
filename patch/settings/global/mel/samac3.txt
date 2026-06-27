@@ -1,0 +1,2 @@
+nIdMap	pX	pY	pX1	pY1	sNameMap
+227	1587	3326	198	207	Sa M¹c 3

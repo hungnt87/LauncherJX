@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+153	1422	3242	Thπch CÊ tr n
+153	1392	2879	Thπch CÊ tr n
+153	1570	2880	Thπch CÊ tr n
+153	1841	2871	Thπch CÊ tr n
+153	1752	3197	Thπch CÊ tr n
+153	1739	3540	Thπch CÊ tr n
+153	1600	3354	Thπch CÊ tr n
+153	1391	3564	Thπch CÊ tr n

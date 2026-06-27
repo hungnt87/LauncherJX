@@ -1,0 +1,11 @@
+Ãû³Æ	µÀ¾ßÖÖÀà	¾ßÌåÀà±ğ	ÏêÏ¸Àà±ğ	¶¯»­ÎÄ¼şÃû	¶ÔÓ¦Îï¼şË÷Òı	¿í¶È	¸ß¶È	ËµÃ÷ÎÄ×Ö	ÎåĞĞÊôĞÔ	¼Û¸ñ	µÈ¼¶	ÊÇ·ñµş·Å	»ù´¡ÊôĞÔ1ÀàĞÍ	»ù´¡ÊôĞÔ1×îĞ¡Öµ	»ù´¡ÊôĞÔ1×î´óÖµ	»ù´¡ÊôĞÔ2ÀàĞÍ	»ù´¡ÊôĞÔ2×îĞ¡Öµ	»ù´¡ÊôĞÔ2×î´óÖµ	»ù´¡ÊôĞÔ3ÀàĞÍ	»ù´¡ÊôĞÔ3×îĞ¡Öµ	»ù´¡ÊôĞÔ3×î´óÖµ	»ù´¡ÊôĞÔ4ÀàĞÍ	»ù´¡ÊôĞÔ4×îĞ¡Öµ	»ù´¡ÊôĞÔ4×î´óÖµ	»ù´¡ÊôĞÔ5ÀàĞÍ	»ù´¡ÊôĞÔ5×îĞ¡Öµ	»ù´¡ÊôĞÔ5×î´óÖµ	»ù´¡ÊôĞÔ6ÀàĞÍ	»ù´¡ÊôĞÔ6×îĞ¡Öµ	»ù´¡ÊôĞÔ6×î´óÖµ	»ù´¡ÊôĞÔ7ÀàĞÍ	»ù´¡ÊôĞÔ7×îĞ¡Öµ	»ù´¡ÊôĞÔ7×î´óÖµ	ĞèÇóÊôĞÔ1ÀàĞÍ	ĞèÇóÊôĞÔ1ÊıÖµ	ĞèÇóÊôĞÔ2ÀàĞÍ	ĞèÇóÊôĞÔ2ÊıÖµ	ĞèÇóÊôĞÔ3ÀàĞÍ	ĞèÇóÊôĞÔ3ÊıÖµ	ĞèÇóÊôĞÔ4ÀàĞÍ	ĞèÇóÊôĞÔ4ÊıÖµ	ĞèÇóÊôĞÔ5ÀàĞÍ	ĞèÇóÊôĞÔ5ÊıÖµ	ĞèÇóÊôĞÔ6ÀàĞÍ	ĞèÇóÊôĞÔ6ÊıÖµ
+Phi Phong L¨ng V©n	0	12	0	\spr\item\equip\pifengtubiao\pifeng_01.spr	338	1	1	<enter><color=green>Phi Phong L¨ng V©n<color><enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		0	1	0	85	200	200	89	200	200																											
+TuyÖt ThÕ	0	12	0	\spr\item\equip\pifengtubiao\pifeng_02.spr	338	1	1	Kh«ng sö dông		0	2	0																						36	200										
+Ph¸ Qu©n	0	12	0	\spr\item\equip\pifengtubiao\pifeng_03.spr	338	1	1	Kh«ng sö dông		0	3	0																						36	200										
+Ng¹o TuyÕt	0	12	0	\spr\item\equip\pifengtubiao\pifeng_04.spr	338	1	1	Kh«ng sö dông		0	4	0																						36	200										
+K×nh L«i	0	12	0	\spr\item\equip\pifengtubiao\pifeng_05.spr	338	1	1	Kh«ng sö dông		0	5	0																						36	200										
+Ngù Phong	0	12	0	\spr\item\equip\pifengtubiao\pifeng_06.spr	338	1	1	Kh«ng sö dông		0	6	0																						36	200										
+PhÖ Quang	0	12	0	\spr\item\equip\pifengtubiao\pifeng_07.spr	338	1	1	Kh«ng sö dông		0	7	0																						36	200										
+KhÊp ThÇn	0	12	0	\spr\item\equip\pifengtubiao\pifeng_08.spr	338	1	1	Kh«ng sö dông		0	8	0																						36	200										
+K×nh Thiªn	0	12	0	\spr\item\equip\pifengtubiao\pifeng_09.spr	338	1	1	Kh«ng sö dông		0	9	0																						36	200										
+V« Cùc	0	12	0	\spr\item\equip\pifengtubiao\pifeng_10.spr	338	1	1	Kh«ng sö dông		0	10	0																						36	200										

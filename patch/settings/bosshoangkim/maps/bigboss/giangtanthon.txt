@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+20	3524	6430	Giang T姊 Th南
+20	3670	6434	Giang T姊 Th南
+20	3775	6275	Giang T姊 Th南
+20	3829	6129	Giang T姊 Th南
+20	3688	6023	Giang T姊 Th南
+20	3468	5915	Giang T姊 Th南
+20	3484	5799	Giang T姊 Th南
+20	3570	5654	Giang T姊 Th南

@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+59	1525	3108	Thiªn V­¬ng Bang
+59	1544	3342	Thiªn V­¬ng Bang
+59	1689	3263	Thiªn V­¬ng Bang
+59	1682	3374	Thiªn V­¬ng Bang
+59	1897	3219	Thiªn V­¬ng Bang
+59	1926	3145	Thiªn V­¬ng Bang
+59	1843	2979	Thiªn V­¬ng Bang
+59	1793	3011	Thiªn V­¬ng Bang

@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+53	1476	3292	Ba L®ng huy÷n
+53	1440	3413	Ba L®ng huy÷n
+53	1628	3405	Ba L®ng huy÷n
+53	1759	3211	Ba L®ng huy÷n
+53	1771	2919	Ba L®ng huy÷n
+53	1665	2927	Ba L®ng huy÷n
+53	1553	3005	Ba L®ng huy÷n
+53	1402	3028	Ba L®ng huy÷n

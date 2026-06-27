@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+99	1444	2841	V‹nh Lπc tr n
+99	1438	3054	V‹nh Lπc tr n
+99	1501	3359	V‹nh Lπc tr n
+99	1505	3582	V‹nh Lπc tr n
+99	1788	3619	V‹nh Lπc tr n
+99	1753	3407	V‹nh Lπc tr n
+99	1847	3150	V‹nh Lπc tr n
+99	1791	2931	V‹nh Lπc tr n

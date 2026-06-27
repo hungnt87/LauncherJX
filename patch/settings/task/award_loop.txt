@@ -1,0 +1,11 @@
+Name	Quality	Genre	Detail	Particular	GoodsFive	Level	Magiclevel	TaskValue
+LÖnh bµi vinh dù Hµn thiÕt	0	6	1	1257	0	0	0	2000000
+LÖnh bµi vinh dù Hµn thiÕt	0	6	1	1257	0	0	0	5000000
+LÖnh bµi vinh dù Hµn thiÕt	0	6	1	1257	0	0	0	8000000
+LÖnh bµi vinh dù Hµn thiÕt	0	6	1	1257	0	0	0	5000000
+LÖnh bµi vinh dù Hµn thiÕt	0	6	1	1257	0	0	0	5000000
+LÖnh bµi vinh dù Hµn thiÕt	0	6	1	1257	0	0	0	5000000
+LÖnh bµi vinh dù Thanh ®ång	0	6	1	1256	0	0	0	10000000
+LÖnh bµi vinh dù Hµn thiÕt	0	6	1	1257	0	0	0	5000000
+LÖnh bµi vinh dù Hµn thiÕt	0	6	1	1257	0	0	0	5000000
+LÖnh bµi vinh dù Hµn thiÕt	0	6	1	1257	0	0	0	5000000

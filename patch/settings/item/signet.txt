@@ -1,0 +1,111 @@
+Ãû³Æ	µÀ¾ßÖÖÀà	¾ßÌåÀà±ð	ÏêÏ¸Àà±ð	¶¯»­ÎÄ¼þÃû	¶ÔÓ¦Îï¼þË÷Òý	¿í¶È	¸ß¶È	ËµÃ÷ÎÄ×Ö	ÎåÐÐÊôÐÔ	¼Û¸ñ	µÈ¼¶	ÊÇ·ñµþ·Å	»ù´¡ÊôÐÔ1ÀàÐÍ	»ù´¡ÊôÐÔ1×îÐ¡Öµ	»ù´¡ÊôÐÔ1×î´óÖµ	»ù´¡ÊôÐÔ2ÀàÐÍ	»ù´¡ÊôÐÔ2×îÐ¡Öµ	»ù´¡ÊôÐÔ2×î´óÖµ	»ù´¡ÊôÐÔ3ÀàÐÍ	»ù´¡ÊôÐÔ3×îÐ¡Öµ	»ù´¡ÊôÐÔ3×î´óÖµ	»ù´¡ÊôÐÔ4ÀàÐÍ	»ù´¡ÊôÐÔ4×îÐ¡Öµ	»ù´¡ÊôÐÔ4×î´óÖµ	»ù´¡ÊôÐÔ5ÀàÐÍ	»ù´¡ÊôÐÔ5×îÐ¡Öµ	»ù´¡ÊôÐÔ5×î´óÖµ	»ù´¡ÊôÐÔ6ÀàÐÍ	»ù´¡ÊôÐÔ6×îÐ¡Öµ	»ù´¡ÊôÐÔ6×î´óÖµ	»ù´¡ÊôÐÔ7ÀàÐÍ	»ù´¡ÊôÐÔ7×îÐ¡Öµ	»ù´¡ÊôÐÔ7×î´óÖµ	ÐèÇóÊôÐÔ1ÀàÐÍ	ÐèÇóÊôÐÔ1ÊýÖµ	ÐèÇóÊôÐÔ2ÀàÐÍ	ÐèÇóÊôÐÔ2ÊýÖµ	ÐèÇóÊôÐÔ3ÀàÐÍ	ÐèÇóÊôÐÔ3ÊýÖµ	ÐèÇóÊôÐÔ4ÀàÐÍ	ÐèÇóÊôÐÔ4ÊýÖµ	ÐèÇóÊôÐÔ5ÀàÐÍ	ÐèÇóÊôÐÔ5ÊýÖµ	ÐèÇóÊôÐÔ6ÀàÐÍ	ÐèÇóÊôÐÔ6ÊýÖµ
+Ên T©n Thñ	0	13	0	\spr\mel\an\antanthu.spr	37	1	1	<enter><color=green>Ên T©n Thñ<color><enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	1	0	85	100	100	89	100	100																											
+Kh«ng sö dông	0	13	0	\spr\mel\an\antanthu.spr	37	1	1	Kh«ng sö dông		100	2	0																						36	1										
+Kh«ng sö dông	0	13	0	\spr\mel\an\antanthu.spr	37	1	1	Kh«ng sö dông		100	3	0																																	
+Kh«ng sö dông	0	13	0	\spr\mel\an\antanthu.spr	37	1	1	Kh«ng sö dông		100	4	0																																	
+Kh«ng sö dông	0	13	0	\spr\mel\an\antanthu.spr	37	1	1	Kh«ng sö dông		100	5	0																																	
+Kh«ng sö dông	0	13	0	\spr\mel\an\antanthu.spr	37	1	1	Kh«ng sö dông		100	6	0																																	
+Kh«ng sö dông	0	13	0	\spr\mel\an\antanthu.spr	37	1	1	Kh«ng sö dông		100	7	0																																	
+Kh«ng sö dông	0	13	0	\spr\mel\an\antanthu.spr	37	1	1	Kh«ng sö dông		100	8	0																																	
+Kh«ng sö dông	0	13	0	\spr\mel\an\antanthu.spr	37	1	1	Kh«ng sö dông		100	9	0																																	
+Kh«ng sö dông	0	13	0	\spr\mel\an\antanthu.spr	37	1	1	Kh«ng sö dông		100	10	0																																	
+ThiÕu L©m Ên - S¬ CÊp	0	13	1	\spr\mel\an\thieulaman.spr	37	1	1	<color><enter>ThiÕu L©m Ên - S¬ CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	1	0	85	200	200	89	200	200	121	10	10	126	50	50												39	0								
+Kh«ng sö dông	0	13	1	\spr\mel\an\thieulaman.spr	37	1	1	Kh«ng sö dông		100	2	0																								39	0								
+Kh«ng sö dông	0	13	1	\spr\mel\an\thieulaman.spr	37	1	1	Kh«ng sö dông		100	3	0																								39	0								
+Kh«ng sö dông	0	13	1	\spr\mel\an\thieulaman.spr	37	1	1	Kh«ng sö dông		100	4	0																								39	0								
+ThiÕu L©m Ên - Trung CÊp	0	13	1	\spr\mel\an\thieulaman.spr	37	1	1	<color><enter>ThiÕu L©m Ên - Trung CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	5	0	85	200	200	89	200	200	121	30	30	126	50	50												39	0								
+Kh«ng sö dông	0	13	1	\spr\mel\an\thieulaman.spr	37	1	1	Kh«ng sö dông		100	6	0																								39	0								
+Kh«ng sö dông	0	13	1	\spr\mel\an\thieulaman.spr	37	1	1	Kh«ng sö dông		100	7	0																								39	0								
+Kh«ng sö dông	0	13	1	\spr\mel\an\thieulaman.spr	37	1	1	Kh«ng sö dông		100	8	0																								39	0								
+Kh«ng sö dông	0	13	1	\spr\mel\an\thieulaman.spr	37	1	1	Kh«ng sö dông		100	9	0																								39	0								
+ThiÕu L©m Ên - Cao CÊp	0	13	1	\spr\mel\an\thieulaman.spr	37	1	1	<color><enter>ThiÕu L©m Ên - Cao CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	10	0	85	200	200	89	200	200	121	50	50	126	100	100												39	0								
+Thiªn V­¬ng Ên - S¬ CÊp	0	13	2	\spr\mel\an\thienvuongan.spr	37	1	1	<color><enter>Thiªn V­¬ng Ên - S¬ CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	1	0	85	300	300	89	100	100	121	10	10	126	50	50												39	1								
+Kh«ng sö dông	0	13	2	\spr\mel\an\thienvuongan.spr	37	1	1	Kh«ng sö dông		100	2	0																								39	1								
+Kh«ng sö dông	0	13	2	\spr\mel\an\thienvuongan.spr	37	1	1	Kh«ng sö dông		100	3	0																								39	1								
+Kh«ng sö dông	0	13	2	\spr\mel\an\thienvuongan.spr	37	1	1	Kh«ng sö dông		100	4	0																								39	1								
+Thiªn V­¬ng Ên - Trung CÊp	0	13	2	\spr\mel\an\thienvuongan.spr	37	1	1	<color><enter>Thiªn V­¬ng Ên - Trung CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	5	0	85	400	400	89	100	100	121	30	30	126	50	50												39	1								
+Kh«ng sö dông	0	13	2	\spr\mel\an\thienvuongan.spr	37	1	1	Kh«ng sö dông		100	6	0																								39	1								
+Kh«ng sö dông	0	13	2	\spr\mel\an\thienvuongan.spr	37	1	1	Kh«ng sö dông		100	7	0																								39	1								
+Kh«ng sö dông	0	13	2	\spr\mel\an\thienvuongan.spr	37	1	1	Kh«ng sö dông		100	8	0																								39	1								
+Kh«ng sö dông	0	13	2	\spr\mel\an\thienvuongan.spr	37	1	1	Kh«ng sö dông		100	9	0																								39	1								
+Thiªn V­¬ng Ên - Cao CÊp	0	13	2	\spr\mel\an\thienvuongan.spr	37	1	1	<color><enter>Thiªn V­¬ng Ên - Cao CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	10	0	85	500	500	89	100	100	121	50	50	126	100	100												39	1								
+§­êng M«n Ên - S¬ CÊp	0	13	3	\spr\mel\an\duongmonan.spr	37	1	1	<color><enter>§­êng M«n Ên - S¬ CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	1	0	85	200	200	89	200	200	125	10	10	172	10	10												39	2								
+Kh«ng sö dông	0	13	3	\spr\mel\an\duongmonan.spr	37	1	1	Kh«ng sö dông		100	2	0																								39	2								
+Kh«ng sö dông	0	13	3	\spr\mel\an\duongmonan.spr	37	1	1	Kh«ng sö dông		100	3	0																								39	2								
+Kh«ng sö dông	0	13	3	\spr\mel\an\duongmonan.spr	37	1	1	Kh«ng sö dông		100	4	0																								39	2								
+§­êng M«n Ên - Trung CÊp	0	13	3	\spr\mel\an\duongmonan.spr	37	1	1	<color><enter>§­êng M«n Ên - Trung CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	5	0	85	200	200	89	200	200	125	20	20	172	20	20												39	2								
+Kh«ng sö dông	0	13	3	\spr\mel\an\duongmonan.spr	37	1	1	Kh«ng sö dông		100	6	0																								39	2								
+Kh«ng sö dông	0	13	3	\spr\mel\an\duongmonan.spr	37	1	1	Kh«ng sö dông		100	7	0																								39	2								
+Kh«ng sö dông	0	13	3	\spr\mel\an\duongmonan.spr	37	1	1	Kh«ng sö dông		100	8	0																								39	2								
+Kh«ng sö dông	0	13	3	\spr\mel\an\duongmonan.spr	37	1	1	Kh«ng sö dông		100	9	0																								39	2								
+§­êng M«n Ên - Cao CÊp	0	13	3	\spr\mel\an\duongmonan.spr	37	1	1	<color><enter>§­êng M«n Ên - Cao CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	10	0	85	200	200	89	200	200	125	50	50	172	50	50												39	2								
+Ngò §éc Ên - S¬ CÊp	0	13	4	\spr\mel\an\ngudocan.spr	37	1	1	<color><enter>Ngò §éc Ên - S¬ CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	1	0	85	200	200	89	200	200	125	10	10	172	10	10												39	3								
+Kh«ng sö dông	0	13	4	\spr\mel\an\ngudocan.spr	37	1	1	Kh«ng sö dông		100	2	0																								39	3								
+Kh«ng sö dông	0	13	4	\spr\mel\an\ngudocan.spr	37	1	1	Kh«ng sö dông		100	3	0																								39	3								
+Kh«ng sö dông	0	13	4	\spr\mel\an\ngudocan.spr	37	1	1	Kh«ng sö dông		100	4	0																								39	3								
+Ngò §éc Ên - Trung CÊp	0	13	4	\spr\mel\an\ngudocan.spr	37	1	1	<color><enter>Ngò §éc Ên - Trung CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	5	0	85	200	200	89	200	200	125	20	20	172	20	20												39	3								
+Kh«ng sö dông	0	13	4	\spr\mel\an\ngudocan.spr	37	1	1	Kh«ng sö dông		100	6	0																								39	3								
+Kh«ng sö dông	0	13	4	\spr\mel\an\ngudocan.spr	37	1	1	Kh«ng sö dông		100	7	0																								39	3								
+Kh«ng sö dông	0	13	4	\spr\mel\an\ngudocan.spr	37	1	1	Kh«ng sö dông		100	8	0																								39	3								
+Kh«ng sö dông	0	13	4	\spr\mel\an\ngudocan.spr	37	1	1	Kh«ng sö dông		100	9	0																								39	3								
+Ngò §éc Ên - Cao CÊp	0	13	4	\spr\mel\an\ngudocan.spr	37	1	1	<color><enter>Ngò §éc Ên - Cao CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	10	0	85	200	200	89	200	200	125	50	50	172	50	50												39	3								
+Nga My Ên - S¬ CÊp	0	13	5	\spr\mel\an\ngamyan.spr	37	1	1	<color><enter>Nga My Ên - S¬ CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	1	0	85	200	200	89	200	200	121	10	10	169	100	100												39	4								
+Kh«ng sö dông	0	13	5	\spr\mel\an\ngamyan.spr	37	1	1	Kh«ng sö dông		100	2	0																								39	4								
+Kh«ng sö dông	0	13	5	\spr\mel\an\ngamyan.spr	37	1	1	Kh«ng sö dông		100	3	0																								39	4								
+Kh«ng sö dông	0	13	5	\spr\mel\an\ngamyan.spr	37	1	1	Kh«ng sö dông		100	4	0																								39	4								
+Nga My Ên - Trung CÊp	0	13	5	\spr\mel\an\ngamyan.spr	37	1	1	<color><enter>Nga My Ên - Trung CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	5	0	85	200	200	89	200	200	121	30	30	169	200	200												39	4								
+Kh«ng sö dông	0	13	5	\spr\mel\an\ngamyan.spr	37	1	1	Kh«ng sö dông		100	6	0																								39	4								
+Kh«ng sö dông	0	13	5	\spr\mel\an\ngamyan.spr	37	1	1	Kh«ng sö dông		100	7	0																								39	4								
+Kh«ng sö dông	0	13	5	\spr\mel\an\ngamyan.spr	37	1	1	Kh«ng sö dông		100	8	0																								39	4								
+Kh«ng sö dông	0	13	5	\spr\mel\an\ngamyan.spr	37	1	1	Kh«ng sö dông		100	9	0																								39	4								
+Nga My Ên - Cao CÊp	0	13	5	\spr\mel\an\ngamyan.spr	37	1	1	<color><enter>Nga My Ên - Cao CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	10	0	85	200	200	89	200	200	121	50	50	169	400	400												39	4								
+Thóy Yªn Ên - S¬ CÊp	0	13	6	\spr\mel\an\thuyyenan.spr	37	1	1	<color><enter>Thóy Yªn Ên - S¬ CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	1	0	85	200	200	89	200	200	121	10	10	169	100	100												39	5								
+Kh«ng sö dông	0	13	6	\spr\mel\an\thuyyenan.spr	37	1	1	Kh«ng sö dông		100	2	0																								39	5								
+Kh«ng sö dông	0	13	6	\spr\mel\an\thuyyenan.spr	37	1	1	Kh«ng sö dông		100	3	0																								39	5								
+Kh«ng sö dông	0	13	6	\spr\mel\an\thuyyenan.spr	37	1	1	Kh«ng sö dông		100	4	0																								39	5								
+Thóy Yªn Ên - Trung CÊp	0	13	6	\spr\mel\an\thuyyenan.spr	37	1	1	<color><enter>Thóy Yªn Ên - Trung CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	5	0	85	200	200	89	200	200	121	30	30	169	200	200												39	5								
+Kh«ng sö dông	0	13	6	\spr\mel\an\thuyyenan.spr	37	1	1	Kh«ng sö dông		100	6	0																								39	5								
+Kh«ng sö dông	0	13	6	\spr\mel\an\thuyyenan.spr	37	1	1	Kh«ng sö dông		100	7	0																								39	5								
+Kh«ng sö dông	0	13	6	\spr\mel\an\thuyyenan.spr	37	1	1	Kh«ng sö dông		100	8	0																								39	5								
+Kh«ng sö dông	0	13	6	\spr\mel\an\thuyyenan.spr	37	1	1	Kh«ng sö dông		100	9	0																								39	5								
+Thóy Yªn Ên - Cao CÊp	0	13	6	\spr\mel\an\thuyyenan.spr	37	1	1	<color><enter>Thóy Yªn Ên - Cao CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	10	0	85	200	200	89	200	200	121	50	50	169	400	400												39	5								
+C¸i Bang Ên - S¬ CÊp	0	13	7	\spr\mel\an\caibangan.spr	37	1	1	<color><enter>C¸i Bang Ên - S¬ CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	1	0	85	200	200	89	200	200	121	20	20	170	100	100												39	6								
+Kh«ng sö dông	0	13	7	\spr\mel\an\caibangan.spr	37	1	1	Kh«ng sö dông		100	2	0																								39	6								
+Kh«ng sö dông	0	13	7	\spr\mel\an\caibangan.spr	37	1	1	Kh«ng sö dông		100	3	0																								39	6								
+Kh«ng sö dông	0	13	7	\spr\mel\an\caibangan.spr	37	1	1	Kh«ng sö dông		100	4	0																								39	6								
+C¸i Bang Ên - Trung CÊp	0	13	7	\spr\mel\an\caibangan.spr	37	1	1	<color><enter>C¸i Bang Ên - Trung CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	5	0	85	200	200	89	200	200	121	40	40	170	200	200												39	6								
+Kh«ng sö dông	0	13	7	\spr\mel\an\caibangan.spr	37	1	1	Kh«ng sö dông		100	6	0																								39	6								
+Kh«ng sö dông	0	13	7	\spr\mel\an\caibangan.spr	37	1	1	Kh«ng sö dông		100	7	0																								39	6								
+Kh«ng sö dông	0	13	7	\spr\mel\an\caibangan.spr	37	1	1	Kh«ng sö dông		100	8	0																								39	6								
+Kh«ng sö dông	0	13	7	\spr\mel\an\caibangan.spr	37	1	1	Kh«ng sö dông		100	9	0																								39	6								
+C¸i Bang Ên - Cao CÊp	0	13	7	\spr\mel\an\caibangan.spr	37	1	1	<color><enter>C¸i Bang Ên - Cao CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	10	0	85	200	200	89	200	200	121	60	60	170	300	300												39	6								
+Thiªn NhÉn Ên - S¬ CÊp	0	13	8	\spr\mel\an\thiennhanan.spr	37	1	1	<color><enter>Thiªn NhÉn Ên - S¬ CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	1	0	85	200	200	89	200	200	121	20	20	170	100	100												39	7								
+Kh«ng sö dông	0	13	8	\spr\mel\an\thiennhanan.spr	37	1	1	Kh«ng sö dông		100	2	0																								39	7								
+Kh«ng sö dông	0	13	8	\spr\mel\an\thiennhanan.spr	37	1	1	Kh«ng sö dông		100	3	0																								39	7								
+Kh«ng sö dông	0	13	8	\spr\mel\an\thiennhanan.spr	37	1	1	Kh«ng sö dông		100	4	0																								39	7								
+Thiªn NhÉn Ên - Trung CÊp	0	13	8	\spr\mel\an\thiennhanan.spr	37	1	1	<color><enter>Thiªn NhÉn Ên - Trung CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	5	0	85	200	200	89	200	200	121	50	50	170	200	200												39	7								
+Kh«ng sö dông	0	13	8	\spr\mel\an\thiennhanan.spr	37	1	1	Kh«ng sö dông		100	6	0																								39	7								
+Kh«ng sö dông	0	13	8	\spr\mel\an\thiennhanan.spr	37	1	1	Kh«ng sö dông		100	7	0																								39	7								
+Kh«ng sö dông	0	13	8	\spr\mel\an\thiennhanan.spr	37	1	1	Kh«ng sö dông		100	8	0																								39	7								
+Kh«ng sö dông	0	13	8	\spr\mel\an\thiennhanan.spr	37	1	1	Kh«ng sö dông		100	9	0																								39	7								
+Thiªn NhÉn Ên - Cao CÊp	0	13	8	\spr\mel\an\thiennhanan.spr	37	1	1	<color><enter>Thiªn NhÉn Ên - Cao CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	10	0	85	200	200	89	200	200	121	100	100	170	400	400												39	7								
+Vâ §ang Ên - S¬ CÊp	0	13	9	\spr\mel\an\vodangan.spr	37	1	1	<color><enter>Vâ §ang Ên - S¬ CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	1	0	85	200	200	89	200	200	121	20	20	171	100	100												39	8								
+Kh«ng sö dông	0	13	9	\spr\mel\an\vodangan.spr	37	1	1	Kh«ng sö dông		100	2	0																								39	8								
+Kh«ng sö dông	0	13	9	\spr\mel\an\vodangan.spr	37	1	1	Kh«ng sö dông		100	3	0																								39	8								
+Kh«ng sö dông	0	13	9	\spr\mel\an\vodangan.spr	37	1	1	Kh«ng sö dông		100	4	0																								39	8								
+Vâ §ang Ên - Trung CÊp	0	13	9	\spr\mel\an\vodangan.spr	37	1	1	<color><enter>Vâ §ang Ên - Trung CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	5	0	85	200	200	89	200	200	121	50	50	171	200	200												39	8								
+Kh«ng sö dông	0	13	9	\spr\mel\an\vodangan.spr	37	1	1	Kh«ng sö dông		100	6	0																								39	8								
+Kh«ng sö dông	0	13	9	\spr\mel\an\vodangan.spr	37	1	1	Kh«ng sö dông		100	7	0																								39	8								
+Kh«ng sö dông	0	13	9	\spr\mel\an\vodangan.spr	37	1	1	Kh«ng sö dông		100	8	0																								39	8								
+Kh«ng sö dông	0	13	9	\spr\mel\an\vodangan.spr	37	1	1	Kh«ng sö dông		100	9	0																								39	8								
+Vâ §ang Ên - Cao CÊp	0	13	9	\spr\mel\an\vodangan.spr	37	1	1	<color><enter>Vâ §ang Ên - Cao CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	10	0	85	200	200	89	200	200	121	100	100	171	300	300												39	8								
+C«n L«n Ên - S¬ CÊp	0	13	10	\spr\mel\an\conlonan.spr	37	1	1	<color><enter>C«n L«n Ên - S¬ CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	1	0	85	200	200	89	200	200	121	10	10	171	100	100												39	9								
+Kh«ng sö dông	0	13	10	\spr\mel\an\conlonan.spr	37	1	1	Kh«ng sö dông		100	2	0																								39	9								
+Kh«ng sö dông	0	13	10	\spr\mel\an\conlonan.spr	37	1	1	Kh«ng sö dông		100	3	0																								39	9								
+Kh«ng sö dông	0	13	10	\spr\mel\an\conlonan.spr	37	1	1	Kh«ng sö dông		100	4	0																								39	9								
+C«n L«n Ên - Trung CÊp	0	13	10	\spr\mel\an\conlonan.spr	37	1	1	<color><enter>C«n L«n Ên - Trung CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	5	0	85	200	200	89	200	200	121	30	30	171	200	200												39	9								
+Kh«ng sö dông	0	13	10	\spr\mel\an\conlonan.spr	37	1	1	Kh«ng sö dông		100	6	0																								39	9								
+Kh«ng sö dông	0	13	10	\spr\mel\an\conlonan.spr	37	1	1	Kh«ng sö dông		100	7	0																								39	9								
+Kh«ng sö dông	0	13	10	\spr\mel\an\conlonan.spr	37	1	1	Kh«ng sö dông		100	8	0																								39	9								
+Kh«ng sö dông	0	13	10	\spr\mel\an\conlonan.spr	37	1	1	Kh«ng sö dông		100	9	0																								39	9								
+C«n L«n Ên - Cao CÊp	0	13	10	\spr\mel\an\conlonan.spr	37	1	1	<color><enter>C«n L«n Ên - Cao CÊp<enter><enter><color=white><bclr=pink>Vâ L©m Offline<bclr><color>		100	10	0	85	200	200	89	200	200	121	50	50	171	300	300												39	9								

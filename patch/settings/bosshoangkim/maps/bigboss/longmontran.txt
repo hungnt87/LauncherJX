@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+121	2056	4685	Long M南 tr刡
+121	2250	4626	Long M南 tr刡
+121	2024	4403	Long M南 tr刡
+121	2156	4291	Long M南 tr刡
+121	1988	4136	Long M南 tr刡
+121	1821	4179	Long M南 tr刡
+121	1750	4560	Long M南 tr刡
+121	1951	4736	Long M南 tr刡

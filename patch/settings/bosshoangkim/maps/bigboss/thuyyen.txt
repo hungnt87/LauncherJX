@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+154	274	1405	Thóy Yªn m«n
+154	140	1566	Thóy Yªn m«n
+154	320	1712	Thóy Yªn m«n
+154	470	1649	Thóy Yªn m«n
+154	686	1634	Thóy Yªn m«n
+154	612	1362	Thóy Yªn m«n
+154	447	1117	Thóy Yªn m«n
+154	501	848	Thóy Yªn m«n

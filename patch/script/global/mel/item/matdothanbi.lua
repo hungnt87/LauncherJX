@@ -1,0 +1,12 @@
+function main()
+	Say("DÔng Æ” t◊m tung t›ch <color=yellow>Boss Ti”u Hoµng Kim<color><enter>C«n <color=water>200<color> t m!")
+	return 1
+end
+
+function GetDesc(nItemIdx)
+	local szDesc = "<color=water>MÀt ÆÂ c„ th” dﬂ t◊m vﬁ tr› <color><color=yellow>Boss Ti”u Hoµng Kim<color>\n"
+    szDesc = szDesc.."<color=water>ß’n g∆p <color=green>Thi™n C¨ L∑o Nh©n<color> Æ” sˆ dÙng<color>\n"
+    szDesc = szDesc.."<color=water>DÔng Æ” vµo <color=violet>Huy“n C¨ C∏c<color><color>\n"
+    szDesc = szDesc.."<color=water>Ngoµi ra g∆p <color=orange>Tuy÷t ßÿnh VÚ ß’<color> Æ” <color=orange>Th∏ch ß u<color><color>"
+    return szDesc
+end

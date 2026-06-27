@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+183	1412	3540	Ngò §éc Gi¸o
+183	1355	3267	Ngò §éc Gi¸o
+183	1717	3033	Ngò §éc Gi¸o
+183	1786	3081	Ngò §éc Gi¸o
+183	1519	2733	Ngò §éc Gi¸o
+183	1205	2856	Ngò §éc Gi¸o
+183	1250	2519	Ngò §éc Gi¸o
+183	1073	2450	Ngò §éc Gi¸o

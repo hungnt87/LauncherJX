@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+103	1575	3253	Thi’u L©m ph∏i
+103	1447	3150	Thi’u L©m ph∏i
+103	1330	2833	Thi’u L©m ph∏i
+103	1501	2938	Thi’u L©m ph∏i
+103	1774	2714	Thi’u L©m ph∏i
+103	1913	2934	Thi’u L©m ph∏i
+103	1782	3319	Thi’u L©m ph∏i
+103	1953	3265	Thi’u L©m ph∏i

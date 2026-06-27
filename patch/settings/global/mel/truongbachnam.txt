@@ -1,0 +1,2 @@
+nIdMap	pX	pY	pX1	pY1	sNameMap
+321	997	2440	124	152	Tr­êng B¹ch s¬n Nam 

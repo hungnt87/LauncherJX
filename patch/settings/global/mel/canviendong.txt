@@ -1,0 +1,2 @@
+nIdMap	pX	pY	pX1	pY1	sNameMap
+124	1684	3411	210	213	C¸n Viªn ®éng

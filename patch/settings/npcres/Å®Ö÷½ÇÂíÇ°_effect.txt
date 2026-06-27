@@ -1,0 +1,36 @@
+EqName	FreeStand1	FreeStand2	FreeStand3	MeleeWStand	RangeWStand	DoubleWStand	FreeWalk	NormalWalk	MeleeWWalk	RangeWWalk	DoubleWWalk	FreeRun	NormalRun	MeleeWRun	RangeWRun	DoubleWRun	FreeWound	MeleeWWound	RangeWWound	DoubleWWound	FreeDie	MeleeWDie	RangeWDie	DoubleWDie	FreeAttack	MeleeWPuncture	MeleeWCut	RangeWPuncture	RangeWCut	DoubleWPull	DoubleWPound	DartThrow	FreeMagic	MeleeWMagic	RangeWMagic	DoubleWMagic	SitDown	Jump	RideStand	RideWalk	RideRun	RideCut	RidePuncture	RideMagic	RideWound	RideDie	RideStand1	RideStand2
+Ngùa 1																																																
+Ngùa 2																																																
+Ngùa 3																																																
+Ngùa 4																																																
+Ngùa 5																																																
+Ngùa 6																																																
+Ngùa 7																																																
+Ngùa 8																																																
+Ngùa 9																																																
+Ngùa 10																																																
+Ngùa 11																																																
+Ngùa 12																																																
+Ngùa sè 13																																																
+ÂíÆ¥14																																																
+ÂíÆ¥15																																																
+ÂíÆ¥16																																																
+ÂíÆ¥17																																																
+ÂíÆ¥18																																																
+ÂíÆ¥19																																																
+ÂíÆ¥20																																																
+ÂíÆ¥21																																																
+ÂíÆ¥22																																																
+ÂíÆ¥23																																							..\man\horse_effect_a.spr	..\man\horse_effect_a.spr	..\man\horse_effect_a.spr	..\man\horse_effect_a.spr	..\man\horse_effect_a.spr	..\man\horse_effect_a.spr	..\man\horse_effect_a.spr	..\man\horse_effect_a.spr	..\man\horse_effect_a.spr	..\man\horse_effect_a.spr
+ÂíÆ¥24																																																
+ÂíÆ¥25																																																
+ÂíÆ¥26																																																
+ÂíÆ¥27																																																
+ÂíÆ¥28																																																
+ÂíÆ¥29																																																
+ÂíÆ¥30																																																
+ÂíÆ¥31																																																
+Háa Viªm																																							..\man\hhfnguatrangxanh_rs01.spr	..\man\hhfnguatrangxanh_rw.spr	..\man\hhfnguatrangxanh_rr.spr	..\man\hhfnguatrangxanh_ra01.spr	..\man\hhfnguatrangxanh_ra02.spr	..\man\hhfnguatrangxanh_rm.spr	..\man\hhfnguatrangxanh_rb.spr	..\man\hhfnguatrangxanh_rd.spr	..\man\hhfnguatrangxanh_ra02.spr	..\man\hhfnguatrangxanh_ra02.spr
+H¾c Tinh 																																							..\man\hhfnguatrangxanh_rs01.spr	..\man\hhfnguatrangxanh_rw.spr	..\man\hhfnguatrangxanh_rr.spr	..\man\hhfnguatrangxanh_ra01.spr	..\man\hhfnguatrangxanh_ra02.spr	..\man\hhfnguatrangxanh_rm.spr	..\man\hhfnguatrangxanh_rb.spr	..\man\hhfnguatrangxanh_rd.spr	..\man\hhfnguatrangxanh_ra02.spr	..\man\hhfnguatrangxanh_ra02.spr
+H¾c Hãa																																							..\man\hhfnguavang_rs01.spr	..\man\hhfnguavang_rw.spr	..\man\hhfnguavang_rr.spr	..\man\hhfnguavang_ra01.spr	..\man\hhfnguavang_ra02.spr	..\man\hhfnguavang_rm.spr	..\man\hhfnguavang_rb.spr	..\man\hhfnguavang_rd.spr	..\man\hhfnguavang_ra02.spr	..\man\hhfnguavang_ra02.spr
+Giao Phong																																							..\man\hhfnguavang_rs01.spr	..\man\hhfnguavang_rw.spr	..\man\hhfnguavang_rr.spr	..\man\hhfnguavang_ra01.spr	..\man\hhfnguavang_ra02.spr	..\man\hhfnguavang_rm.spr	..\man\hhfnguavang_rb.spr	..\man\hhfnguavang_rd.spr	..\man\hhfnguavang_ra02.spr	..\man\hhfnguavang_ra02.spr

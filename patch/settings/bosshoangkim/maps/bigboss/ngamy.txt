@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+13	1815	4973	Nga My ph¸i
+13	1675	5036	Nga My ph¸i
+13	1938	5058	Nga My ph¸i
+13	2056	5024	Nga My ph¸i
+13	2155	5038	Nga My ph¸i
+13	2258	4890	Nga My ph¸i
+13	2158	4829	Nga My ph¸i
+13	2282	4834	Nga My ph¸i

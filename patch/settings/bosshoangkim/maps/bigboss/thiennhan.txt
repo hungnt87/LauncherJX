@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+45	1580	3235	Thiªn NhÉn gi¸o
+45	1641	3249	Thiªn NhÉn gi¸o
+45	1671	3185	Thiªn NhÉn gi¸o
+45	1706	3162	Thiªn NhÉn gi¸o
+45	1701	3081	Thiªn NhÉn gi¸o
+45	1640	3081	Thiªn NhÉn gi¸o
+45	1591	3079	Thiªn NhÉn gi¸o
+45	1561	3132	Thiªn NhÉn gi¸o

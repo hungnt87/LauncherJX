@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+81	1514	3311	Vâ §ang ph¸i
+81	1614	3350	Vâ §ang ph¸i
+81	1670	3410	Vâ §ang ph¸i
+81	1677	3317	Vâ §ang ph¸i
+81	1787	3303	Vâ §ang ph¸i
+81	1867	2995	Vâ §ang ph¸i
+81	1789	2972	Vâ §ang ph¸i
+81	1585	3258	Vâ §ang ph¸i

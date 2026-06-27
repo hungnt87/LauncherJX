@@ -1,0 +1,1 @@
+nIdMap	pX	pY	pX1	pY1	sNameMap

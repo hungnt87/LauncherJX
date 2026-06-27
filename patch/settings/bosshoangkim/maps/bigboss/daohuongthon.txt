@@ -1,0 +1,9 @@
+MAPID	POSX	POSY	MAPNAME
+101	1859	3293	完o H閂ng th南
+101	1850	2890	完o H閂ng th南
+101	1536	2770	完o H閂ng th南
+101	1515	2984	完o H閂ng th南
+101	1357	2929	完o H閂ng th南
+101	1374	3189	完o H閂ng th南
+101	1385	3387	完o H閂ng th南
+101	1505	3339	完o H閂ng th南
