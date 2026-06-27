@@ -223,22 +223,37 @@ void RenderUI(LauncherApp& app) {
 
     const launcher::update::UpdateSnapshot snapshot = app.Snapshot();
 
-    ImGui::SetCursorPos(ImVec2(12, 515));
+    ImGui::SetCursorPos(ImVec2(12, 485));
+    char log_buf[1024] = "";
+    std::string display_msg;
+
     if (snapshot.phase == launcher::update::UpdatePhase::Idle) {
-        ImGui::Text("He thong da san sang. Bam UPDATE de cap nhat game.");
+        display_msg = "He thong da san sang. Bam UPDATE de cap nhat game.";
     } else if (snapshot.phase == launcher::update::UpdatePhase::Checking) {
-        ImGui::Text("Dang kiem tra ban cap nhat...");
-    } else if (snapshot.phase == launcher::update::UpdatePhase::Downloading) {
-        ImGui::Text("Dang tai ban cap nhat: %.0f%%", snapshot.progress * 100.0f);
+        display_msg = "Dang kiem tra ban cap nhat...";
     } else if (snapshot.phase == launcher::update::UpdatePhase::Done) {
-        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Cap nhat hoan tat! He thong da san sang.");
+        display_msg = "Cap nhat hoan tat! He thong da san sang.";
     } else if (snapshot.phase == launcher::update::UpdatePhase::Error) {
-        ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.2f, 1.0f), "%s", snapshot.message.c_str());
+        display_msg = snapshot.message;
     }
 
     if (!snapshot.message.empty() && snapshot.phase != launcher::update::UpdatePhase::Error) {
-        ImGui::TextWrapped("%s", snapshot.message.c_str());
+        display_msg = snapshot.message;
     }
+
+    strncpy_s(log_buf, display_msg.c_str(), sizeof(log_buf) - 1);
+    log_buf[sizeof(log_buf) - 1] = '\0';
+
+    if (snapshot.phase == launcher::update::UpdatePhase::Error) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.2f, 1.0f)); // Màu cam cho lỗi
+    } else if (snapshot.phase == launcher::update::UpdatePhase::Done) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f)); // Màu xanh lá cho thành công
+    } else {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f)); // Màu xanh ngọc cho bình thường
+    }
+
+    ImGui::InputTextMultiline("##status_log", log_buf, sizeof(log_buf), ImVec2(800, 50), ImGuiInputTextFlags_ReadOnly);
+    ImGui::PopStyleColor();
 
     ImGui::SetCursorPos(ImVec2(12, 545));
     ImGui::ProgressBar(snapshot.progress, ImVec2(800, 22));
