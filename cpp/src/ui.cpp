@@ -262,9 +262,16 @@ void RenderUI(LauncherApp& app) {
             ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Che do hien thi:");
             ImGui::Spacing();
 
-            bool fullscreen = app.IsFullScreen();
-            if (ImGui::Checkbox("Toan man hinh (FullScreen = 1)", &fullscreen)) {
-                app.SetFullScreen(fullscreen);
+            bool isFS = app.IsFullScreen();
+            bool selWindow     = !isFS;
+            bool selFullscreen =  isFS;
+
+            if (ImGui::RadioButton("Cua so (Windowed)", selWindow)) {
+                app.SetFullScreen(false);
+            }
+            ImGui::Spacing();
+            if (ImGui::RadioButton("Toan man hinh (FullScreen)", selFullscreen)) {
+                app.SetFullScreen(true);
             }
 
             ImGui::Spacing();
