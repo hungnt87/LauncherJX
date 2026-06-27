@@ -171,51 +171,55 @@ void RenderUI(LauncherApp& app) {
     if (ImGui::BeginTabBar("LauncherTabs")) {
         if (ImGui::BeginTabItem("Thông báo")) {
             ImGui::Spacing();
-            if (g_bannerTexture) {
-                ImGui::Image(reinterpret_cast<void*>(g_bannerTexture), ImVec2(936, 180));
-            } else {
-                ImGui::BeginChild("ErrorBanner", ImVec2(936, 180), true);
-                ImGui::Text("Không thể tải ảnh wuxia_banner.png");
-                ImGui::EndChild();
-            }
 
-            ImGui::Spacing();
             static float copyFeedbackTime = 0.0f;
-            char copyBtnLabel[64] = "Sao chép thông báo (Copy)";
+            char copyBtnLabel[64] = "Sao chép toàn bộ thông báo (Copy All)";
             if (copyFeedbackTime > 0.0f) {
                 copyFeedbackTime -= ImGui::GetIO().DeltaTime;
-                strcpy_s(copyBtnLabel, "Đã sao chép! (Copied)");
+                strcpy_s(copyBtnLabel, "Đã sao chép toàn bộ! (Copied All)");
             }
 
-            if (ImGui::Button(copyBtnLabel, ImVec2(220, 26))) {
+            if (ImGui::Button(copyBtnLabel, ImVec2(300, 26))) {
                 ImGui::SetClipboardText(app.ChangelogContent().c_str());
                 copyFeedbackTime = 2.0f;
             }
             ImGui::Spacing();
 
-            ImGui::BeginChild("NewsText", ImVec2(936, 184), true); // Điều chỉnh chiều cao từ 220 xuống 184 để nhường chỗ cho nút bấm
+            ImGui::BeginChild("NewsText", ImVec2(936, 380), true);
             std::istringstream stream(app.ChangelogContent());
             std::string line;
+            int line_idx = 0;
             while (std::getline(stream, line)) {
                 if (!line.empty() && line.back() == '\r') {
                     line.pop_back();
                 }
 
+                char id_label[1024];
+                sprintf_s(id_label, "%s##line_%d", line.c_str(), line_idx++);
+
+                bool is_selected = false;
                 if (line.rfind("## ", 0) == 0) {
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f)); // Màu xanh ngọc (Cyan) cho tiêu đề phiên bản
-                    ImGui::TextUnformatted(line.c_str());
+                    if (ImGui::Selectable(id_label, &is_selected)) {
+                        ImGui::SetClipboardText(line.c_str());
+                    }
                     ImGui::PopStyleColor();
                 }
                 else if (line.rfind("### ", 0) == 0) {
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.2f, 1.0f)); // Màu vàng cam (Gold) cho tiêu đề danh mục
-                    ImGui::TextUnformatted(line.c_str());
+                    if (ImGui::Selectable(id_label, &is_selected)) {
+                        ImGui::SetClipboardText(line.c_str());
+                    }
                     ImGui::PopStyleColor();
                 }
-                else if (line.rfind("- ", 0) == 0 || line.rfind("* ", 0) == 0) {
-                    ImGui::BulletText("%s", line.substr(2).c_str());
-                }
                 else {
-                    ImGui::TextUnformatted(line.c_str());
+                    if (ImGui::Selectable(id_label, &is_selected)) {
+                        ImGui::SetClipboardText(line.c_str());
+                    }
+                }
+
+                if (ImGui::IsItemHovered() && !line.empty()) {
+                    ImGui::SetTooltip("Nhấp chuột trái để sao chép dòng này");
                 }
             }
             ImGui::EndChild();

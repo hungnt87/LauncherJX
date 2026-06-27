@@ -62,8 +62,9 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand) {
     ULONG_PTR gdiplusToken;
     Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
 
-    // Dang ky Window Class voi bong do (CS_DROPSHADOW)
-    WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC | CS_DROPSHADOW, WndProc, 0L, 0L, instance, nullptr, nullptr, nullptr, nullptr, L"LauncherJXImGuiClass", nullptr };
+    // Dang ky Window Class voi bong do (CS_DROPSHADOW) va Icon tu Resource 101
+    HICON hIcon = LoadIconW(instance, MAKEINTRESOURCEW(101));
+    WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC | CS_DROPSHADOW, WndProc, 0L, 0L, instance, hIcon, nullptr, nullptr, nullptr, L"LauncherJXImGuiClass", hIcon };
     wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     RegisterClassExW(&wc);
 
