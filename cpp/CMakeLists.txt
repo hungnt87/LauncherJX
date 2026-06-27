@@ -51,14 +51,17 @@ target_link_libraries(LauncherJX
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/wuxia_banner.png"
           "${CMAKE_CURRENT_SOURCE_DIR}/resources/app_icon.png"
           "${CMAKE_CURRENT_SOURCE_DIR}/resources/version.json"
+          "${CMAKE_CURRENT_SOURCE_DIR}/resources/data.txt"
      DESTINATION "${CMAKE_BINARY_DIR}/bin/launcher_res")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/wuxia_banner.png"
           "${CMAKE_CURRENT_SOURCE_DIR}/resources/app_icon.png"
           "${CMAKE_CURRENT_SOURCE_DIR}/resources/version.json"
+          "${CMAKE_CURRENT_SOURCE_DIR}/resources/data.txt"
      DESTINATION "${CMAKE_BINARY_DIR}/bin/Debug/launcher_res")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/wuxia_banner.png"
           "${CMAKE_CURRENT_SOURCE_DIR}/resources/app_icon.png"
           "${CMAKE_CURRENT_SOURCE_DIR}/resources/version.json"
+          "${CMAKE_CURRENT_SOURCE_DIR}/resources/data.txt"
      DESTINATION "${CMAKE_BINARY_DIR}/bin/Release/launcher_res")
 
 target_link_options(LauncherJX PRIVATE "/MANIFEST:NO")

@@ -7,6 +7,10 @@
 #include <thread>
 #include <string>
 #include <fstream>
+#include <vector>
+#include <wincrypt.h>
+#include <iomanip>
+#include <sstream>
 
 namespace {
 
@@ -22,6 +26,13 @@ int g_logoWidth = 0, g_logoHeight = 0;
 
 // Chuoi version doc tu file
 std::string g_versionString = "v1.0.0";
+
+// Cau truc file game va danh sach files can theo doi
+struct GameFileConfig {
+    std::string name;
+    std::string hash;
+};
+std::vector<GameFileConfig> g_gameFilesList;
 
 // Da luong cap nhat
 std::atomic<float> g_updateProgress{0.0f};
@@ -39,6 +50,116 @@ std::wstring GetExecutablePath() {
         return path.substr(0, pos);
     }
     return L".";
+}
+
+// Thuat toan tinh MD5 cua file su dung Win32 CryptoAPI
+std::string CalculateMD5(const std::wstring& filePath) {
+    HCRYPTPROV hProv = 0;
+    HCRYPTHASH hHash = 0;
+    std::string md5Result = "";
+
+    std::ifstream file(filePath, std::ios::binary);
+    if (!file.is_open()) return "";
+
+    if (!CryptAcquireContextW(&hProv, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
+        return "";
+    }
+
+    if (!CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash)) {
+        CryptReleaseContext(hProv, 0);
+        return "";
+    }
+
+    char buffer[4096];
+    while (file.good()) {
+        file.read(buffer, sizeof(buffer));
+        std::streamsize bytesRead = file.gcount();
+        if (bytesRead > 0) {
+            if (!CryptHashData(hHash, reinterpret_cast<BYTE*>(buffer), static_cast<DWORD>(bytesRead), 0)) {
+                CryptDestroyHash(hHash);
+                CryptReleaseContext(hProv, 0);
+                return "";
+            }
+        }
+    }
+
+    DWORD cbHashSize = 16;
+    BYTE rgbHash[16];
+    if (CryptGetHashParam(hHash, HP_HASHVAL, rgbHash, &cbHashSize, 0)) {
+        std::ostringstream oss;
+        for (DWORD i = 0; i < cbHashSize; i++) {
+            oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(rgbHash[i]);
+        }
+        md5Result = oss.str();
+    }
+
+    CryptDestroyHash(hHash);
+    CryptReleaseContext(hProv, 0);
+    return md5Result;
+}
+
+std::string ParseJsonValue(const std::string& json, const std::string& key) {
+    size_t keyPos = json.find("\"" + key + "\"");
+    if (keyPos == std::string::npos) return "";
+    
+    size_t colonPos = json.find(":", keyPos);
+    if (colonPos == std::string::npos) return "";
+    
+    size_t startQuote = json.find("\"", colonPos);
+    if (startQuote == std::string::npos) return "";
+    
+    size_t endQuote = json.find("\"", startQuote + 1);
+    if (endQuote == std::string::npos) return "";
+    
+    return json.substr(startQuote + 1, endQuote - startQuote - 1);
+}
+
+std::vector<GameFileConfig> ParseJsonFiles(const std::string& json) {
+    std::vector<GameFileConfig> files;
+    
+    size_t arrayStart = json.find("\"files\"");
+    if (arrayStart == std::string::npos) return files;
+    
+    size_t openBracket = json.find("[", arrayStart);
+    size_t closeBracket = json.find("]", openBracket);
+    if (openBracket == std::string::npos || closeBracket == std::string::npos) return files;
+    
+    std::string arrayContent = json.substr(openBracket + 1, closeBracket - openBracket - 1);
+    
+    size_t searchPos = 0;
+    while (true) {
+        size_t objStart = arrayContent.find("{", searchPos);
+        if (objStart == std::string::npos) break;
+        size_t objEnd = arrayContent.find("}", objStart);
+        if (objEnd == std::string::npos) break;
+        
+        std::string objStr = arrayContent.substr(objStart, objEnd - objStart + 1);
+        
+        size_t nameKey = objStr.find("\"name\"");
+        size_t hashKey = objStr.find("\"hash\"");
+        
+        if (nameKey != std::string::npos && hashKey != std::string::npos) {
+            size_t nameColon = objStr.find(":", nameKey);
+            size_t nameStartQuote = objStr.find("\"", nameColon);
+            size_t nameEndQuote = objStr.find("\"", nameStartQuote + 1);
+            
+            size_t hashColon = objStr.find(":", hashKey);
+            size_t hashStartQuote = objStr.find("\"", hashColon);
+            size_t hashEndQuote = objStr.find("\"", hashStartQuote + 1);
+            
+            if (nameStartQuote != std::string::npos && nameEndQuote != std::string::npos &&
+                hashStartQuote != std::string::npos && hashEndQuote != std::string::npos) {
+                
+                GameFileConfig cfg;
+                cfg.name = objStr.substr(nameStartQuote + 1, nameEndQuote - nameStartQuote - 1);
+                cfg.hash = objStr.substr(hashStartQuote + 1, hashEndQuote - hashStartQuote - 1);
+                files.push_back(cfg);
+            }
+        }
+        searchPos = objEnd + 1;
+    }
+    
+    return files;
 }
 
 bool LoadTextureFromImage(const wchar_t* filename, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height) {
@@ -104,22 +225,6 @@ bool LoadTextureFromImage(const wchar_t* filename, ID3D11ShaderResourceView** ou
     return true;
 }
 
-std::string ParseJsonValue(const std::string& json, const std::string& key) {
-    size_t keyPos = json.find("\"" + key + "\"");
-    if (keyPos == std::string::npos) return "";
-    
-    size_t colonPos = json.find(":", keyPos);
-    if (colonPos == std::string::npos) return "";
-    
-    size_t startQuote = json.find("\"", colonPos);
-    if (startQuote == std::string::npos) return "";
-    
-    size_t endQuote = json.find("\"", startQuote + 1);
-    if (endQuote == std::string::npos) return "";
-    
-    return json.substr(startQuote + 1, endQuote - startQuote - 1);
-}
-
 } // namespace
 
 void InitUI(ID3D11Device* device, ID3D11DeviceContext* context, HWND hWnd) {
@@ -145,6 +250,8 @@ void InitUI(ID3D11Device* device, ID3D11DeviceContext* context, HWND hWnd) {
         if (!ver.empty()) {
             g_versionString = ver;
         }
+        // Luu danh sach file game can check
+        g_gameFilesList = ParseJsonFiles(jsonContent);
         versionFile.close();
     }
 
@@ -306,12 +413,56 @@ void RenderUI() {
                 g_updateThread.join();
             }
             g_updateThread = std::thread([]() {
-                for (int i = 0; i <= 100; ++i) {
+                std::wstring exeDir = GetExecutablePath();
+                std::vector<std::wstring> filesToUpdate;
+
+                // 1. Quet va so khop MD5 cua cac file game
+                for (const auto& fileCfg : g_gameFilesList) {
                     if (!g_appRunning) break;
-                    g_updateProgress = static_cast<float>(i) / 100.0f;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    
+                    std::wstring wFileName(fileCfg.name.begin(), fileCfg.name.end());
+                    std::wstring localPath = exeDir + L"\\launcher_res\\" + wFileName;
+                    
+                    std::string localHash = CalculateMD5(localPath);
+                    
+                    // Neu file sai hash hoac chua ton tai -> Dua vao list update
+                    if (localHash != fileCfg.hash) {
+                        filesToUpdate.push_back(localPath);
+                    }
                 }
+
+                if (filesToUpdate.empty()) {
+                    g_updateProgress = 1.0f;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                    if (g_appRunning) {
+                        g_updateState = 2;
+                    }
+                    return;
+                }
+
+                // 2. Tai mo phong các file can cap nhat
+                for (size_t idx = 0; idx < filesToUpdate.size(); ++idx) {
+                    if (!g_appRunning) break;
+                    
+                    const auto& path = filesToUpdate[idx];
+                    
+                    // Giả lập tải file (chạy progress bar)
+                    for (int i = 0; i <= 100; ++i) {
+                        if (!g_appRunning) break;
+                        g_updateProgress = static_cast<float>(i) / 100.0f;
+                        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                    }
+
+                    // Ghi de/tao moi file chuan
+                    std::ofstream outFile(path);
+                    if (outFile.is_open()) {
+                        outFile << "Phien ban moi nhat v1.0.0. Hoat dong tot!";
+                        outFile.close();
+                    }
+                }
+
                 if (g_appRunning) {
+                    g_updateProgress = 1.0f;
                     g_updateState = 2;
                 }
             });
