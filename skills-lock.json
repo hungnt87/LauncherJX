@@ -7,6 +7,12 @@
       "skillPath": "skills/brainstorming/SKILL.md",
       "computedHash": "0c877c8521ec97a5d55fa682d33122b811aebddd4788b92ac008efe85cd305cd"
     },
+    "cpp-expert": {
+      "source": "personamanagmentlayer/pcl",
+      "sourceType": "github",
+      "skillPath": "stdlib/languages/cpp-expert/SKILL.md",
+      "computedHash": "2ef30384b9ab767c2dc16cf47e72070d54a7c9b06ac18a06dc6924a780d0f812"
+    },
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",
