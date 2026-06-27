@@ -28,6 +28,17 @@ def zip_directory(dir_path, zip_path, rel_root):
         print(f"Error compressing {dir_path}: {e}")
 
 def generate_manifest(patch_dir, version):
+    # Sao chép CHANGELOG.md vào patch/ để đưa vào manifest cập nhật
+    changelog_src = os.path.abspath(os.path.join(patch_dir, "..", "CHANGELOG.md"))
+    changelog_dst = os.path.join(patch_dir, "CHANGELOG.md")
+    if os.path.exists(changelog_src):
+        import shutil
+        try:
+            shutil.copy2(changelog_src, changelog_dst)
+            print(f"Copied CHANGELOG.md to patch folder successfully.")
+        except Exception as e:
+            print(f"Warning copying CHANGELOG.md to patch folder: {e}")
+
     manifest = {
         "version": version,
         "files": []

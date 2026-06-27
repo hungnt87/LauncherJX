@@ -1,6 +1,11 @@
 {
-  "version": "v1.0.6",
+  "version": "v1.0.7",
   "files": [
+    {
+      "name": "CHANGELOG.md",
+      "hash": "2d3ac3cf49e333fdeb2f5e1d2cab13b5244e53833be7bde809759aa561ce8948",
+      "zip": ""
+    },
     {
       "name": "JX1Mod.ini",
       "hash": "3701404ef1cf3296358c71388c602b2122aed91d6f59ab303a70b8e4a0260b87",
