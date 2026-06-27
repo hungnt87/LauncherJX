@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.6 - 2026-06-27
+
+### Features
+- Add "Copy" button in notification tab to copy changelog text directly to clipboard
+- Show examples of failing files (integrity check mismatch) in status log to ease debugging
+
 ## v1.0.5 - 2026-06-27
 
 ### Features
