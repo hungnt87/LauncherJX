@@ -4,7 +4,6 @@ project(LauncherJX_cpp LANGUAGES CXX)
 
 include(FetchContent)
 
-# Tai ImGui tu GitHub
 FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
@@ -13,32 +12,29 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(imgui)
 
-# Duong dan nguon ImGui
 set(IMGUI_DIR ${imgui_SOURCE_DIR})
 
-# Thiet lap target executable voi file nguon ImGui
-add_executable(LauncherJX WIN32
-    src/main.cpp
-    src/ui.cpp
-    src/update.cpp
-    resources/app.rc
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/imgui_draw.cpp
-    ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/imgui_tables.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_win32.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_dx11.cpp
-)
+add_library(launcher_resources INTERFACE)
+target_include_directories(launcher_resources INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_include_directories(LauncherJX
+add_executable(LauncherJX WIN32)
+target_sources(LauncherJX
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${IMGUI_DIR}
-        ${IMGUI_DIR}/backends
+        src/main.cpp
+        src/ui.cpp
+        src/update.cpp
+        resources/app.rc
+        ${IMGUI_DIR}/imgui.cpp
+        ${IMGUI_DIR}/imgui_draw.cpp
+        ${IMGUI_DIR}/imgui_widgets.cpp
+        ${IMGUI_DIR}/imgui_tables.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_win32.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_dx11.cpp
 )
 
 target_link_libraries(LauncherJX
     PRIVATE
+        launcher_resources
         common_lib
         comctl32
         user32
@@ -49,28 +45,30 @@ target_link_libraries(LauncherJX
         advapi32
 )
 
-# Sao chep file anh resources vao cac thu muc build
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/wuxia_banner.png"
-          "${CMAKE_CURRENT_SOURCE_DIR}/resources/app_icon.png"
-          "${CMAKE_CURRENT_SOURCE_DIR}/resources/version.json"
-          "${CMAKE_CURRENT_SOURCE_DIR}/resources/data.txt"
-     DESTINATION "${CMAKE_BINARY_DIR}/bin/launcher_res")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/wuxia_banner.png"
-          "${CMAKE_CURRENT_SOURCE_DIR}/resources/app_icon.png"
-          "${CMAKE_CURRENT_SOURCE_DIR}/resources/version.json"
-          "${CMAKE_CURRENT_SOURCE_DIR}/resources/data.txt"
-     DESTINATION "${CMAKE_BINARY_DIR}/bin/Debug/launcher_res")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/wuxia_banner.png"
-          "${CMAKE_CURRENT_SOURCE_DIR}/resources/app_icon.png"
-          "${CMAKE_CURRENT_SOURCE_DIR}/resources/version.json"
-          "${CMAKE_CURRENT_SOURCE_DIR}/resources/data.txt"
-     DESTINATION "${CMAKE_BINARY_DIR}/bin/Release/launcher_res")
+target_include_directories(LauncherJX
+    PRIVATE
+        ${IMGUI_DIR}
+        ${IMGUI_DIR}/backends
+)
 
 target_link_options(LauncherJX PRIVATE "/MANIFEST:NO")
-
 target_compile_options(LauncherJX PRIVATE "/utf-8")
-
 target_compile_definitions(LauncherJX PRIVATE UNICODE _UNICODE)
+
+set(LAUNCHER_RESOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/wuxia_banner.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/app_icon.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/version.json
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/data.txt
+)
+
+add_custom_command(TARGET LauncherJX POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:LauncherJX>/launcher_res
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${LAUNCHER_RESOURCES}
+            $<TARGET_FILE_DIR:LauncherJX>/launcher_res
+    VERBATIM
+)
 
 add_executable(update_module_smoke
     tests/update_module_smoke.cpp
@@ -86,3 +84,5 @@ target_link_libraries(update_module_smoke
     PRIVATE
         advapi32
 )
+
+target_compile_definitions(update_module_smoke PRIVATE UNICODE _UNICODE)
