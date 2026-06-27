@@ -1,4 +1,4 @@
-# Project Brief: Aetheris Game Launcher (Classic Win32 Edition)
+# Project Brief: LauncherJX (Classic Win32 Edition)
 
 ## 1. Overview
 
@@ -36,4 +36,4 @@ A desktop game launcher inspired by the classic Windows Win32/MFC aesthetic, des
 ## 6. Target Device
 
 - **Platform:** Desktop (Windows).
-- **Form Factor:** Fixed-size launcher window (smaller than full screen).
+- **Form Factor:** Fixed-size launcher window (960x600 pixels).

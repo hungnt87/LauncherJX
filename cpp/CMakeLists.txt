@@ -50,13 +50,16 @@ target_link_libraries(LauncherJX
 # Sao chep file anh resources vao cac thu muc build
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/wuxia_banner.png"
           "${CMAKE_CURRENT_SOURCE_DIR}/resources/app_icon.png"
-     DESTINATION "${CMAKE_BINARY_DIR}/bin")
+          "${CMAKE_CURRENT_SOURCE_DIR}/resources/version.json"
+     DESTINATION "${CMAKE_BINARY_DIR}/bin/launcher_res")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/wuxia_banner.png"
           "${CMAKE_CURRENT_SOURCE_DIR}/resources/app_icon.png"
-     DESTINATION "${CMAKE_BINARY_DIR}/bin/Debug")
+          "${CMAKE_CURRENT_SOURCE_DIR}/resources/version.json"
+     DESTINATION "${CMAKE_BINARY_DIR}/bin/Debug/launcher_res")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/wuxia_banner.png"
           "${CMAKE_CURRENT_SOURCE_DIR}/resources/app_icon.png"
-     DESTINATION "${CMAKE_BINARY_DIR}/bin/Release")
+          "${CMAKE_CURRENT_SOURCE_DIR}/resources/version.json"
+     DESTINATION "${CMAKE_BINARY_DIR}/bin/Release/launcher_res")
 
 target_link_options(LauncherJX PRIVATE "/MANIFEST:NO")
 

@@ -34,13 +34,13 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand) {
     wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     RegisterClassExW(&wc);
 
-    // Tao cua so Borderless (WS_POPUP) voi kich thuoc co dinh 640x420
+    // Tao cua so Borderless (WS_POPUP) voi kich thuoc co dinh 960x600
     HWND hwnd = CreateWindowExW(
         0, 
         wc.lpszClassName, 
-        L"Aetheris Launcher", 
+        L"LauncherJX", 
         WS_POPUP | WS_SYSMENU | WS_MINIMIZEBOX, 
-        CW_USEDEFAULT, CW_USEDEFAULT, 640, 420, 
+        CW_USEDEFAULT, CW_USEDEFAULT, 960, 600, 
         nullptr, nullptr, instance, nullptr
     );
 
@@ -62,7 +62,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand) {
     // Dua cua so ra giua man hinh
     int screenWidth = GetSystemMetrics(SM_CXSCREEN);
     int screenHeight = GetSystemMetrics(SM_CYSCREEN);
-    SetWindowPos(hwnd, nullptr, (screenWidth - 640) / 2, (screenHeight - 420) / 2, 640, 420, SWP_NOZORDER | SWP_NOSIZE);
+    SetWindowPos(hwnd, nullptr, (screenWidth - 960) / 2, (screenHeight - 600) / 2, 960, 600, SWP_NOZORDER | SWP_NOSIZE);
 
     ShowWindow(hwnd, showCommand);
     UpdateWindow(hwnd);
@@ -195,7 +195,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         // Cho phep keo tha cua so khi click chuot vao vung Title Bar cao 40 pixel o tren cung
         POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
         ScreenToClient(hWnd, &pt);
-        if (pt.y >= 0 && pt.y <= 40 && pt.x >= 0 && pt.x <= 560) {
+        if (pt.y >= 0 && pt.y <= 40 && pt.x >= 0 && pt.x <= 880) {
             return HTCAPTION;
         }
         return HTCLIENT;

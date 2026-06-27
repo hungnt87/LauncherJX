@@ -6,6 +6,7 @@
 #include <atomic>
 #include <thread>
 #include <string>
+#include <fstream>
 
 namespace {
 
@@ -18,6 +19,9 @@ ID3D11ShaderResourceView* g_bannerTexture = nullptr;
 ID3D11ShaderResourceView* g_logoTexture = nullptr;
 int g_bannerWidth = 0, g_bannerHeight = 0;
 int g_logoWidth = 0, g_logoHeight = 0;
+
+// Chuoi version doc tu file
+std::string g_versionString = "v1.0.0";
 
 // Da luong cap nhat
 std::atomic<float> g_updateProgress{0.0f};
@@ -100,6 +104,22 @@ bool LoadTextureFromImage(const wchar_t* filename, ID3D11ShaderResourceView** ou
     return true;
 }
 
+std::string ParseJsonValue(const std::string& json, const std::string& key) {
+    size_t keyPos = json.find("\"" + key + "\"");
+    if (keyPos == std::string::npos) return "";
+    
+    size_t colonPos = json.find(":", keyPos);
+    if (colonPos == std::string::npos) return "";
+    
+    size_t startQuote = json.find("\"", colonPos);
+    if (startQuote == std::string::npos) return "";
+    
+    size_t endQuote = json.find("\"", startQuote + 1);
+    if (endQuote == std::string::npos) return "";
+    
+    return json.substr(startQuote + 1, endQuote - startQuote - 1);
+}
+
 } // namespace
 
 void InitUI(ID3D11Device* device, ID3D11DeviceContext* context, HWND hWnd) {
@@ -107,17 +127,30 @@ void InitUI(ID3D11Device* device, ID3D11DeviceContext* context, HWND hWnd) {
     g_pd3dDeviceContext = context;
     g_hWnd = hWnd;
 
-    // Load cac texture tu cung thu muc chay file .exe
+    // Load cac texture tu thu muc launcher_res nam cung thu muc file .exe
     std::wstring exeDir = GetExecutablePath();
-    std::wstring bannerPath = exeDir + L"\\wuxia_banner.png";
-    std::wstring logoPath = exeDir + L"\\app_icon.png";
+    std::wstring bannerPath = exeDir + L"\\launcher_res\\wuxia_banner.png";
+    std::wstring logoPath = exeDir + L"\\launcher_res\\app_icon.png";
 
     LoadTextureFromImage(bannerPath.c_str(), &g_bannerTexture, &g_bannerWidth, &g_bannerHeight);
     LoadTextureFromImage(logoPath.c_str(), &g_logoTexture, &g_logoWidth, &g_logoHeight);
 
-    // Cau hinh Font tieng Viet Segoe UI tu thu muc Fonts he thong
+    // Doc file version.json tu thu muc launcher_res
+    std::wstring versionPath = exeDir + L"\\launcher_res\\version.json";
+    std::ifstream versionFile(versionPath);
+    if (versionFile.is_open()) {
+        std::string jsonContent((std::istreambuf_iterator<char>(versionFile)),
+                                 std::istreambuf_iterator<char>());
+        std::string ver = ParseJsonValue(jsonContent, "version");
+        if (!ver.empty()) {
+            g_versionString = ver;
+        }
+        versionFile.close();
+    }
+
+    // Cau hinh Font tieng Viet Segoe UI tu thu muc Fonts he thong voi co chu lon 18.0f
     ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeui.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesVietnamese());
+    io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeui.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesVietnamese());
 
     // Thiet lap phong cach Custom Theme Teal toi & Neon Cyan
     ImGuiStyle& style = ImGui::GetStyle();
@@ -150,9 +183,9 @@ void InitUI(ID3D11Device* device, ID3D11DeviceContext* context, HWND hWnd) {
 }
 
 void RenderUI() {
-    // Dat vi tri cua so ImGui khop khit 640x420
+    // Dat vi tri cua so ImGui khop khit 960x600
     ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::SetNextWindowSize(ImVec2(640, 420));
+    ImGui::SetNextWindowSize(ImVec2(960, 600));
     
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | 
                                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | 
@@ -167,10 +200,11 @@ void RenderUI() {
     }
     ImGui::SameLine();
     ImGui::SetCursorPosY(10);
-    ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Aetheris Launcher"); // Chu Neon Cyan
+    std::string titleText = "LauncherJX - " + g_versionString;
+    ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), titleText.c_str()); // Chu Neon Cyan
 
-    // Nut Minimize va Close o goc tren ben phai
-    ImGui::SetCursorPos(ImVec2(570, 6));
+    // Nut Minimize va Close o goc tren ben phai (960 - 70 = 890px)
+    ImGui::SetCursorPos(ImVec2(890, 6));
     if (ImGui::Button("_", ImVec2(26, 26))) {
         ShowWindow(g_hWnd, SW_MINIMIZE);
     }
@@ -189,19 +223,19 @@ void RenderUI() {
         // --- TAB THÔNG BÁO ---
         if (ImGui::BeginTabItem("Thông báo")) {
             ImGui::Spacing();
-            // Ve anh banner
+            // Ve anh banner (kích thước 936x180)
             if (g_bannerTexture) {
-                ImGui::Image(reinterpret_cast<void*>(g_bannerTexture), ImVec2(616, 120));
+                ImGui::Image(reinterpret_cast<void*>(g_bannerTexture), ImVec2(936, 180));
             } else {
                 // Ve khong gian trong neu anh loi
-                ImGui::BeginChild("ErrorBanner", ImVec2(616, 120), true);
+                ImGui::BeginChild("ErrorBanner", ImVec2(936, 180), true);
                 ImGui::Text("Không thể tải ảnh wuxia_banner.png");
                 ImGui::EndChild();
             }
             ImGui::Spacing();
             
-            // Text box tin tuc cuon
-            ImGui::BeginChild("NewsText", ImVec2(616, 130), true);
+            // Text box tin tuc cuon (kích thước 936x220)
+            ImGui::BeginChild("NewsText", ImVec2(936, 220), true);
             ImGui::TextWrapped("=== TIN TỨC VÕ LÂM JX ===");
             ImGui::Separator();
             ImGui::BulletText("Khai mở máy chủ thử nghiệm Thái Sơn vào ngày 28/06/2026.");
@@ -218,12 +252,12 @@ void RenderUI() {
         // --- TAB CÀI ĐẶT ---
         if (ImGui::BeginTabItem("Cài đặt")) {
             ImGui::Spacing();
-            ImGui::BeginChild("SettingsArea", ImVec2(616, 264), true);
+            ImGui::BeginChild("SettingsArea", ImVec2(936, 434), true);
             ImGui::Text("Cấu hình đồ họa & Âm thanh");
             ImGui::Separator();
             ImGui::Spacing();
 
-            // Lua chon do phan giai
+            // Lua chon do phan gia
             static int selectedRes = 0;
             ImGui::Text("Độ phân giải game:");
             ImGui::RadioButton("800 x 600 (Mặc định)", &selectedRes, 0);
@@ -246,8 +280,8 @@ void RenderUI() {
         ImGui::EndTabBar();
     }
 
-    // 3. Vung chan trang Footer
-    ImGui::SetCursorPos(ImVec2(12, 335));
+    // 3. Vung chan trang Footer (dat o Y = 515px)
+    ImGui::SetCursorPos(ImVec2(12, 515));
     
     // Status text
     if (g_updateState == 0) {
@@ -258,12 +292,12 @@ void RenderUI() {
         ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Cập nhật hoàn tất! Hệ thống đã sẵn sàng.");
     }
 
-    // Progress bar
-    ImGui::SetCursorPos(ImVec2(12, 365));
-    ImGui::ProgressBar(g_updateProgress, ImVec2(480, 22));
+    // Progress bar (dat o Y = 545px, rộng 800px)
+    ImGui::SetCursorPos(ImVec2(12, 545));
+    ImGui::ProgressBar(g_updateProgress, ImVec2(800, 22));
 
-    // Nut UPDATE/PLAY lon o goc duoi ben phai
-    ImGui::SetCursorPos(ImVec2(504, 355));
+    // Nut UPDATE/PLAY lon o goc duoi ben phai (960 - 12 - 120 = 828px, Y = 535px)
+    ImGui::SetCursorPos(ImVec2(828, 535));
     
     if (g_updateState == 0) {
         if (ImGui::Button("UPDATE", ImVec2(120, 36))) {
