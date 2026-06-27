@@ -59,6 +59,7 @@ void LauncherApp::Initialize(const std::wstring& exe_dir) {
     }
     changelog_content_ = "Dang tai thong tin cap nhat tu GitHub...";
     LoadResolutionSettings();
+    LoadJx1ModSettings();
     check_thread_ = std::thread(&LauncherApp::RunCheckWorker, this);
 }
 
@@ -512,4 +513,38 @@ void LauncherApp::SaveFullScreenSetting(bool fullscreen) {
     fullscreen_ = fullscreen;
     std::wstring config_path = exe_dir_ + L"\\config.ini";
     WritePrivateProfileStringW(L"Client", L"FullScreen", fullscreen ? L"1" : L"0", config_path.c_str());
+}
+
+JX1ModSettings& LauncherApp::Jx1ModSettings() noexcept {
+    return jx1mod_settings_;
+}
+
+void LauncherApp::WriteJx1ModKey(const std::wstring& section, const std::wstring& key, bool value) {
+    std::wstring path = exe_dir_ + L"\\JX1Mod.ini";
+    WritePrivateProfileStringW(section.c_str(), key.c_str(), value ? L"1" : L"0", path.c_str());
+}
+
+void LauncherApp::LoadJx1ModSettings() {
+    std::wstring path = exe_dir_ + L"\\JX1Mod.ini";
+    auto readBool = [&](const wchar_t* sec, const wchar_t* key, bool def) -> bool {
+        wchar_t buf[8] = {0};
+        GetPrivateProfileStringW(sec, key, def ? L"1" : L"0", buf, 8, path.c_str());
+        return std::wstring(buf) == L"1";
+    };
+    jx1mod_settings_.trung_sinh          = readBool(L"ChucNang",          L"TrungSinh",          true);
+    jx1mod_settings_.an_nu_kim_nam_thuy  = readBool(L"ChucNang",          L"AnNuKimNamThuy",     true);
+    jx1mod_settings_.nam_thuy_nu_kim     = readBool(L"ChucNang",          L"NamThuyNuKim",       false);
+    jx1mod_settings_.so_sanh_trang_bi    = readBool(L"ChucNang",          L"SoSanhTrangBi",      true);
+    jx1mod_settings_.thong_so_trang_bi   = readBool(L"ChucNang",          L"ThongSoTrangBi",     false);
+    jx1mod_settings_.hien_thi_thanh_mau  = readBool(L"ChucNang",          L"HienThiThanhMau",    true);
+    jx1mod_settings_.xep_hang_tren_dau   = readBool(L"ChucNang",          L"XepHangTrenDau",     true);
+    jx1mod_settings_.lien_tram           = readBool(L"ChucNang",          L"LienTram",           false);
+    jx1mod_settings_.trade_info          = readBool(L"ChucNang",          L"TradeInfo",          false);
+    jx1mod_settings_.thanh_mau_boss      = readBool(L"ThanhMauBoss",      L"Enabled",            false);
+    jx1mod_settings_.thanh_mau_npc       = readBool(L"ThanhMauNPC",       L"Enabled",            false);
+    jx1mod_settings_.f3_merge            = readBool(L"F3Merge",           L"Enabled",            false);
+    jx1mod_settings_.xep_hang_f3         = readBool(L"XepHangF3",         L"Enabled",            true);
+    jx1mod_settings_.thong_bao_pk        = readBool(L"ThongBaoPK",        L"Enable",             false);
+    jx1mod_settings_.hieu_ung_xung_quanh = readBool(L"HieuUngXungQuanhNV",L"Enabled",            true);
+    jx1mod_settings_.add_point_popup     = readBool(L"AddPointPopup",     L"Enabled",            false);
 }

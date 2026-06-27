@@ -285,6 +285,73 @@ void RenderUI(LauncherApp& app) {
             ImGui::EndChild();
             ImGui::EndTabItem();
         }
+
+        if (ImGui::BeginTabItem("JX1Mod")) {
+            ImGui::Spacing();
+            ImGui::BeginChild("JX1ModArea", ImVec2(936, 434), true);
+
+            auto& s = app.Jx1ModSettings();
+            // Helper macro giúp tao checkbox + ghi file ngay khi click
+            #define JX1_TOGGLE(label, field, sec, key) \
+                { bool v = s.field; if (ImGui::Checkbox(label, &v)) { s.field = v; app.WriteJx1ModKey(L##sec, L##key, v); } }
+
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f));
+            ImGui::Text("== Chuc nang chinh [ChucNang] ==");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::Columns(2, "jx1mod_cols", false);
+
+            JX1_TOGGLE("Hoi sinh tron (TrungSinh)",        trung_sinh,          "ChucNang", "TrungSinh");
+            JX1_TOGGLE("An nu Kim/Nam/Thuy (AnNuKimNamThuy)", an_nu_kim_nam_thuy, "ChucNang", "AnNuKimNamThuy");
+            JX1_TOGGLE("Hoan doi gioi tinh (NamThuyNuKim)", nam_thuy_nu_kim,     "ChucNang", "NamThuyNuKim");
+            JX1_TOGGLE("So sanh trang bi (SoSanhTrangBi)",  so_sanh_trang_bi,    "ChucNang", "SoSanhTrangBi");
+            JX1_TOGGLE("Thong so trang bi (ThongSoTrangBi)",thong_so_trang_bi,   "ChucNang", "ThongSoTrangBi");
+
+            ImGui::NextColumn();
+
+            JX1_TOGGLE("Hien thi thanh mau (HienThiThanhMau)", hien_thi_thanh_mau, "ChucNang", "HienThiThanhMau");
+            JX1_TOGGLE("Xep hang tren dau (XepHangTrenDau)", xep_hang_tren_dau, "ChucNang", "XepHangTrenDau");
+            JX1_TOGGLE("Lien tram (LienTram)",                lien_tram,         "ChucNang", "LienTram");
+            JX1_TOGGLE("Thong tin giao dich (TradeInfo)",     trade_info,        "ChucNang", "TradeInfo");
+
+            ImGui::Columns(1);
+            ImGui::Spacing();
+
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f));
+            ImGui::Text("== Cac module mo rong ==");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::Columns(2, "jx1mod_cols2", false);
+
+            JX1_TOGGLE("Duong mau Boss (ThanhMauBoss)",      thanh_mau_boss,      "ThanhMauBoss",       "Enabled");
+            JX1_TOGGLE("Duong mau NPC (ThanhMauNPC)",        thanh_mau_npc,       "ThanhMauNPC",        "Enabled");
+            JX1_TOGGLE("Gop bang F3 (F3Merge)",              f3_merge,            "F3Merge",            "Enabled");
+            JX1_TOGGLE("Hieu ung xung quanh NV",             hieu_ung_xung_quanh, "HieuUngXungQuanhNV", "Enabled");
+
+            ImGui::NextColumn();
+
+            JX1_TOGGLE("Xep hang trong F3 (XepHangF3)",      xep_hang_f3,         "XepHangF3",          "Enabled");
+            JX1_TOGGLE("Thong bao PK (ThongBaoPK)",          thong_bao_pk,        "ThongBaoPK",         "Enable");
+            JX1_TOGGLE("Popup cong diem (AddPointPopup)",    add_point_popup,     "AddPointPopup",      "Enabled");
+
+            ImGui::Columns(1);
+            ImGui::Spacing();
+
+            #undef JX1_TOGGLE
+
+            ImGui::Separator();
+            ImGui::Spacing();
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+            ImGui::TextWrapped("* Thay doi duoc luu ngay lap tuc vao JX1Mod.ini. Khoi dong lai game de ap dung.");
+            ImGui::PopStyleColor();
+
+            ImGui::EndChild();
+            ImGui::EndTabItem();
+        }
         ImGui::EndTabBar();
     }
 
