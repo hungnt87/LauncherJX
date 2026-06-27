@@ -20,6 +20,7 @@ struct ManifestSource {
 struct FileEntry {
     std::string name;
     std::string hash;
+    std::string zip;
 };
 
 struct Manifest {
@@ -53,6 +54,9 @@ std::wstring Utf8ToWstring(const std::string& str);
 
 // Hàm tiện ích mã hóa URL (Percent-encoding) cho tên file chứa ký tự đặc biệt
 std::string UrlEncode(const std::string& value);
+
+// Hàm tiện ích giải nén file zip ngầm bằng PowerShell
+bool UnzipFile(const std::wstring& zip_path, const std::wstring& dest_dir);
 
 // Hàm thực hiện tải file qua WinINet hỗ trợ báo cáo tiến trình và hủy tải
 // hInternet có thể truyền từ ngoài vào để tái sử dụng kết nối (HTTP Keep-Alive), nếu truyền nullptr sẽ tự mở

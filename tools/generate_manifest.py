@@ -1,6 +1,8 @@
 import os
 import hashlib
 import json
+import zipfile
+import sys
 
 def get_sha256(file_path):
     sha256 = hashlib.sha256()
@@ -13,27 +15,63 @@ def get_sha256(file_path):
         print(f"Error hashing {file_path}: {e}")
         return None
 
+def zip_directory(dir_path, zip_path, rel_root):
+    try:
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(dir_path):
+                for file in files:
+                    abs_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(abs_path, rel_root).replace('\\', '/')
+                    zipf.write(abs_path, rel_path)
+        print(f"Compressed directory {dir_path} -> {zip_path}")
+    except Exception as e:
+        print(f"Error compressing {dir_path}: {e}")
+
 def generate_manifest(patch_dir, version):
     manifest = {
         "version": version,
         "files": []
     }
     
-    for root, dirs, files in os.walk(patch_dir):
-        for file in files:
-            if file == "version.json":
+    # 1. Quét và nén các thư mục con cấp 1
+    for item in os.listdir(patch_dir):
+        sub_dir_path = os.path.join(patch_dir, item)
+        if os.path.isdir(sub_dir_path):
+            sub_dir = item
+            if sub_dir.startswith('.') or sub_dir == "tmp":
                 continue
+                
+            zip_path = os.path.join(patch_dir, f"{sub_dir}.zip")
+            zip_directory(sub_dir_path, zip_path, patch_dir)
             
-            abs_path = os.path.join(root, file)
-            rel_path = os.path.relpath(abs_path, patch_dir).replace('\\', '/')
+            # Quét các file trong thư mục con này để tính hash và add vào manifest
+            for root, dirs, files in os.walk(sub_dir_path):
+                for file in files:
+                    abs_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(abs_path, patch_dir).replace('\\', '/')
+                    sha = get_sha256(abs_path)
+                    if sha:
+                        manifest["files"].append({
+                            "name": rel_path,
+                            "hash": sha,
+                            "zip": f"{sub_dir}.zip"
+                        })
+                        
+    # 2. Quét các file lẻ nằm trực tiếp ở thư mục gốc (không nén)
+    for item in os.listdir(patch_dir):
+        abs_path = os.path.join(patch_dir, item)
+        if os.path.isfile(abs_path):
+            file = item
+            if file == "version.json" or file.endswith(".zip"):
+                continue
             sha = get_sha256(abs_path)
-            
             if sha:
                 manifest["files"].append({
-                    "name": rel_path,
-                    "hash": sha
+                    "name": file,
+                    "hash": sha,
+                    "zip": ""
                 })
-            
+                
     manifest["files"].sort(key=lambda x: x["name"])
     
     manifest_path = os.path.join(patch_dir, "version.json")
@@ -66,7 +104,6 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Warning reading current version.json: {e}")
             
-    import sys
     print(f"Thu muc patch phat hien tai: {patch_dir}")
     if len(sys.argv) > 1:
         new_version = sys.argv[1].strip()

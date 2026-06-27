@@ -78,8 +78,9 @@ std::vector<FileEntry> ExtractFiles(const std::string& json) {
         const std::string object = array_content.substr(object_start, object_end - object_start + 1);
         const std::string name = ExtractStringField(object, "name");
         const std::string hash = ExtractStringField(object, "hash");
+        const std::string zip = ExtractStringField(object, "zip");
         if (!name.empty() && !hash.empty()) {
-            files.push_back(FileEntry{name, ToLowerAscii(hash)});
+            files.push_back(FileEntry{name, ToLowerAscii(hash), zip});
         }
 
         cursor = object_end + 1;
@@ -276,6 +277,37 @@ std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const M
     }
 
     return files_to_update;
+}
+
+bool UnzipFile(const std::wstring& zip_path, const std::wstring& dest_dir) {
+    std::filesystem::create_directories(dest_dir);
+
+    std::wstring cmd = L"powershell.exe -NoProfile -NonInteractive -WindowStyle Hidden -Command \"Expand-Archive -Path '" + zip_path + L"' -DestinationPath '" + dest_dir + L"' -Force\"";
+    
+    STARTUPINFOW si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESHOWWINDOW;
+    si.wShowWindow = SW_HIDE;
+    ZeroMemory(&pi, sizeof(pi));
+
+    std::vector<wchar_t> cmd_buf(cmd.begin(), cmd.end());
+    cmd_buf.push_back(L'\0');
+
+    if (!CreateProcessW(nullptr, cmd_buf.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi)) {
+        return false;
+    }
+
+    WaitForSingleObject(pi.hProcess, INFINITE);
+
+    DWORD exit_code = 0;
+    GetExitCodeProcess(pi.hProcess, &exit_code);
+
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    return exit_code == 0;
 }
 
 bool DownloadFile(void* hInternet, const std::wstring& url, const std::wstring& dest_path, const std::atomic<bool>& running, const std::function<void(float)>& progress_callback) {

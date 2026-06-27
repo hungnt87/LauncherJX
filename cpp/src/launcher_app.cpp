@@ -207,10 +207,58 @@ void LauncherApp::RunUpdateWorker() {
         return;
     }
 
+    // Phân loại các file zip cần tải và file lẻ cần tải trực tiếp
+    std::vector<std::string> zips_to_download;
+    std::vector<launcher::update::FileEntry> direct_files_to_download;
+
+    for (const auto& file : files_to_update) {
+        if (!file.zip.empty()) {
+            if (std::find(zips_to_download.begin(), zips_to_download.end(), file.zip) == zips_to_download.end()) {
+                zips_to_download.push_back(file.zip);
+            }
+        } else {
+            direct_files_to_download.push_back(file);
+        }
+    }
+
+    struct DownloadTask {
+        bool is_zip;
+        std::string name;
+        launcher::update::FileEntry file_entry;
+    };
+
+    std::vector<DownloadTask> download_tasks;
+    for (const auto& zip_name : zips_to_download) {
+        download_tasks.push_back(DownloadTask{true, zip_name, {}});
+    }
+    for (const auto& file : direct_files_to_download) {
+        download_tasks.push_back(DownloadTask{false, file.name, file});
+    }
+
+    if (download_tasks.empty()) {
+        try {
+            std::filesystem::path dest_ver = std::filesystem::path(exe_dir_) / L"version.json";
+            std::filesystem::create_directories(dest_ver.parent_path());
+            std::filesystem::path temp_version_path = std::filesystem::path(exe_dir_) / L"tmp" / L"version.json";
+            std::filesystem::copy_file(temp_version_path, dest_ver, std::filesystem::copy_options::overwrite_existing);
+            std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"tmp");
+        } catch (...) {}
+
+        version_string_ = server_manifest_.version;
+        has_update_ = false;
+
+        launcher::update::UpdateSnapshot done_snapshot;
+        done_snapshot.progress = 1.0f;
+        done_snapshot.phase = launcher::update::UpdatePhase::Done;
+        done_snapshot.message = "Game da o phien ban moi nhat (" + version_string_ + ")! (Da quet " + std::to_string(server_manifest_.files.size()) + " file)";
+        SetSnapshot(done_snapshot);
+        return;
+    }
+
     launcher::update::UpdateSnapshot downloading_snapshot;
     downloading_snapshot.progress = 0.0f;
     downloading_snapshot.phase = launcher::update::UpdatePhase::Downloading;
-    downloading_snapshot.message = "Tim thay " + std::to_string(files_to_update.size()) + " file can cap nhat. Dang tai bang 4 luong...";
+    downloading_snapshot.message = "Dang tai " + std::to_string(zips_to_download.size()) + " file zip va " + std::to_string(direct_files_to_download.size()) + " file le...";
     SetSnapshot(downloading_snapshot);
 
     std::wstring wversion = launcher::update::Utf8ToWstring(server_manifest_.version);
@@ -218,13 +266,13 @@ void LauncherApp::RunUpdateWorker() {
     // Tải đa luồng song song
     const size_t kNumThreads = 4;
     std::vector<std::thread> download_threads;
-    std::atomic<size_t> next_file_idx{0};
-    std::atomic<size_t> files_finished{0};
+    std::atomic<size_t> next_task_idx{0};
+    std::atomic<size_t> tasks_finished{0};
     std::atomic<bool> download_failed{false};
     std::string error_message;
     std::mutex error_mutex;
 
-    for (size_t t = 0; t < kNumThreads; ++t) {
+    for (size_t t = 0; t < (std::min)(kNumThreads, download_tasks.size()); ++t) {
         download_threads.emplace_back([&]() {
             HINTERNET hInternet = InternetOpenW(L"LauncherJX/1.0", INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0);
             if (!hInternet) {
@@ -233,36 +281,42 @@ void LauncherApp::RunUpdateWorker() {
             }
 
             while (running_ && !download_failed) {
-                size_t idx = next_file_idx.fetch_add(1);
-                if (idx >= files_to_update.size()) {
+                size_t idx = next_task_idx.fetch_add(1);
+                if (idx >= download_tasks.size()) {
                     break;
                 }
 
-                const auto& file = files_to_update[idx];
-                std::wstring wname = launcher::update::Utf8ToWstring(file.name);
-                
-                std::string encoded_name = launcher::update::UrlEncode(file.name);
-                std::wstring wencoded_name = launcher::update::Utf8ToWstring(encoded_name);
+                const auto& task = download_tasks[idx];
+                std::wstring wname = launcher::update::Utf8ToWstring(task.name);
+                std::wstring file_url;
+                std::wstring temp_file_path;
 
-                std::wstring file_url = launcher::update::kServerRawPrefix + wversion + L"/patch/" + wencoded_name;
-                std::wstring temp_file_path = (std::filesystem::path(exe_dir_) / L"tmp" / wname).wstring();
+                if (task.is_zip) {
+                    file_url = launcher::update::kServerRawPrefix + wversion + L"/patch/" + wname;
+                    temp_file_path = (std::filesystem::path(exe_dir_) / L"tmp" / wname).wstring();
+                } else {
+                    std::string encoded_name = launcher::update::UrlEncode(task.name);
+                    std::wstring wencoded_name = launcher::update::Utf8ToWstring(encoded_name);
+                    file_url = launcher::update::kServerRawPrefix + wversion + L"/patch/" + wencoded_name;
+                    temp_file_path = (std::filesystem::path(exe_dir_) / L"tmp" / wname).wstring();
+                }
 
                 if (!launcher::update::DownloadFile(hInternet, file_url, temp_file_path, running_, nullptr)) {
                     if (running_) {
                         std::lock_guard<std::mutex> lock(error_mutex);
                         download_failed = true;
-                        error_message = "Loi tai file: " + file.name + " (Error: " + std::to_string(GetLastError()) + ")";
+                        error_message = "Loi tai file: " + task.name + " (Error: " + std::to_string(GetLastError()) + ")";
                     }
                     break;
                 }
 
-                size_t finished = files_finished.fetch_add(1) + 1;
+                size_t finished = tasks_finished.fetch_add(1) + 1;
 
-                float progress = static_cast<float>(finished) / files_to_update.size();
+                float progress = static_cast<float>(finished) / download_tasks.size();
                 launcher::update::UpdateSnapshot progress_snapshot;
                 progress_snapshot.progress = progress;
                 progress_snapshot.phase = launcher::update::UpdatePhase::Downloading;
-                progress_snapshot.message = "Dang tai: " + std::to_string(finished) + "/" + std::to_string(files_to_update.size()) + " file...";
+                progress_snapshot.message = "Dang tai: " + std::to_string(finished) + "/" + std::to_string(download_tasks.size()) + " goi cap nhat...";
                 SetSnapshot(progress_snapshot);
             }
 
@@ -285,14 +339,25 @@ void LauncherApp::RunUpdateWorker() {
     }
 
     if (running_) {
-        launcher::update::UpdateSnapshot copying_snapshot;
-        copying_snapshot.progress = 0.95f;
-        copying_snapshot.phase = launcher::update::UpdatePhase::Downloading;
-        copying_snapshot.message = "Dang cai dat ban cap nhat...";
-        SetSnapshot(copying_snapshot);
+        launcher::update::UpdateSnapshot installing_snapshot;
+        installing_snapshot.progress = 0.9f;
+        installing_snapshot.phase = launcher::update::UpdatePhase::Downloading;
+        installing_snapshot.message = "Dang giai nen va cai dat ban cap nhat...";
+        SetSnapshot(installing_snapshot);
 
         try {
-            for (const auto& file : files_to_update) {
+            // 1. Giải nén các gói zip ra thư mục game
+            for (const auto& zip_name : zips_to_download) {
+                std::wstring wzip_name = launcher::update::Utf8ToWstring(zip_name);
+                std::wstring zip_path = (std::filesystem::path(exe_dir_) / L"tmp" / wzip_name).wstring();
+
+                if (!launcher::update::UnzipFile(zip_path, exe_dir_)) {
+                    throw std::runtime_error("Khong the giai nen goi: " + zip_name);
+                }
+            }
+
+            // 2. Copy các file lẻ không nén (nếu có)
+            for (const auto& file : direct_files_to_download) {
                 std::wstring wname = launcher::update::Utf8ToWstring(file.name);
                 std::filesystem::path temp_path = std::filesystem::path(exe_dir_) / L"tmp" / wname;
                 std::filesystem::path dest_path = std::filesystem::path(exe_dir_) / wname;
@@ -303,10 +368,12 @@ void LauncherApp::RunUpdateWorker() {
                 std::filesystem::copy_file(temp_path, dest_path, std::filesystem::copy_options::overwrite_existing);
             }
 
+            // 3. Copy đè version.json mới
             std::filesystem::path temp_ver = std::filesystem::path(exe_dir_) / L"tmp" / L"version.json";
             std::filesystem::path dest_ver = std::filesystem::path(exe_dir_) / L"version.json";
             std::filesystem::copy_file(temp_ver, dest_ver, std::filesystem::copy_options::overwrite_existing);
 
+            // 4. Xóa sạch thư mục tạm
             std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"tmp");
 
             version_string_ = server_manifest_.version;
@@ -317,10 +384,15 @@ void LauncherApp::RunUpdateWorker() {
             done_snapshot.phase = launcher::update::UpdatePhase::Done;
             done_snapshot.message = "Cap nhat hoan tat! He thong da san sang.";
             SetSnapshot(done_snapshot);
-        } catch (const std::filesystem::filesystem_error& ex) {
+        } catch (const std::exception& ex) {
             launcher::update::UpdateSnapshot error_snapshot;
             error_snapshot.phase = launcher::update::UpdatePhase::Error;
             error_snapshot.message = std::string("Loi cai dat: ") + ex.what();
+            SetSnapshot(error_snapshot);
+        } catch (...) {
+            launcher::update::UpdateSnapshot error_snapshot;
+            error_snapshot.phase = launcher::update::UpdatePhase::Error;
+            error_snapshot.message = "Loi cai dat khong xac dinh.";
             SetSnapshot(error_snapshot);
         }
     }
