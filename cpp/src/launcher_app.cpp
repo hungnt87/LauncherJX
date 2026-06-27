@@ -56,6 +56,7 @@ void LauncherApp::Initialize(const std::wstring& exe_dir) {
     if (check_thread_.joinable()) {
         check_thread_.join();
     }
+    LoadChangelog(); // Đọc file CHANGELOG.md cục bộ lúc khởi tạo
     check_thread_ = std::thread(&LauncherApp::RunCheckWorker, this);
 }
 
@@ -97,6 +98,23 @@ const std::wstring& LauncherApp::ExecutableDir() const noexcept {
 
 const std::string& LauncherApp::VersionString() const noexcept {
     return version_string_;
+}
+
+const std::string& LauncherApp::ChangelogContent() const noexcept {
+    return changelog_content_;
+}
+
+void LauncherApp::LoadChangelog() {
+    std::wstring changelog_path = exe_dir_ + L"\\CHANGELOG.md";
+    std::ifstream file(changelog_path, std::ios::binary);
+    if (!file.is_open()) {
+        changelog_content_ = "Khong tim thay thong tin cap nhat (CHANGELOG.md thieu).";
+        return;
+    }
+    changelog_content_ = std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+    if (changelog_content_.empty()) {
+        changelog_content_ = "Thong tin cap nhat trong.";
+    }
 }
 
 void LauncherApp::RunCheckWorker() {
@@ -391,6 +409,7 @@ void LauncherApp::RunUpdateWorker() {
 
             version_string_ = server_manifest_.version;
             has_update_ = false;
+            LoadChangelog();
 
             launcher::update::UpdateSnapshot done_snapshot;
             done_snapshot.progress = 1.0f;

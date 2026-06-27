@@ -19,6 +19,8 @@ public:
     launcher::update::UpdateSnapshot Snapshot() const;
     const std::wstring& ExecutableDir() const noexcept;
     const std::string& VersionString() const noexcept;
+    const std::string& ChangelogContent() const noexcept;
+    void LoadChangelog();
 
 private:
     void RunCheckWorker();
@@ -30,6 +32,7 @@ private:
     launcher::update::UpdateSnapshot snapshot_{};
     std::wstring exe_dir_;
     std::string version_string_;
+    std::string changelog_content_;
     
     launcher::update::Manifest server_manifest_;
     bool has_update_ = false;

@@ -8,6 +8,7 @@
 
 #include <d3d11.h>
 #include <gdiplus.h>
+#include <sstream>
 
 namespace {
 
@@ -180,14 +181,30 @@ void RenderUI(LauncherApp& app) {
 
             ImGui::Spacing();
             ImGui::BeginChild("NewsText", ImVec2(936, 220), true);
-            ImGui::TextWrapped("=== JX NEWS ===");
-            ImGui::Separator();
-            ImGui::BulletText("Open test server on 2026-06-28.");
-            ImGui::BulletText("Event: Sword Heroes contest incoming.");
-            ImGui::BulletText("Launcher uses Dear ImGui + DX11.");
-            ImGui::BulletText("Update flow checks local files before play.");
-            ImGui::Spacing();
-            ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Good luck on the road.");
+            std::istringstream stream(app.ChangelogContent());
+            std::string line;
+            while (std::getline(stream, line)) {
+                if (!line.empty() && line.back() == '\r') {
+                    line.pop_back();
+                }
+
+                if (line.rfind("## ", 0) == 0) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f)); // Màu xanh ngọc (Cyan) cho tiêu đề phiên bản
+                    ImGui::TextUnformatted(line.c_str());
+                    ImGui::PopStyleColor();
+                }
+                else if (line.rfind("### ", 0) == 0) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.2f, 1.0f)); // Màu vàng cam (Gold) cho tiêu đề danh mục
+                    ImGui::TextUnformatted(line.c_str());
+                    ImGui::PopStyleColor();
+                }
+                else if (line.rfind("- ", 0) == 0 || line.rfind("* ", 0) == 0) {
+                    ImGui::BulletText("%s", line.substr(2).c_str());
+                }
+                else {
+                    ImGui::TextUnformatted(line.c_str());
+                }
+            }
             ImGui::EndChild();
 
             ImGui::EndTabItem();
