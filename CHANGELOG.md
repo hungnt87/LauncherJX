@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.4 - 2026-06-27
+
+### Fixes
+- Preserve LastError in DownloadFile to avoid hiding real Windows API errors with Error: 0
+
 ## v1.0.3 - 2026-06-27
 
 ### Fixes

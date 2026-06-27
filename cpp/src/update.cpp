@@ -329,9 +329,11 @@ bool DownloadFile(void* hInternet, const std::wstring& url, const std::wstring& 
     DWORD flags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_SECURE;
     HINTERNET hUrl = InternetOpenUrlW(active_hInternet, url.c_str(), nullptr, 0, flags, 0);
     if (!hUrl) {
+        DWORD err = GetLastError(); // Lưu lại mã lỗi kết nối
         if (internal_hInternet) {
             InternetCloseHandle(internal_hInternet);
         }
+        SetLastError(err); // Khôi phục mã lỗi
         return false;
     }
 
@@ -340,11 +342,11 @@ bool DownloadFile(void* hInternet, const std::wstring& url, const std::wstring& 
     DWORD statusCodeSize = sizeof(statusCode);
     if (HttpQueryInfoW(hUrl, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &statusCode, &statusCodeSize, nullptr)) {
         if (statusCode < 200 || statusCode >= 300) {
-            SetLastError(statusCode); // Thiết lập LastError bằng HTTP status code để hiển thị
             InternetCloseHandle(hUrl);
             if (internal_hInternet) {
                 InternetCloseHandle(internal_hInternet);
             }
+            SetLastError(statusCode); // Thiết lập LastError bằng HTTP status code
             return false;
         }
     }
@@ -355,18 +357,31 @@ bool DownloadFile(void* hInternet, const std::wstring& url, const std::wstring& 
 
     std::ofstream file(dest_path, std::ios::binary);
     if (!file.is_open()) {
+        DWORD err = GetLastError(); // Lưu lại mã lỗi ghi file
         InternetCloseHandle(hUrl);
         if (internal_hInternet) {
             InternetCloseHandle(internal_hInternet);
         }
+        SetLastError(err); // Khôi phục mã lỗi
         return false;
     }
 
     char buffer[8192];
     DWORD bytesRead = 0;
     size_t totalBytesRead = 0;
+    bool readSuccess = true;
+    DWORD readError = 0;
 
-    while (running && InternetReadFile(hUrl, buffer, sizeof(buffer), &bytesRead) && bytesRead > 0) {
+    while (running) {
+        BOOL ok = InternetReadFile(hUrl, buffer, sizeof(buffer), &bytesRead);
+        if (!ok) {
+            readError = GetLastError();
+            readSuccess = false;
+            break;
+        }
+        if (bytesRead == 0) {
+            break;
+        }
         file.write(buffer, bytesRead);
         totalBytesRead += bytesRead;
         if (contentLength > 0 && progress_callback) {
@@ -383,6 +398,12 @@ bool DownloadFile(void* hInternet, const std::wstring& url, const std::wstring& 
     if (!running) {
         // Xóa file tải dở nếu bị hủy giữa chừng
         std::filesystem::remove(dest_path);
+        return false;
+    }
+
+    if (!readSuccess) {
+        std::filesystem::remove(dest_path);
+        SetLastError(readError);
         return false;
     }
 
