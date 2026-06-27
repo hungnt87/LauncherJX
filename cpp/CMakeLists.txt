@@ -40,6 +40,7 @@ target_sources(LauncherJX
         src/main.cpp
         src/ui.cpp
         src/update.cpp
+        src/launcher_app.cpp
         resources/app.rc
         $<TARGET_OBJECTS:imgui_objects>
 )
