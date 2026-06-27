@@ -271,13 +271,16 @@ std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const M
         std::wstring wname = Utf8ToWstring(file.name);
         const std::filesystem::path local_path = root / std::filesystem::path(wname);
         
-        // Đối với các file cấu hình .ini, chỉ tải về nếu chưa tồn tại ở local (không check hash ghi đè cấu hình người chơi)
-        if (local_path.extension() == ".ini" || local_path.extension() == ".INI") {
+        // Chỉ bỏ qua kiểm tra hash đối với config.ini, jx1mod.ini, package.ini (giữ cấu hình người chơi)
+        std::wstring filename = local_path.filename().wstring();
+        std::transform(filename.begin(), filename.end(), filename.begin(), ::tolower);
+
+        if (filename == L"config.ini" || filename == L"jx1mod.ini" || filename == L"package.ini") {
             if (!std::filesystem::exists(local_path)) {
                 files_to_update.push_back(file);
             }
         } else {
-            // Đối với các file game thông thường, check sự tồn tại và khớp hash SHA-256
+            // Đối với các file game thông thường (kể cả các file .ini khác), check sự tồn tại và khớp hash SHA-256
             const std::string local_hash = ComputeSha256(local_path.wstring());
             if (local_hash.empty() || ToLowerAscii(local_hash) != ToLowerAscii(file.hash)) {
                 files_to_update.push_back(file);

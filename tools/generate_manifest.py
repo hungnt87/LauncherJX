@@ -47,9 +47,13 @@ def generate_manifest(patch_dir, version):
             zip_path = os.path.join(zips_dir, f"{sub_dir}.zip")
             zip_directory(sub_dir_path, zip_path, patch_dir)
             
+            ignored_files = {"config.ini", "jx1mod.ini", "package.ini"}
+            
             # Quét các file trong thư mục con này để tính hash và add vào manifest
             for root, dirs, files in os.walk(sub_dir_path):
                 for file in files:
+                    if file.lower() in ignored_files:
+                        continue
                     abs_path = os.path.join(root, file)
                     rel_path = os.path.relpath(abs_path, patch_dir).replace('\\', '/')
                     sha = get_sha256(abs_path)
@@ -61,11 +65,12 @@ def generate_manifest(patch_dir, version):
                         })
                         
     # 2. Quét các file lẻ nằm trực tiếp ở thư mục gốc (không nén)
+    ignored_files = {"config.ini", "jx1mod.ini", "package.ini"}
     for item in os.listdir(patch_dir):
         abs_path = os.path.join(patch_dir, item)
         if os.path.isfile(abs_path):
             file = item
-            if file == "version.json" or file.endswith(".zip"):
+            if file == "version.json" or file.endswith(".zip") or file.lower() in ignored_files:
                 continue
             sha = get_sha256(abs_path)
             if sha:
