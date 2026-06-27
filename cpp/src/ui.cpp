@@ -172,57 +172,13 @@ void RenderUI(LauncherApp& app) {
         if (ImGui::BeginTabItem("Thông báo")) {
             ImGui::Spacing();
 
-            static float copyFeedbackTime = 0.0f;
-            char copyBtnLabel[64] = "Sao chép toàn bộ thông báo (Copy All)";
-            if (copyFeedbackTime > 0.0f) {
-                copyFeedbackTime -= ImGui::GetIO().DeltaTime;
-                strcpy_s(copyBtnLabel, "Đã sao chép toàn bộ! (Copied All)");
-            }
+            const std::string& changelog = app.ChangelogContent();
+            std::vector<char> text_buf(changelog.begin(), changelog.end());
+            text_buf.push_back('\0');
 
-            if (ImGui::Button(copyBtnLabel, ImVec2(300, 26))) {
-                ImGui::SetClipboardText(app.ChangelogContent().c_str());
-                copyFeedbackTime = 2.0f;
-            }
-            ImGui::Spacing();
-
-            ImGui::BeginChild("NewsText", ImVec2(936, 380), true);
-            std::istringstream stream(app.ChangelogContent());
-            std::string line;
-            int line_idx = 0;
-            while (std::getline(stream, line)) {
-                if (!line.empty() && line.back() == '\r') {
-                    line.pop_back();
-                }
-
-                char id_label[1024];
-                sprintf_s(id_label, "%s##line_%d", line.c_str(), line_idx++);
-
-                bool is_selected = false;
-                if (line.rfind("## ", 0) == 0) {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f)); // Màu xanh ngọc (Cyan) cho tiêu đề phiên bản
-                    if (ImGui::Selectable(id_label, &is_selected)) {
-                        ImGui::SetClipboardText(line.c_str());
-                    }
-                    ImGui::PopStyleColor();
-                }
-                else if (line.rfind("### ", 0) == 0) {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.2f, 1.0f)); // Màu vàng cam (Gold) cho tiêu đề danh mục
-                    if (ImGui::Selectable(id_label, &is_selected)) {
-                        ImGui::SetClipboardText(line.c_str());
-                    }
-                    ImGui::PopStyleColor();
-                }
-                else {
-                    if (ImGui::Selectable(id_label, &is_selected)) {
-                        ImGui::SetClipboardText(line.c_str());
-                    }
-                }
-
-                if (ImGui::IsItemHovered() && !line.empty()) {
-                    ImGui::SetTooltip("Nhấp chuột trái để sao chép dòng này");
-                }
-            }
-            ImGui::EndChild();
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.00f, 0.12f, 0.12f, 0.50f));
+            ImGui::InputTextMultiline("##changelog_box", text_buf.data(), text_buf.size(), ImVec2(936, 414), ImGuiInputTextFlags_ReadOnly);
+            ImGui::PopStyleColor();
 
             ImGui::EndTabItem();
         }
