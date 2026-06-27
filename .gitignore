@@ -1,0 +1,15 @@
+/build
+/out
+/bin
+*.user
+*.vcxproj*
+*.suo
+*.ipch
+*.pdb
+*.ilk
+*.obj
+*.lib
+*.exp
+*.exe
+*.manifest
+*.log
