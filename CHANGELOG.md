@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.11 - 2026-06-27
+
+### Features
+- Integrate professional game icon into LauncherJX.exe using Windows resource files
+- Implement single-instance prevention using Win32 Named Mutex to block opening multiple Launcher windows
+
 ## v1.0.10 - 2026-06-27
 
 ### Fixes

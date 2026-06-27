@@ -41,6 +41,22 @@ std::wstring GetExecutablePath() {
 }  // namespace
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand) {
+    // Chỉ chạy 1 Instance duy nhất (Single Instance)
+    HANDLE hMutex = CreateMutexW(nullptr, TRUE, L"Local\\LauncherJX_SingleInstance_Mutex");
+    if (hMutex && GetLastError() == ERROR_ALREADY_EXISTS) {
+        HWND hWndExisting = FindWindowW(L"LauncherJXImGuiClass", nullptr);
+        if (hWndExisting) {
+            if (IsIconic(hWndExisting)) {
+                ShowWindow(hWndExisting, SW_RESTORE);
+            }
+            SetForegroundWindow(hWndExisting);
+        }
+        if (hMutex) {
+            CloseHandle(hMutex);
+        }
+        return 0;
+    }
+
     // Khoi tao GDI+ (dung de load anh banner/logo)
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
@@ -144,6 +160,11 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand) {
     
     // Don dep GDI+
     Gdiplus::GdiplusShutdown(gdiplusToken);
+
+    if (hMutex) {
+        ReleaseMutex(hMutex);
+        CloseHandle(hMutex);
+    }
 
     return 0;
 }
