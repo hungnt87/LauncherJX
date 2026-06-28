@@ -28,7 +28,7 @@ def zip_directory(dir_path, zip_path, rel_root):
     except Exception as e:
         print(f"Error compressing {dir_path}: {e}")
 
-def generate_manifest(patch_dir, version, updater_path=None, updater_name="updater.exe"):
+def generate_manifest(patch_dir, version, updater_path=None, updater_name="updater.exe", launcher_path=None):
     manifest = {
         "version": version,
         "files": []
@@ -49,7 +49,24 @@ def generate_manifest(patch_dir, version, updater_path=None, updater_name="updat
         else:
             print(f"Warning: Updater path '{updater_path}' does not exist.")
 
+    # 0b. Thêm thông tin LauncherJX.exe vào danh sách files nếu được cung cấp
+    if launcher_path:
+        if os.path.exists(launcher_path):
+            launcher_hash = get_sha256(launcher_path)
+            if launcher_hash:
+                manifest["files"].append({
+                    "name": "LauncherJX.exe",
+                    "hash": launcher_hash,
+                    "zip": ""
+                })
+                print(f"Added LauncherJX.exe to manifest files: {launcher_hash}")
+            else:
+                print(f"Warning: Failed to compute hash for launcher at {launcher_path}")
+        else:
+            print(f"Warning: Launcher path '{launcher_path}' does not exist.")
+
     # 1. Quét và nén các thư mục con cấp 1
+
     zips_dir = os.path.abspath(os.path.join(patch_dir, "..", "zips"))
     os.makedirs(zips_dir, exist_ok=True)
 
@@ -134,6 +151,7 @@ if __name__ == "__main__":
     parser.add_argument("version", nargs="?", default=None, help="New version tag")
     parser.add_argument("--updater-path", default=None, help="Path to updater.exe binary to hash")
     parser.add_argument("--updater-name", default="updater.exe", help="Name of the updater asset")
+    parser.add_argument("--launcher-path", default=None, help="Path to LauncherJX.exe binary to include in files manifest")
     
     args = parser.parse_args()
     
@@ -147,5 +165,6 @@ if __name__ == "__main__":
         new_version = new_version.strip()
         print(f"Su dung phien ban tu dong lenh: {new_version}")
         
-    generate_manifest(patch_dir, new_version, updater_path=args.updater_path, updater_name=args.updater_name)
+    generate_manifest(patch_dir, new_version, updater_path=args.updater_path, updater_name=args.updater_name, launcher_path=args.launcher_path)
+
 

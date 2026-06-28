@@ -14,7 +14,8 @@ tag:
 
 # Tự động chạy script generate_manifest.py với tag phiên bản mới và hash updater.exe
 hooks:
-  prepare_artifact: "python {project_root}/tools/generate_manifest.py {version} --updater-path {project_root}/build/bin/Release/updater.exe"
+  prepare_artifact: "python {project_root}/tools/generate_manifest.py {version} --updater-path {project_root}/build/bin/Release/updater.exe --launcher-path {project_root}/build/bin/Release/LauncherJX.exe"
+
 
 # Đảm bảo file version.json đã cập nhật được đưa vào release commit
 include:
