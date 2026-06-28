@@ -467,4 +467,110 @@ bool DownloadFile(void* hInternet, const std::wstring& url, const std::wstring& 
     return true;
 }
 
+void MergeIniFiles(const std::wstring& default_ini_path, const std::wstring& local_ini_path) {
+    if (!std::filesystem::exists(default_ini_path)) {
+        return;
+    }
+    if (!std::filesystem::exists(local_ini_path)) {
+        try {
+            std::filesystem::copy_file(default_ini_path, local_ini_path, std::filesystem::copy_options::overwrite_existing);
+        } catch (...) {}
+        return;
+    }
+
+    // 1. Đọc tất cả các Section từ file mặc định
+    std::vector<wchar_t> section_names(4096);
+    DWORD len = GetPrivateProfileSectionNamesW(section_names.data(), (DWORD)section_names.size(), default_ini_path.c_str());
+    while (len == section_names.size() - 2) {
+        section_names.resize(section_names.size() * 2);
+        len = GetPrivateProfileSectionNamesW(section_names.data(), (DWORD)section_names.size(), default_ini_path.c_str());
+    }
+
+    std::vector<std::wstring> sections;
+    wchar_t* p = section_names.data();
+    while (*p) {
+        sections.push_back(p);
+        p += wcslen(p) + 1;
+    }
+
+    // 2. Với mỗi Section, đọc tất cả các Key từ file mặc định
+    for (const auto& section : sections) {
+        std::vector<wchar_t> key_names(4096);
+        DWORD key_len = GetPrivateProfileStringW(section.c_str(), nullptr, nullptr, key_names.data(), (DWORD)key_names.size(), default_ini_path.c_str());
+        while (key_len == key_names.size() - 2) {
+            key_names.resize(key_names.size() * 2);
+            key_len = GetPrivateProfileStringW(section.c_str(), nullptr, nullptr, key_names.data(), (DWORD)key_names.size(), default_ini_path.c_str());
+        }
+
+        std::vector<std::wstring> keys;
+        wchar_t* kp = key_names.data();
+        while (*kp) {
+            keys.push_back(kp);
+            kp += wcslen(kp) + 1;
+        }
+
+        // 3. Với mỗi Key, kiểm tra xem file local đã có chưa. Nếu chưa có, lấy giá trị từ file mặc định và ghi vào file local
+        for (const auto& key : keys) {
+            wchar_t local_val[1024] = {0};
+            const wchar_t* sentinel = L"__INI_KEY_NOT_FOUND__";
+            GetPrivateProfileStringW(section.c_str(), key.c_str(), sentinel, local_val, 1024, local_ini_path.c_str());
+
+            if (wcscmp(local_val, sentinel) == 0) {
+                wchar_t default_val[1024] = {0};
+                GetPrivateProfileStringW(section.c_str(), key.c_str(), L"", default_val, 1024, default_ini_path.c_str());
+                WritePrivateProfileStringW(section.c_str(), key.c_str(), default_val, local_ini_path.c_str());
+            }
+        }
+    }
+}
+
+bool CheckAndRepairIniFiles(const std::wstring& exe_dir, const Manifest& manifest, const std::atomic<bool>& running) {
+    std::wstring branch = (manifest.version.empty() || manifest.version == "v0.0.0") ? L"dev" : Utf8ToWstring(manifest.version);
+    std::wstring remote_prefix = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/" + branch + L"/patch/";
+
+    std::vector<std::string> special_configs = {"config.ini", "jx1mod.ini", "package.ini"};
+    bool any_merged = false;
+
+    for (const auto& config_name : special_configs) {
+        // Tìm file entry tương ứng trong manifest từ server
+        FileEntry target_entry;
+        bool found_in_manifest = false;
+        for (const auto& f : manifest.files) {
+            std::string fname = f.name;
+            std::transform(fname.begin(), fname.end(), fname.begin(), ::tolower);
+            if (fname == config_name) {
+                target_entry = f;
+                found_in_manifest = true;
+                break;
+            }
+        }
+
+        if (!found_in_manifest) continue;
+
+        std::wstring wconfig_name = Utf8ToWstring(target_entry.name);
+        std::wstring local_path = (std::filesystem::path(exe_dir) / wconfig_name).wstring();
+        std::wstring temp_default_path = (std::filesystem::path(exe_dir) / L"tmp" / (wconfig_name + L".default")).wstring();
+
+        // Tính hash thực tế
+        std::string local_hash = ComputeSha256(local_path);
+        std::transform(local_hash.begin(), local_hash.end(), local_hash.begin(), ::tolower);
+        std::string target_hash = target_entry.hash;
+        std::transform(target_hash.begin(), target_hash.end(), target_hash.begin(), ::tolower);
+
+        // Chỉ tải và merge nếu file bị thiếu hoặc hash thay đổi
+        if (local_hash.empty() || local_hash != target_hash) {
+            std::string encoded_name = UrlEncode(target_entry.name);
+            std::wstring wencoded_name = Utf8ToWstring(encoded_name);
+            std::wstring file_url = remote_prefix + wencoded_name;
+
+            if (DownloadFile(nullptr, file_url, temp_default_path, running, nullptr)) {
+                MergeIniFiles(temp_default_path, local_path);
+                try { std::filesystem::remove(temp_default_path); } catch (...) {}
+                any_merged = true;
+            }
+        }
+    }
+    return any_merged;
+}
+
 }  // namespace launcher::update

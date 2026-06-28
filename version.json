@@ -1,5 +1,5 @@
 {
-  "version": "v1.1.11",
+  "version": "v1.1.12",
   "files": [
     {
       "name": "JX1Mod.ini",
@@ -8,7 +8,7 @@
     },
     {
       "name": "LauncherJX.exe",
-      "hash": "28c23e289bc7dbfcdcc8bb6a4a520d45d229cd33e63ec8363f54cc88924d567b",
+      "hash": "188acfe4765a502129838442017e05250a7b755e97487d37b92b0173f2f31c3a",
       "zip": ""
     },
     {

@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.12 - 2026-06-28
+
+### Features
+- Implement local hash integrity verification for special INI configurations (config.ini, JX1Mod.ini, package.ini) on startup
+- Automate online default configuration downloads and structure merges when hash mismatch or missing files are detected
+
 ## v1.1.11 - 2026-06-28
 
 ### Features

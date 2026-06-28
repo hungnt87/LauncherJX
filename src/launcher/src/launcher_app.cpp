@@ -12,67 +12,6 @@
 #include <iterator>
 #include <vector>
 
-namespace {
-
-void MergeIniFiles(const std::wstring& default_ini_path, const std::wstring& local_ini_path) {
-    if (!std::filesystem::exists(default_ini_path)) {
-        return;
-    }
-    if (!std::filesystem::exists(local_ini_path)) {
-        try {
-            std::filesystem::copy_file(default_ini_path, local_ini_path, std::filesystem::copy_options::overwrite_existing);
-        } catch (...) {}
-        return;
-    }
-
-    // 1. Đọc tất cả các Section từ file mặc định
-    std::vector<wchar_t> section_names(4096);
-    DWORD len = GetPrivateProfileSectionNamesW(section_names.data(), (DWORD)section_names.size(), default_ini_path.c_str());
-    while (len == section_names.size() - 2) {
-        section_names.resize(section_names.size() * 2);
-        len = GetPrivateProfileSectionNamesW(section_names.data(), (DWORD)section_names.size(), default_ini_path.c_str());
-    }
-
-    std::vector<std::wstring> sections;
-    wchar_t* p = section_names.data();
-    while (*p) {
-        sections.push_back(p);
-        p += wcslen(p) + 1;
-    }
-
-    // 2. Với mỗi Section, đọc tất cả các Key từ file mặc định
-    for (const auto& section : sections) {
-        std::vector<wchar_t> key_names(4096);
-        DWORD key_len = GetPrivateProfileStringW(section.c_str(), nullptr, nullptr, key_names.data(), (DWORD)key_names.size(), default_ini_path.c_str());
-        while (key_len == key_names.size() - 2) {
-            key_names.resize(key_names.size() * 2);
-            key_len = GetPrivateProfileStringW(section.c_str(), nullptr, nullptr, key_names.data(), (DWORD)key_names.size(), default_ini_path.c_str());
-        }
-
-        std::vector<std::wstring> keys;
-        wchar_t* kp = key_names.data();
-        while (*kp) {
-            keys.push_back(kp);
-            kp += wcslen(kp) + 1;
-        }
-
-        // 3. Với mỗi Key, kiểm tra xem file local đã có chưa. Nếu chưa có, lấy giá trị từ file mặc định và ghi vào file local
-        for (const auto& key : keys) {
-            wchar_t local_val[1024] = {0};
-            const wchar_t* sentinel = L"__INI_KEY_NOT_FOUND__";
-            GetPrivateProfileStringW(section.c_str(), key.c_str(), sentinel, local_val, 1024, local_ini_path.c_str());
-
-            if (wcscmp(local_val, sentinel) == 0) {
-                wchar_t default_val[1024] = {0};
-                GetPrivateProfileStringW(section.c_str(), key.c_str(), L"", default_val, 1024, default_ini_path.c_str());
-                WritePrivateProfileStringW(section.c_str(), key.c_str(), default_val, local_ini_path.c_str());
-            }
-        }
-    }
-}
-
-} // namespace
-
 LauncherApp::LauncherApp() = default;
 
 LauncherApp::~LauncherApp() {
@@ -243,6 +182,12 @@ void LauncherApp::RunCheckWorker() {
         SetSnapshot(done_snapshot);
         has_update_ = false;
         return;
+    }
+
+    // Tự động kiểm tra hash và sửa cấu trúc các file .ini đặc biệt khi khởi động
+    if (launcher::update::CheckAndRepairIniFiles(exe_dir_, manifest, running_)) {
+        LoadResolutionSettings();
+        LoadJx1ModSettings();
     }
 
     if (ShouldSelfUpdate(manifest)) {
@@ -520,17 +465,17 @@ void LauncherApp::RunUpdateWorker() {
 
             // Khôi phục lại cấu hình của người chơi sau khi giải nén bằng cách Merge cấu trúc mới vào cấu hình cũ
             if (has_backup_config) {
-                MergeIniFiles(local_config, backup_config);
+                launcher::update::MergeIniFiles(local_config, backup_config);
                 std::filesystem::copy_file(backup_config, local_config, std::filesystem::copy_options::overwrite_existing);
                 try { std::filesystem::remove(backup_config); } catch (...) {}
             }
             if (has_backup_jx1mod) {
-                MergeIniFiles(local_jx1mod, backup_jx1mod);
+                launcher::update::MergeIniFiles(local_jx1mod, backup_jx1mod);
                 std::filesystem::copy_file(backup_jx1mod, local_jx1mod, std::filesystem::copy_options::overwrite_existing);
                 try { std::filesystem::remove(backup_jx1mod); } catch (...) {}
             }
             if (has_backup_package) {
-                MergeIniFiles(local_package, backup_package);
+                launcher::update::MergeIniFiles(local_package, backup_package);
                 std::filesystem::copy_file(backup_package, local_package, std::filesystem::copy_options::overwrite_existing);
                 try { std::filesystem::remove(backup_package); } catch (...) {}
             }
