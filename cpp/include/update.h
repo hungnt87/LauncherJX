@@ -8,8 +8,9 @@
 
 namespace launcher::update {
 
-// URL tải manifest version.json từ Release mới nhất của GitHub
-const std::wstring kManifestUrl = L"https://github.com/hungnt87/LauncherJX/releases/latest/download/version.json";
+// URL tải manifest version.json từ thư mục patch trên branch main của GitHub
+const std::wstring kManifestUrl = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/main/patch/version.json";
+
 // Tiền tố URL để tải các file game theo Tag phiên bản
 const std::wstring kServerRawPrefix = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/";
 
