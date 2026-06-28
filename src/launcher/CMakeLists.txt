@@ -61,6 +61,7 @@ target_link_libraries(LauncherJX
 
 target_include_directories(LauncherJX
     PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources
         ${IMGUI_DIR}
         ${IMGUI_BACKENDS_DIR}
 )
