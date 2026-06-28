@@ -1,166 +1,44 @@
-# Changelog
+# Nhật ký thay đổi (Changelog)
 
-## v1.1.13 - 2026-06-28
+Tất cả các thay đổi lớn đối với dự án này sẽ được ghi lại trong tệp này.
 
-### Fixes
-- Force WinINet and intermediate CDNs to bypass caching when downloading CHANGELOG.md by adding Cache-Control and Pragma headers
-- Fix loading status indicator by resetting the changelog content to "Loading..." and cleaning up temp files immediately when LoadChangelog begins
+## v1.0.0 - 2026-06-28
 
-## v1.1.12 - 2026-06-28
+Đây là phiên bản phát hành chính thức đầu tiên (Production-ready) của **LauncherJX**, mang lại một giải pháp khởi chạy game và cập nhật dữ liệu toàn diện cho game MMORPG võ hiệp với phong cách giao diện Win32 Retro hoài cổ.
 
-### Features
-- Implement local hash integrity verification for special INI configurations (config.ini, JX1Mod.ini, package.ini) on startup
-- Automate online default configuration downloads and structure merges when hash mismatch or missing files are detected
+### Tính năng nổi bật
 
-## v1.1.11 - 2026-06-28
+#### 1. Giao diện & Trải nghiệm Người dùng (Win32 Retro Style)
+- **Thiết kế Cổ điển:** Giao diện hoài cổ mang phong cách Win32/MFC kinh điển với tông màu xám (#c0c0c0), các đường viền 3D nổi và chìm, mang lại cảm giác thân thuộc cho người chơi dòng game kiếm hiệp cổ xưa.
+- **Quản lý Cấu hình Game:** Tab "Cài đặt" cho phép người chơi dễ dàng thay đổi độ phân giải (800x600, 1024x768), chế độ cửa sổ (Windowed) hoặc toàn màn hình (FullScreen) trực tiếp ghi đè vào các tệp cấu hình game (`config.ini` và `package.ini`).
+- **Quản lý Mod JX1:** Tích hợp tab "JX1 Mod" hỗ trợ tới 16 tùy chọn bật/tắt (toggles) tinh chỉnh nâng cao cho game, tương tác trực tiếp qua tệp `JX1Mod.ini`.
+- **Đa phương tiện:** Tích hợp icon trò chơi chuyên nghiệp, hiển thị banner phong cảnh võ hiệp hoài cổ trực tiếp trên launcher bằng cách tải ảnh PNG từ tài nguyên EXE thông qua thư viện đồ họa GDI+.
+- **Hỗ trợ Tiếng Việt:** Toàn bộ giao diện, nút bấm, thông báo trạng thái cập nhật và thông báo lỗi được việt hóa 100%.
 
-### Features
-- Implement dynamic INI structure merge logic in launcher using Win32 Private Profile APIs to automatically restore missing Sections/Keys from default configurations without overwriting player settings
+#### 2. Cơ chế Cập nhật Tự động & Sửa lỗi Toàn vẹn (Auto-Update & Auto-Repair)
+- **Tải xuống song song đa luồng:** Hỗ trợ tải dữ liệu đồng thời với 4 luồng kết hợp HTTP Keep-Alive, giúp tăng tốc độ cập nhật từ 3 đến 5 lần so với tải tuần tự truyền thống.
+- **Tự động Sửa lỗi (Auto-Repair):** Kiểm tra tính toàn vẹn của tất cả các file game bằng cách đối chiếu mã băm SHA-256 nội bộ với file cấu hình manifest. Tự động tải lại và sửa các file bị lỗi hoặc thiếu.
+- **Cập nhật phân đoạn dạng ZIP:** Phân chia các gói cập nhật theo thư mục con thành các file zip tương ứng (`data.zip`, `script.zip`, `settings.zip`, `spr.zip`, `ui.zip`) và sử dụng PowerShell chạy ngầm trên Windows để tự động giải nén native.
+- **Bảo toàn Cấu hình Người chơi:** Khi cập nhật, LauncherJX tự động đối chiếu các tệp thiết lập cá nhân (`config.ini`, `JX1Mod.ini`, `package.ini`) với file gốc mặc định. Nếu phát hiện thiếu Section hoặc Key, hệ thống sẽ sử dụng Win32 Private Profile APIs để tự động khôi phục và bổ sung cấu hình còn thiếu đó mà hoàn toàn giữ nguyên giá trị thiết lập hiện tại của người chơi.
+- **Mã hóa URL thông minh:** Hỗ trợ xử lý mã hóa URL (Percent-Encoding) độc lập với ngôn ngữ hệ thống (locale-independent), đảm bảo tải chính xác các file chứa ký tự tiếng Việt hoặc ký tự đặc biệt.
 
-## v1.1.10 - 2026-06-28
+#### 3. Cơ chế Tự cập nhật Launcher (Self-Update)
+- **Tự động Cập nhật Không gián đoạn:** Tích hợp ứng dụng phụ `updater.exe` để thay thế `LauncherJX.exe` một cách an sau khi tải phiên bản launcher mới.
+- **Cơ chế Rollback an toàn:** Tự động khôi phục lại Launcher cũ nếu quá trình ghi đè tệp mới hoặc cập nhật file manifest `version.json` xảy ra lỗi.
+- **Quản lý Tiến trình an toàn:** Tự động kiểm tra và cưỡng bức tắt tiến trình Launcher cũ (nếu không tự thoát sau 5 giây) trước khi tiến hành cập nhật.
+- **Ngăn chặn Đa cửa sổ:** Sử dụng Named Mutex của Windows để ngăn người chơi mở nhiều cửa sổ launcher cùng một lúc.
+- **Bảo toàn thời gian của tệp:** Sử dụng Win32 API `GetFileTime`/`SetFileTime` để bảo toàn thời gian tạo/chỉnh sửa của file launcher khi tự cập nhật, tránh gây hiểu nhầm về tính toàn vẹn.
 
-### Features
-- Pack all root patch files including .ini config files (config.ini, JX1Mod.ini, package.ini) into root.zip
-- Implement a local backup and restore mechanism in the launcher to preserve player configuration files during zip updates
+### Sửa lỗi & Tối ưu hóa
+- Khắc phục lỗi deadlock khi thoát launcher bằng cách sử dụng `PostMessageW` gửi thông điệp đóng cửa sổ từ luồng chính thay vị gọi trực tiếp `PostQuitMessage` từ luồng cập nhật.
+- Sửa lỗi lặp tự động cập nhật vô hạn bằng cách sao chép đúng tệp `version.json` mới vào thư mục gốc sau khi chạy xong updater.
+- Khắc phục lỗi cache của CDN GitHub Raw khi tải `CHANGELOG.md` và `version.json` bằng cách thêm tham số truy vấn dấu thời gian (cache-buster query) và các HTTP Header `Cache-Control`/`Pragma` chống lưu đệm trên WinINet.
+- Tải file thông báo thay đổi `CHANGELOG.md` trực tiếp vào bộ nhớ RAM qua luồng chạy ngầm để hiển thị trên tab Thông báo thay vì lưu tạm ra file vật lý trên ổ cứng.
 
-## v1.1.9 - 2026-06-28
-
-### Fixes
-- Add special config files (config.ini, JX1Mod.ini, package.ini) to manifest as direct downloads so that they are automatically restored when deleted on client clones, without overwriting player local configurations
-
-## v1.1.8 - 2026-06-28
-
-### Refactor
-- Move C++ source tree under src
-
-### Documentation
-- Create C++ folder refactoring implementation plan
-
-## v1.1.6 - 2026-06-28
-
-### Features
-- Implement file creation and modification time preservation during update and self-update using GetFileTime/SetFileTime APIs
-
-## v1.1.5 - 2026-06-28
-
-
-### Features
-- Add rollback mechanism in updater.exe to restore original launcher if copying new version.json fails during update sequence
-
-## v1.1.4 - 2026-06-28
-
-
-### Fixes
-- Fix infinite self-update loop by copying new version.json to the launcher root directory and deleting temp files during updater execution
-
-## v1.1.3 - 2026-06-28
-
-
-### Fixes
-- Add active process termination fallback in updater.exe to force terminate the launcher process if it does not exit within 5 seconds during update sequence
-
-## v1.1.2 - 2026-06-28
-
-
-### Fixes
-- Fix deadlock in self-update exit sequence by closing main window from main thread using PostMessageW instead of calling PostQuitMessage directly from worker thread
-
-## v1.1.1 - 2026-06-28
-
-
-### Fixes
-- Fix self-update process by adding LauncherJX.exe to manifest files list
-- Point manifest URL to raw GitHub patch/version.json with cache buster query parameter
-- Update release configuration to include all patch zip files in GitHub Release assets
-
-## v1.1.0 - 2026-06-28
-
-
-### Features
-- Implement a Windows self-update path for LauncherJX that downloads `updater.exe` and replaces the launcher safely
-- Implement launcher UI with configuration and JX1 mod management tabs using Dear ImGui
-- Implement core launcher application logic and update coordination system
-- Add JX1Mod tab with 16 toggles reading/writing JX1Mod.ini keys
-- Add Settings tab with resolution selector (800x600/1024x768) and FullScreen radio buttons writing to config.ini and package.ini
-- Embed PNG images directly into EXE resources and load them from memory using GDI+
-- Support publishing updater asset metadata in release manifest
-
-### Fixes
-- Only ignore config.ini, jx1mod.ini, and package.ini in manifest generation and client updates instead of all ini files
-
-### Refactor
-- Localize launcher UI, buttons, updates and error messages to Vietnamese
-- Convert app_icon.png to launcher.ico and update exe resource icon
-- Replace copy buttons and selectable list with single read-only multiline input box for changelog text selection
-
-### Documentation
-- Add self-update launcher design spec
-
-## v1.0.11 - 2026-06-27
-
-
-### Features
-- Integrate professional game icon into LauncherJX.exe using Windows resource files
-- Implement single-instance prevention using Win32 Named Mutex to block opening multiple Launcher windows
-
-## v1.0.10 - 2026-06-27
-
-### Fixes
-- Add query timestamp (cache-buster) to remote CHANGELOG.md URL to bypass GitHub Raw CDN caching and show the latest changes immediately
-
-## v1.0.9 - 2026-06-27
-
-### Features
-- Implement remote CHANGELOG.md downloading directly to memory via background thread (no local copy needed)
-
-## v1.0.8 - 2026-06-27
-
-### Fixes
-- Skip hash integrity check for local .ini settings files (e.g. package.ini, config.ini) to keep player settings and prevent infinite update loops
-
-## v1.0.7 - 2026-06-27
-
-### Fixes
-- Copy and package CHANGELOG.md into the patch folder so that it is downloaded by the launcher for the notification tab
-
-## v1.0.6 - 2026-06-27
-
-### Features
-- Add "Copy" button in notification tab to copy changelog text directly to clipboard
-- Show examples of failing files (integrity check mismatch) in status log to ease debugging
-
-## v1.0.5 - 2026-06-27
-
-### Features
-- Implement automatic game file integrity check and repair logic (Auto-Repair) when local files are missing or modified
-
-## v1.0.4 - 2026-06-27
-
-### Fixes
-- Preserve LastError in DownloadFile to avoid hiding real Windows API errors with Error: 0
-
-## v1.0.3 - 2026-06-27
-
-### Fixes
-- Add missing game executables (config.exe, game.exe) in patch folder by correcting gitignore rules
-
-## v1.0.2 - 2026-06-27
-
-### Features
-- Implement subfolder zip update logic with direct root file downloading and native background powershell extraction
-- Move zip files destination to external 'zips' folder and update launcher download url path
-
-### Fixes
-- Make UrlEncode function locale-independent to ensure non-ASCII characters in file paths are always percent-encoded correctly
-- Url-encode file paths during update downloading to support files with non-ASCII characters
-
-### Performance
-- Implement 4-thread parallel downloading with HTTP Keep-Alive for 3-5x faster game updates
-
-### Style
-- Convert status text to read-only multiline input box for easy error copying
-
-## v1.0.1 - 2026-06-27
-
-### Features
-- Integrate automatic updates with GitHub Release and configure release hooks
+### DevOps & Công cụ Phát hành
+- **Script Manifest:** Cung cấp công cụ Python `tools/generate_manifest.py` tự động hóa việc tính toán hash SHA-256 các file patch, đóng gói các file zip theo thư mục con, gom file lẻ ở gốc vào `root.zip` và xuất ra manifest `version.json`.
+- **Hệ thống CI/CD:** Cấu hình workflow GitHub Actions (`.github/workflows/release.yml`) tự động hóa toàn bộ quy trình:
+  - Tự động cấu hình và build mã nguồn C++ ở chế độ Release bằng CMake trên môi trường `windows-latest`.
+  - Chạy Smoke Test tự động để kiểm tra tính ổn định của `LauncherJX.exe` và `updater.exe` trước khi đóng gói.
+  - Tự động sinh file manifest, đóng gói các file zip cập nhật game.
+  - Tự động tạo và phát hành GitHub Release khi đẩy tag `v*` mới lên repo, đính kèm đầy đủ các file thực thi và tệp zip cập nhật, sau đó đồng bộ file `version.json` ngược lại về nhánh `main`.
