@@ -56,13 +56,12 @@ jobs:
         
         $commitSha = git rev-parse HEAD
         
-        # Fetch các nhánh để xác định nguồn gốc tag
+        # Fetch nhánh main để xác định nguồn gốc tag
         git fetch origin main:main
-        git fetch origin dev:dev
         
-        $branch = (git branch -r --contains $commitSha | Select-String -Pattern "origin/(main|dev)" | Select-Object -First 1)
+        $branch = (git branch -r --contains $commitSha | Select-String -Pattern "origin/main" | Select-Object -First 1)
         if ($branch) {
-            $branchName = $branch.ToString().Trim().Replace("origin/", "")
+            $branchName = "main"
             Write-Host "Tag $tag duoc tao tu nhanh: $branchName. Tien hanh checkout va commit nguoc lai."
             
             git checkout $branchName
@@ -73,9 +72,9 @@ jobs:
             # Commit va push version.json mới ngược lại nhánh
             git add version.json
             git commit -m "chore: release $tag - update version.json [skip ci]"
-            git push origin $branchName
+            git push origin main
         } else {
-            Write-Host "Khong tim thay nhanh main hoac dev phu hop. Chi sinh manifest cuc bo."
+            Write-Host "Khong tim thay nhanh main phu hop. Chi sinh manifest cuc bo."
             python tools/generate_manifest.py $tag --updater-path build/bin/Release/updater.exe --launcher-path build/bin/Release/LauncherJX.exe
         }
 
