@@ -42,6 +42,17 @@ jobs:
         build\bin\Release\update_tests.exe
         build\bin\Release\updater_tests.exe
 
+    - name: Get Tag Message
+      if: startsWith(github.ref, 'refs/tags/v')
+      shell: pwsh
+      run: |
+        $tag = "${{ github.ref_name }}"
+        $msg = git tag -l --format='%(contents)' $tag
+        if ([string]::IsNullOrEmpty($msg)) {
+            $msg = git log -1 --format=%B
+        }
+        $msg | Out-File -FilePath tag_message.txt -Encoding utf8
+
     - name: Generate Manifest and Package Zips
       if: startsWith(github.ref, 'refs/tags/v')
       shell: pwsh
@@ -55,6 +66,7 @@ jobs:
       with:
         name: ${{ github.ref_name }}
         tag_name: ${{ github.ref_name }}
+        body_path: tag_message.txt
         draft: false
         prerelease: false
         files: |
