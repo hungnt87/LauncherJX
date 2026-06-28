@@ -26,7 +26,3 @@ assets:
     name: "LauncherJX.exe"
   - path: "build/bin/Release/updater.exe"
     name: "updater.exe"
-  - path: "patch/version.json"
-    name: "version.json"
-
-
