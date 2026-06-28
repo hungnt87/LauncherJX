@@ -12,6 +12,7 @@
 *.exp
 *.exe
 *.manifest
+!/src/launcher/resources/app.manifest
 *.log
 /zips
 /patch/zips
