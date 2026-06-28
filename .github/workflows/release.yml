@@ -35,6 +35,70 @@ jobs:
         build\bin\Release\update_tests.exe
         build\bin\Release\updater_tests.exe
 
+    - name: Smoke Test LauncherJX.exe
+      shell: pwsh
+      run: |
+        $exe = (Resolve-Path 'build\bin\Release\LauncherJX.exe').Path
+        $p = Start-Process -FilePath $exe -WindowStyle Hidden -PassThru
+        Start-Sleep -Seconds 5
+        if ($p.HasExited) {
+            if ($p.ExitCode -ne 0) {
+                throw "LauncherJX.exe exited with code $($p.ExitCode)"
+            }
+        } else {
+            Stop-Process -Id $p.Id -Force
+        }
+
+    - name: Smoke Test updater.exe
+      shell: pwsh
+      run: |
+        $root = (Resolve-Path '.').Path
+        $smoke = Join-Path $root 'build\smoke-updater'
+        $oldDir = Join-Path $smoke 'old'
+        $newDir = Join-Path $smoke 'new'
+        if (Test-Path $smoke) {
+            Remove-Item -Recurse -Force $smoke
+        }
+        New-Item -ItemType Directory -Force -Path $oldDir, $newDir | Out-Null
+
+        Copy-Item 'build\bin\Release\LauncherJX.exe' (Join-Path $oldDir 'current.exe')
+        Copy-Item 'build\bin\Release\LauncherJX.exe' (Join-Path $newDir 'new.exe')
+        Copy-Item 'version.json' (Join-Path $newDir 'version.json')
+
+        $hash = (Get-FileHash -Algorithm SHA256 (Join-Path $newDir 'new.exe')).Hash.ToLowerInvariant()
+        $dummy = Start-Process -FilePath $env:ComSpec -ArgumentList '/c','ping 127.0.0.1 -n 2 >nul' -PassThru -WindowStyle Hidden
+        $updater = Resolve-Path 'build\bin\Release\updater.exe'
+        $args = @(
+            '--launcher-pid', $dummy.Id,
+            '--current', (Join-Path $oldDir 'current.exe'),
+            '--new', (Join-Path $newDir 'new.exe'),
+            '--expected-hash', $hash,
+            '--launch', (Join-Path $oldDir 'current.exe')
+        )
+
+        $p = Start-Process -FilePath $updater -ArgumentList $args -PassThru -WindowStyle Hidden
+        try {
+            Wait-Process -Id $p.Id -Timeout 20
+        } catch {
+        }
+
+        if (-not $p.HasExited) {
+            Stop-Process -Id $p.Id -Force
+            throw 'updater.exe timed out'
+        }
+
+        if ($p.ExitCode -ne 0) {
+            throw "updater.exe exited with code $($p.ExitCode)"
+        }
+
+        Stop-Process -Id $dummy.Id -ErrorAction SilentlyContinue
+
+        Get-Process LauncherJX -ErrorAction SilentlyContinue |
+            Where-Object { $_.Path -and $_.Path.StartsWith($smoke, [System.StringComparison]::OrdinalIgnoreCase) } |
+            Stop-Process -Force -ErrorAction SilentlyContinue
+
+        Remove-Item -Recurse -Force $smoke
+
     - name: Get Tag Message
       shell: pwsh
       run: |
@@ -49,34 +113,7 @@ jobs:
       shell: pwsh
       run: |
         $tag = "${{ github.ref_name }}"
-        
-        # Cấu hình git user
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        
-        $commitSha = git rev-parse HEAD
-        
-        # Fetch nhánh main để xác định nguồn gốc tag
-        git fetch origin main:main
-        
-        $branch = (git branch -r --contains $commitSha | Select-String -Pattern "origin/main" | Select-Object -First 1)
-        if ($branch) {
-            $branchName = "main"
-            Write-Host "Tag $tag duoc tao tu nhanh: $branchName. Tien hanh checkout va commit nguoc lai."
-            
-            git checkout $branchName
-            
-            # Sinh manifest và zips mới
-            python tools/generate_manifest.py $tag --updater-path build/bin/Release/updater.exe --launcher-path build/bin/Release/LauncherJX.exe
-            
-            # Commit va push version.json mới ngược lại nhánh
-            git add version.json
-            git commit -m "chore: release $tag - update version.json [skip ci]"
-            git push origin main
-        } else {
-            Write-Host "Khong tim thay nhanh main phu hop. Chi sinh manifest cuc bo."
-            python tools/generate_manifest.py $tag --updater-path build/bin/Release/updater.exe --launcher-path build/bin/Release/LauncherJX.exe
-        }
+        python tools/generate_manifest.py $tag --updater-path build/bin/Release/updater.exe --launcher-path build/bin/Release/LauncherJX.exe
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
