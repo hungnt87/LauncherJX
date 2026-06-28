@@ -1,6 +1,12 @@
 # Changelog
 
+## v1.1.2 - 2026-06-28
+
+### Fixes
+- Fix deadlock in self-update exit sequence by closing main window from main thread using PostMessageW instead of calling PostQuitMessage directly from worker thread
+
 ## v1.1.1 - 2026-06-28
+
 
 ### Fixes
 - Fix self-update process by adding LauncherJX.exe to manifest files list
