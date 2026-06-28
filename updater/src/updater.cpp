@@ -203,9 +203,28 @@ bool ReplaceExecutable(const std::wstring& current_path, const std::wstring& new
         return false;
     }
 
-    // Xóa file tạm launcher mới và file backup
+    // Sao chép tệp version.json mới để cập nhật thông tin phiên bản local của người chơi
+    std::wstring cur_dir = current_path;
+    size_t pos_cur = cur_dir.find_last_of(L"\\/");
+    if (pos_cur != std::wstring::npos) {
+        cur_dir = cur_dir.substr(0, pos_cur);
+    }
+    std::wstring new_dir = new_path;
+    size_t pos_new = new_dir.find_last_of(L"\\/");
+    if (pos_new != std::wstring::npos) {
+        new_dir = new_dir.substr(0, pos_new);
+    }
+    std::wstring src_ver = new_dir + L"\\version.json";
+    std::wstring dest_ver = cur_dir + L"\\version.json";
+    if (GetFileAttributesW(src_ver.c_str()) != INVALID_FILE_ATTRIBUTES) {
+        CopyFileW(src_ver.c_str(), dest_ver.c_str(), FALSE);
+    }
+
+    // Xóa file tạm launcher mới, file version.json tạm và file backup
     DeleteFileW(new_path.c_str());
+    DeleteFileW(src_ver.c_str());
     DeleteFileW(bak_path.c_str()); // Có thể thất bại nếu OS chưa nhả file, nhưng không sao
+
 
     return true;
 }
