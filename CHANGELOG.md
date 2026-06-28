@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.8 - 2026-06-28
+
+### Refactor
+- Move C++ source tree under src
+
+### Documentation
+- Create C++ folder refactoring implementation plan
+
 ## v1.1.6 - 2026-06-28
 
 ### Features
