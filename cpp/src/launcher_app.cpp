@@ -133,9 +133,11 @@ void LauncherApp::LoadChangelog() {
 void LauncherApp::RunCheckWorker() {
     LoadChangelog();
     const std::wstring temp_version_path = exe_dir_ + L"\\tmp\\version.json";
-    const std::wstring remote_version_url = launcher::update::kManifestUrl;
+    // Thêm timestamp để phá cache CDN của GitHub Raw cho tệp version.json
+    std::wstring remote_version_url = launcher::update::kManifestUrl + L"?t=" + std::to_wstring(std::time(nullptr));
 
     if (!launcher::update::DownloadFile(nullptr, remote_version_url, temp_version_path, running_, nullptr)) {
+
 
 
         launcher::update::UpdateSnapshot done_snapshot;
