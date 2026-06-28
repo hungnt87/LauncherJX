@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.9 - 2026-06-28
+
+### Fixes
+- Add special config files (config.ini, JX1Mod.ini, package.ini) to manifest as direct downloads so that they are automatically restored when deleted on client clones, without overwriting player local configurations
+
 ## v1.1.8 - 2026-06-28
 
 ### Refactor

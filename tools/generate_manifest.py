@@ -130,6 +130,21 @@ def generate_manifest(patch_dir, version, updater_path=None, updater_name="updat
                     })
         except Exception as e:
             print(f"Error compressing root files to zip: {e}")
+
+    # 2b. Thêm các file cấu hình đặc biệt (config.ini, jx1mod.ini, package.ini) vào manifest dưới dạng file tải trực tiếp (zip = "")
+    # để client có thể tải về khi bị thiếu, nhưng không bị ghi đè khi cập nhật thông thường.
+    special_configs = {"config.ini", "jx1mod.ini", "package.ini"}
+    for item in os.listdir(patch_dir):
+        abs_path = os.path.join(patch_dir, item)
+        if os.path.isfile(abs_path) and item.lower() in special_configs:
+            sha = get_sha256(abs_path)
+            if sha:
+                manifest["files"].append({
+                    "name": item,
+                    "hash": sha,
+                    "zip": ""
+                })
+                print(f"Added special config file to manifest (direct download): {item} ({sha})")
                 
     manifest["files"].sort(key=lambda x: x["name"])
     
