@@ -2,15 +2,8 @@ name: Build and Release
 
 on:
   push:
-    branches:
-      - main
-      - dev
     tags:
       - 'v*'
-  pull_request:
-    branches:
-      - main
-      - dev
 
 permissions:
   contents: write
@@ -43,7 +36,6 @@ jobs:
         build\bin\Release\updater_tests.exe
 
     - name: Get Tag Message
-      if: startsWith(github.ref, 'refs/tags/v')
       shell: pwsh
       run: |
         $tag = "${{ github.ref_name }}"
@@ -54,7 +46,6 @@ jobs:
         $msg | Out-File -FilePath tag_message.txt -Encoding utf8
 
     - name: Generate Manifest and Package Zips
-      if: startsWith(github.ref, 'refs/tags/v')
       shell: pwsh
       run: |
         $tag = "${{ github.ref_name }}"
@@ -89,7 +80,6 @@ jobs:
         }
 
     - name: Create GitHub Release
-      if: startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v2
       with:
         name: ${{ github.ref_name }}
