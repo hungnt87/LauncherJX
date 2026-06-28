@@ -184,6 +184,24 @@ bool ReplaceExecutable(const std::wstring& current_path, const std::wstring& new
         bak_path = current_path + L".bak";
     }
 
+    auto rollback_launcher = [&](const std::wstring& rollback_error) -> bool {
+        if (GetFileAttributesW(bak_path.c_str()) == INVALID_FILE_ATTRIBUTES) {
+            if (error) *error = rollback_error;
+            return false;
+        }
+
+        if (!MoveFileW(bak_path.c_str(), current_path.c_str())) {
+            if (error) {
+                *error = rollback_error + L" (không thể khôi phục launcher cũ, mã lỗi: " +
+                         std::to_wstring(GetLastError()) + L")";
+            }
+            return false;
+        }
+
+        if (error) *error = rollback_error;
+        return true;
+    };
+
     // Xóa file backup cũ nếu có
     if (GetFileAttributesW(bak_path.c_str()) != INVALID_FILE_ATTRIBUTES) {
         DeleteFileW(bak_path.c_str());
@@ -217,7 +235,16 @@ bool ReplaceExecutable(const std::wstring& current_path, const std::wstring& new
     std::wstring src_ver = new_dir + L"\\version.json";
     std::wstring dest_ver = cur_dir + L"\\version.json";
     if (GetFileAttributesW(src_ver.c_str()) != INVALID_FILE_ATTRIBUTES) {
-        CopyFileW(src_ver.c_str(), dest_ver.c_str(), FALSE);
+        if (!CopyFileW(src_ver.c_str(), dest_ver.c_str(), FALSE)) {
+            if (!rollback_launcher(L"Không thể sao chép version.json mới")) {
+                DeleteFileW(new_path.c_str());
+                DeleteFileW(src_ver.c_str());
+                return false;
+            }
+            DeleteFileW(new_path.c_str());
+            DeleteFileW(src_ver.c_str());
+            return false;
+        }
     }
 
     // Xóa file tạm launcher mới, file version.json tạm và file backup
