@@ -524,12 +524,20 @@ void LauncherApp::WriteJx1ModKey(const std::wstring& section, const std::wstring
     WritePrivateProfileStringW(section.c_str(), key.c_str(), value ? L"1" : L"0", path.c_str());
 }
 
+void LauncherApp::WriteJx1ModKey(const std::wstring& section, const std::wstring& key, int value) {
+    std::wstring path = exe_dir_ + L"\\JX1Mod.ini";
+    WritePrivateProfileStringW(section.c_str(), key.c_str(), std::to_wstring(value).c_str(), path.c_str());
+}
+
 void LauncherApp::LoadJx1ModSettings() {
     std::wstring path = exe_dir_ + L"\\JX1Mod.ini";
     auto readBool = [&](const wchar_t* sec, const wchar_t* key, bool def) -> bool {
         wchar_t buf[8] = {0};
         GetPrivateProfileStringW(sec, key, def ? L"1" : L"0", buf, 8, path.c_str());
         return std::wstring(buf) == L"1";
+    };
+    auto readInt = [&](const wchar_t* sec, const wchar_t* key, int def) -> int {
+        return GetPrivateProfileIntW(sec, key, def, path.c_str());
     };
     jx1mod_settings_.trung_sinh          = readBool(L"ChucNang",          L"TrungSinh",          true);
     jx1mod_settings_.an_nu_kim_nam_thuy  = readBool(L"ChucNang",          L"AnNuKimNamThuy",     true);
@@ -538,7 +546,7 @@ void LauncherApp::LoadJx1ModSettings() {
     jx1mod_settings_.thong_so_trang_bi   = readBool(L"ChucNang",          L"ThongSoTrangBi",     false);
     jx1mod_settings_.hien_thi_thanh_mau  = readBool(L"ChucNang",          L"HienThiThanhMau",    true);
     jx1mod_settings_.xep_hang_tren_dau   = readBool(L"ChucNang",          L"XepHangTrenDau",     true);
-    jx1mod_settings_.lien_tram           = readBool(L"ChucNang",          L"LienTram",           false);
+    jx1mod_settings_.lien_tram           = readInt(L"ChucNang",           L"LienTram",           0);
     jx1mod_settings_.trade_info          = readBool(L"ChucNang",          L"TradeInfo",          false);
     jx1mod_settings_.thanh_mau_boss      = readBool(L"ThanhMauBoss",      L"Enabled",            false);
     jx1mod_settings_.thanh_mau_npc       = readBool(L"ThanhMauNPC",       L"Enabled",            false);

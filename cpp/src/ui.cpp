@@ -212,9 +212,23 @@ void RenderUI(LauncherApp& app) {
             JX1_TOGGLE("Xếp hạng trên đầu",
                 "Hiển thị thứ hạng xếp hạng ngay trên đầu nhân vật trong game.\n[ChucNang] XepHangTrenDau",
                 xep_hang_tren_dau, "ChucNang", "XepHangTrenDau");
-            JX1_TOGGLE("Liên trạm",
-                "Bật chức năng liên trạm - dịch chuyển nhanh giữa các bản đồ.\nReset sau N giây (cấu hình trong [LienTram] ResetTimeout).\n[ChucNang] LienTram",
-                lien_tram, "ChucNang", "LienTram");
+            
+            {
+                ImGui::Text("Liên trảm:");
+                ImGui::SameLine();
+                ImGui::SetNextItemWidth(150.0f);
+                const char* items[] = { "Tắt", "Người", "Tất cả" };
+                int v = s.lien_tram;
+                if (v < 0 || v > 2) v = 0;
+                if (ImGui::Combo("##LienTramCombo", &v, items, 3)) {
+                    s.lien_tram = v;
+                    app.WriteJx1ModKey(L"ChucNang", L"LienTram", v);
+                }
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Chế độ liên trảm:\n- Tắt (0): Không sử dụng.\n- Người (1): Chỉ áp dụng với người chơi.\n- Tất cả (2): Áp dụng cho cả người và NPC/quái.\n[ChucNang] LienTram");
+                }
+            }
+
             JX1_TOGGLE("Thông tin giao dịch",
                 "Hiển thị thông tin chi tiết khi giao dịch với người chơi khác.\n[ChucNang] TradeInfo",
                 trade_info, "ChucNang", "TradeInfo");

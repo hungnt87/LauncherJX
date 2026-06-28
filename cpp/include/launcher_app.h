@@ -16,7 +16,7 @@ struct JX1ModSettings {
     bool thong_so_trang_bi    = false;
     bool hien_thi_thanh_mau   = true;
     bool xep_hang_tren_dau    = true;
-    bool lien_tram            = false;
+    int lien_tram             = 0;
     bool trade_info           = false;
     // Các section riêng
     bool thanh_mau_boss       = false;  // [ThanhMauBoss] Enabled
@@ -51,6 +51,7 @@ public:
 
     JX1ModSettings& Jx1ModSettings() noexcept;
     void WriteJx1ModKey(const std::wstring& section, const std::wstring& key, bool value);
+    void WriteJx1ModKey(const std::wstring& section, const std::wstring& key, int value);
 
 private:
     void RunCheckWorker();
