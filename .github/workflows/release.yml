@@ -135,3 +135,77 @@ jobs:
           zips/ui.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  sync-version:
+    name: Sync version.json to main
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout main
+      uses: actions/checkout@v4
+      with:
+        ref: main
+        fetch-depth: 0
+
+    - name: Verify tag comes from main
+      id: verify
+      shell: pwsh
+      run: |
+        $tag = "${{ github.ref_name }}"
+        $tagCommit = (git rev-list -n 1 $tag).Trim()
+        if (-not $tagCommit) {
+          throw "Could not resolve commit for tag $tag"
+        }
+
+        git merge-base --is-ancestor $tagCommit HEAD
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "Tag $tag is not on main. Skip syncing version.json."
+          "allowed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          exit 0
+        }
+
+        "allowed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+    - name: Download version.json from release
+      if: steps.verify.outputs.allowed == 'true'
+      shell: pwsh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        REPOSITORY: ${{ github.repository }}
+        TAG_NAME: ${{ github.ref_name }}
+      run: |
+        $headers = @{
+          Authorization = "Bearer $env:GITHUB_TOKEN"
+          Accept = "application/vnd.github+json"
+          "X-GitHub-Api-Version" = "2022-11-28"
+        }
+
+        $releaseUrl = "https://api.github.com/repos/$env:REPOSITORY/releases/tags/$env:TAG_NAME"
+        $release = Invoke-RestMethod -Uri $releaseUrl -Headers $headers
+        $asset = $release.assets | Where-Object { $_.name -eq 'version.json' } | Select-Object -First 1
+
+        if (-not $asset) {
+          throw "Could not find version.json asset for tag $env:TAG_NAME"
+        }
+
+        Invoke-WebRequest -Uri $asset.browser_download_url -Headers $headers -OutFile version.json
+
+    - name: Commit version.json
+      if: steps.verify.outputs.allowed == 'true'
+      shell: pwsh
+      env:
+        TAG_NAME: ${{ github.ref_name }}
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+        git add version.json
+
+        if (git diff --cached --quiet) {
+          Write-Host "version.json is already up to date on main."
+          exit 0
+        }
+
+        git commit -m "chore: sync version.json from $env:TAG_NAME [skip ci]"
+        git push origin main
