@@ -40,9 +40,11 @@ enum class UpdatePhase {
     Idle,
     Checking,
     Downloading,
+    SelfUpdating,
     Done,
     Error,
 };
+
 
 struct UpdateSnapshot {
     float progress = 0.0f;

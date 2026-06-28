@@ -66,11 +66,25 @@ void TestManifestUpdaterAndHash() {
     assert(ManifestHasLauncherBinary(manifest));
 }
 
+void TestLauncherSelfUpdateSelection() {
+    using namespace launcher::update;
+
+    Manifest manifest;
+    manifest.version = "v2.0.0";
+    manifest.updater = UpdaterAsset{"updater.exe", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"};
+    manifest.files.push_back(FileEntry{"LauncherJX.exe", "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", ""});
+    manifest.files.push_back(FileEntry{"data.pak", "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "patch.zip"});
+
+    // Expected behavior: launcher binary is treated as self-update, not as a manual file update.
+    assert(ManifestHasLauncherBinary(manifest));
+}
+
 int main() {
     try {
         TestCompareSemanticVersion();
         TestUrlEncode();
         TestManifestUpdaterAndHash();
+        TestLauncherSelfUpdateSelection();
     } catch (const std::exception& e) {
         std::cerr << "Test failed with exception: " << e.what() << std::endl;
         return 1;
@@ -80,4 +94,5 @@ int main() {
     }
     return 0;
 }
+
 

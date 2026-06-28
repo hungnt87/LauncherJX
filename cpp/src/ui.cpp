@@ -298,6 +298,8 @@ void RenderUI(LauncherApp& app) {
         display_msg = "Hệ thống đã sẵn sàng. Bấm CẬP NHẬT để cập nhật game.";
     } else if (snapshot.phase == launcher::update::UpdatePhase::Checking) {
         display_msg = "Đang kiểm tra bản cập nhật...";
+    } else if (snapshot.phase == launcher::update::UpdatePhase::SelfUpdating) {
+        display_msg = "Đang tự động cập nhật launcher...";
     } else if (snapshot.phase == launcher::update::UpdatePhase::Done) {
         display_msg = "Cập nhật hoàn tất! Hệ thống đã sẵn sàng.";
     } else if (snapshot.phase == launcher::update::UpdatePhase::Error) {
@@ -330,11 +332,14 @@ void RenderUI(LauncherApp& app) {
         if (ImGui::Button("CẬP NHẬT", ImVec2(120, 36))) {
             app.StartUpdate();
         }
-    } else if (snapshot.phase == launcher::update::UpdatePhase::Checking || snapshot.phase == launcher::update::UpdatePhase::Downloading) {
+    } else if (snapshot.phase == launcher::update::UpdatePhase::Checking || 
+               snapshot.phase == launcher::update::UpdatePhase::Downloading ||
+               snapshot.phase == launcher::update::UpdatePhase::SelfUpdating) {
         ImGui::BeginDisabled();
         ImGui::Button("ĐANG CẬP NHẬT...", ImVec2(120, 36));
         ImGui::EndDisabled();
     } else if (snapshot.phase == launcher::update::UpdatePhase::Done) {
+
         if (ImGui::Button("VÀO GAME", ImVec2(120, 36))) {
             std::wstring gamePath = app.ExecutableDir() + L"\\game.exe";
             HINSTANCE hInst = ShellExecuteW(

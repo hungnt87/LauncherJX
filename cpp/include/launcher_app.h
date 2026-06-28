@@ -56,7 +56,12 @@ public:
 private:
     void RunCheckWorker();
     void RunUpdateWorker();
+    void RunSelfUpdateWorker();
+    bool ShouldSelfUpdate(const launcher::update::Manifest& manifest) const;
+    bool EnsureUpdaterBinary(const launcher::update::Manifest& manifest, std::wstring* updater_path, std::string* error);
+    bool LaunchUpdaterAndExit(const std::wstring& updater_path, const std::wstring& launcher_new_path, const std::string& expected_hash);
     void SetSnapshot(const launcher::update::UpdateSnapshot& snapshot);
+
     void LoadResolutionSettings();
     void SaveResolutionSettings(int resolution);
     void SaveFullScreenSetting(bool fullscreen);

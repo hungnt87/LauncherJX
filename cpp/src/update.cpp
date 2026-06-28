@@ -315,7 +315,12 @@ std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const M
         std::wstring filename = local_path.filename().wstring();
         std::transform(filename.begin(), filename.end(), filename.begin(), ::tolower);
 
+        if (filename == L"launcherjx.exe") {
+            continue;
+        }
+
         if (filename == L"config.ini" || filename == L"jx1mod.ini" || filename == L"package.ini") {
+
             if (!std::filesystem::exists(local_path)) {
                 files_to_update.push_back(file);
             }

@@ -1,5 +1,6 @@
 #include "launcher_app.h"
 #include "update.h"
+#include "common.h"
 
 #include <windows.h>
 #include <wininet.h>
@@ -178,6 +179,20 @@ void LauncherApp::RunCheckWorker() {
         return;
     }
 
+    if (ShouldSelfUpdate(manifest)) {
+        server_manifest_ = manifest;
+        has_update_ = true;
+
+        launcher::update::UpdateSnapshot self_update_snapshot;
+        self_update_snapshot.progress = 0.0f;
+        self_update_snapshot.phase = launcher::update::UpdatePhase::SelfUpdating;
+        self_update_snapshot.message = "Phát hiện phiên bản launcher mới. Đang tự động cập nhật...";
+        SetSnapshot(self_update_snapshot);
+
+        RunSelfUpdateWorker();
+        return;
+    }
+
     int comp = launcher::update::CompareSemanticVersion(manifest.version, version_string_);
     if (comp > 0) {
         server_manifest_ = manifest;
@@ -189,6 +204,7 @@ void LauncherApp::RunCheckWorker() {
         ready_snapshot.message = "Có bản cập nhật mới: " + manifest.version + " (Hiện tại: " + version_string_ + "). Bấm CẬP NHẬT để cập nhật.";
         SetSnapshot(ready_snapshot);
     } else {
+
         // Kể cả khi phiên bản bằng hoặc nhỏ hơn server, vẫn quét kiểm tra tính toàn vẹn của các file game
         const auto files_to_update = launcher::update::CollectFilesToUpdate(exe_dir_, manifest);
         if (!files_to_update.empty()) {
@@ -556,3 +572,161 @@ void LauncherApp::LoadJx1ModSettings() {
     jx1mod_settings_.hieu_ung_xung_quanh = readBool(L"HieuUngXungQuanhNV",L"Enabled",            true);
     jx1mod_settings_.add_point_popup     = readBool(L"AddPointPopup",     L"Enabled",            false);
 }
+
+void LauncherApp::RunSelfUpdateWorker() {
+    launcher::update::UpdateSnapshot snap;
+    snap.phase = launcher::update::UpdatePhase::SelfUpdating;
+    snap.progress = 0.1f;
+    snap.message = "Đang chuẩn bị công cụ updater...";
+    SetSnapshot(snap);
+
+    std::wstring updater_path;
+    std::string error;
+    if (!EnsureUpdaterBinary(server_manifest_, &updater_path, &error)) {
+        snap.phase = launcher::update::UpdatePhase::Error;
+        snap.message = "Lỗi self-update: " + error;
+        SetSnapshot(snap);
+        return;
+    }
+
+    snap.progress = 0.3f;
+    snap.message = "Đang tải LauncherJX mới...";
+    SetSnapshot(snap);
+
+    std::string launcher_hash;
+    for (const auto& file : server_manifest_.files) {
+        std::string name = file.name;
+        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
+        if (name == "launcherjx.exe") {
+            launcher_hash = file.hash;
+            break;
+        }
+    }
+
+    if (launcher_hash.empty()) {
+        snap.phase = launcher::update::UpdatePhase::Error;
+        snap.message = "Lỗi self-update: Không tìm thấy LauncherJX.exe trong manifest";
+        SetSnapshot(snap);
+        return;
+    }
+
+    std::wstring temp_new_launcher = exe_dir_ + L"\\tmp\\LauncherJX.exe.new";
+    std::wstring wversion = common::Utf8ToWide(server_manifest_.version);
+    std::wstring download_url = L"https://github.com/hungnt87/LauncherJX/releases/download/" + wversion + L"/LauncherJX.exe";
+
+    auto progress_callback = [this](float prog) {
+        launcher::update::UpdateSnapshot progress_snap = Snapshot();
+        progress_snap.progress = 0.3f + prog * 0.5f;
+        progress_snap.message = "Đang tải LauncherJX mới: " + std::to_string(static_cast<int>(prog * 100)) + "%...";
+        SetSnapshot(progress_snap);
+    };
+
+    if (!launcher::update::DownloadFile(nullptr, download_url, temp_new_launcher, running_, progress_callback)) {
+        snap.phase = launcher::update::UpdatePhase::Error;
+        snap.message = "Lỗi self-update: Không thể tải LauncherJX.exe mới";
+        SetSnapshot(snap);
+        return;
+    }
+
+    snap.progress = 0.8f;
+    snap.message = "Kiểm tra mã băm LauncherJX mới...";
+    SetSnapshot(snap);
+
+    if (!launcher::update::VerifyFileSha256(temp_new_launcher, launcher_hash)) {
+        snap.phase = launcher::update::UpdatePhase::Error;
+        snap.message = "Lỗi self-update: Mã băm LauncherJX.exe mới không khớp!";
+        try {
+            std::filesystem::remove(temp_new_launcher);
+        } catch (...) {}
+        SetSnapshot(snap);
+        return;
+    }
+
+    snap.progress = 0.9f;
+    snap.message = "Khởi chạy updater và khởi động lại launcher...";
+    SetSnapshot(snap);
+
+    if (!LaunchUpdaterAndExit(updater_path, temp_new_launcher, launcher_hash)) {
+        snap.phase = launcher::update::UpdatePhase::Error;
+        snap.message = "Lỗi self-update: Không thể khởi chạy " + server_manifest_.updater->name;
+        SetSnapshot(snap);
+        return;
+    }
+}
+
+bool LauncherApp::ShouldSelfUpdate(const launcher::update::Manifest& manifest) const {
+    int comp = launcher::update::CompareSemanticVersion(manifest.version, version_string_);
+    return (comp > 0) && launcher::update::ManifestHasLauncherBinary(manifest);
+}
+
+bool LauncherApp::EnsureUpdaterBinary(const launcher::update::Manifest& manifest, std::wstring* updater_path, std::string* error) {
+    if (!manifest.updater.has_value()) {
+        if (error) *error = "Manifest missing updater metadata";
+        return false;
+    }
+    
+    std::wstring path = exe_dir_ + L"\\" + common::Utf8ToWide(manifest.updater->name);
+    *updater_path = path;
+    
+    if (std::filesystem::exists(path) && launcher::update::VerifyFileSha256(path, manifest.updater->hash)) {
+        return true;
+    }
+    
+    std::wstring wversion = common::Utf8ToWide(manifest.version);
+    std::wstring wupdater_name = common::Utf8ToWide(manifest.updater->name);
+    std::wstring download_url = L"https://github.com/hungnt87/LauncherJX/releases/download/" + wversion + L"/" + wupdater_name;
+    
+    launcher::update::UpdateSnapshot snap = Snapshot();
+    snap.phase = launcher::update::UpdatePhase::Downloading;
+    snap.message = "Đang tải công cụ cập nhật (updater.exe)...";
+    SetSnapshot(snap);
+    
+    if (!launcher::update::DownloadFile(nullptr, download_url, path, running_, nullptr)) {
+        if (error) *error = "Không thể tải updater.exe";
+        return false;
+    }
+    
+    if (!launcher::update::VerifyFileSha256(path, manifest.updater->hash)) {
+        if (error) *error = "Mã băm của updater.exe tải về không khớp";
+        try {
+            std::filesystem::remove(path);
+        } catch (...) {}
+        return false;
+    }
+    
+    return true;
+}
+
+bool LauncherApp::LaunchUpdaterAndExit(const std::wstring& updater_path, const std::wstring& launcher_new_path, const std::string& expected_hash) {
+    wchar_t current_exe_path[MAX_PATH];
+    GetModuleFileNameW(nullptr, current_exe_path, MAX_PATH);
+    
+    DWORD pid = GetCurrentProcessId();
+    
+    std::wstring cmd = L"\"" + updater_path + L"\""
+        + L" --launcher-pid " + std::to_wstring(pid)
+        + L" --current \"" + current_exe_path + L"\""
+        + L" --new \"" + launcher_new_path + L"\""
+        + L" --expected-hash " + common::Utf8ToWide(expected_hash)
+        + L" --launch \"" + current_exe_path + L"\"";
+        
+    STARTUPINFOW si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+    
+    std::vector<wchar_t> cmd_buf(cmd.begin(), cmd.end());
+    cmd_buf.push_back(L'\0');
+    
+    if (!CreateProcessW(nullptr, cmd_buf.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi)) {
+        return false;
+    }
+    
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    
+    PostQuitMessage(0);
+    return true;
+}
+
