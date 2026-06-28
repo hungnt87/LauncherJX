@@ -4,6 +4,7 @@
 #include <vector>
 #include <atomic>
 #include <functional>
+#include <optional>
 
 namespace launcher::update {
 
@@ -23,10 +24,17 @@ struct FileEntry {
     std::string zip;
 };
 
+struct UpdaterAsset {
+    std::string name;
+    std::string hash;
+};
+
 struct Manifest {
     std::string version;
+    std::optional<UpdaterAsset> updater;
     std::vector<FileEntry> files;
 };
+
 
 enum class UpdatePhase {
     Idle,
@@ -45,6 +53,9 @@ struct UpdateSnapshot {
 int CompareSemanticVersion(const std::string& v1, const std::string& v2);
 bool ParseManifest(const ManifestSource& source, Manifest* out_manifest, std::string* error);
 std::string ComputeSha256(const std::wstring& file_path);
+bool VerifyFileSha256(const std::wstring& file_path, const std::string& expected_hash);
+bool ManifestHasLauncherBinary(const Manifest& manifest);
+
 
 // Thay đổi kiểu trả về thành FileEntry để lấy được cả tên và hash file cần tải
 std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const Manifest& manifest);

@@ -1,4 +1,5 @@
 #include "update.h"
+#include "common.h"
 
 #include <windows.h>
 #include <wincrypt.h>
@@ -146,6 +147,7 @@ bool ParseManifest(const ManifestSource& source, Manifest* out_manifest, std::st
 
     out_manifest->version.clear();
     out_manifest->files.clear();
+    out_manifest->updater = std::nullopt;
 
     const std::string content = source.content;
     const std::string version = ExtractStringField(content, "version");
@@ -164,10 +166,48 @@ bool ParseManifest(const ManifestSource& source, Manifest* out_manifest, std::st
         return false;
     }
 
+    // Phân tích cú pháp khối updater (nếu có)
+    const size_t updater_pos = content.find("\"updater\"");
+    if (updater_pos != std::string::npos) {
+        const size_t obj_start = content.find('{', updater_pos);
+        const size_t obj_end = content.find('}', obj_start);
+        if (obj_start != std::string::npos && obj_end != std::string::npos && obj_end > obj_start) {
+            const std::string updater_obj = content.substr(obj_start, obj_end - obj_start + 1);
+            const std::string name = ExtractStringField(updater_obj, "name");
+            const std::string hash = ExtractStringField(updater_obj, "hash");
+            if (!name.empty() && !hash.empty()) {
+                UpdaterAsset asset;
+                asset.name = name;
+                asset.hash = ToLowerAscii(hash);
+                out_manifest->updater = asset;
+            }
+        }
+    }
+
     out_manifest->version = version;
     out_manifest->files = files;
     return true;
 }
+
+bool VerifyFileSha256(const std::wstring& file_path, const std::string& expected_hash) {
+    if (expected_hash.empty()) return false;
+    std::string actual_hash = ComputeSha256(file_path);
+    std::string lower_actual = ToLowerAscii(actual_hash);
+    std::string lower_expected = ToLowerAscii(expected_hash);
+    return !lower_actual.empty() && lower_actual == lower_expected;
+}
+
+bool ManifestHasLauncherBinary(const Manifest& manifest) {
+    for (const auto& file : manifest.files) {
+        std::string name = file.name;
+        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
+        if (name == "launcherjx.exe") {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 std::string ComputeSha256(const std::wstring& file_path) {
     std::ifstream file(file_path, std::ios::binary);

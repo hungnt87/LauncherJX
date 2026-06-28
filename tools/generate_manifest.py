@@ -3,6 +3,7 @@ import hashlib
 import json
 import zipfile
 import sys
+import argparse
 
 def get_sha256(file_path):
     sha256 = hashlib.sha256()
@@ -27,12 +28,27 @@ def zip_directory(dir_path, zip_path, rel_root):
     except Exception as e:
         print(f"Error compressing {dir_path}: {e}")
 
-def generate_manifest(patch_dir, version):
+def generate_manifest(patch_dir, version, updater_path=None, updater_name="updater.exe"):
     manifest = {
         "version": version,
         "files": []
     }
     
+    # 0. Thêm metadata cho updater nếu được cung cấp
+    if updater_path:
+        if os.path.exists(updater_path):
+            updater_hash = get_sha256(updater_path)
+            if updater_hash:
+                manifest["updater"] = {
+                    "name": updater_name,
+                    "hash": updater_hash
+                }
+                print(f"Added updater metadata: {updater_name} ({updater_hash})")
+            else:
+                print(f"Warning: Failed to compute hash for updater at {updater_path}")
+        else:
+            print(f"Warning: Updater path '{updater_path}' does not exist.")
+
     # 1. Quét và nén các thư mục con cấp 1
     zips_dir = os.path.abspath(os.path.join(patch_dir, "..", "zips"))
     os.makedirs(zips_dir, exist_ok=True)
@@ -113,12 +129,23 @@ if __name__ == "__main__":
             print(f"Warning reading current version.json: {e}")
             
     print(f"Thu muc patch phat hien tai: {patch_dir}")
-    if len(sys.argv) > 1:
-        new_version = sys.argv[1].strip()
-        print(f"Su dung phien ban tu dong lenh: {new_version}")
-    else:
+    
+    parser = argparse.ArgumentParser(description="Generate manifest version.json for LauncherJX")
+    parser.add_argument("version", nargs="?", default=None, help="New version tag")
+    parser.add_argument("--updater-path", default=None, help="Path to updater.exe binary to hash")
+    parser.add_argument("--updater-name", default="updater.exe", help="Name of the updater asset")
+    
+    args = parser.parse_args()
+    
+    new_version = args.version
+    if not new_version:
+        # Nếu chạy không có đối số version, hỏi người dùng
         new_version = input(f"Nhap phien ban moi (Nhan Enter de giu nguyen [{old_version}]): ").strip()
         if not new_version:
             new_version = old_version
+    else:
+        new_version = new_version.strip()
+        print(f"Su dung phien ban tu dong lenh: {new_version}")
         
-    generate_manifest(patch_dir, new_version)
+    generate_manifest(patch_dir, new_version, updater_path=args.updater_path, updater_name=args.updater_name)
+

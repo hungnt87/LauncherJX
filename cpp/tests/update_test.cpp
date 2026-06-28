@@ -40,10 +40,37 @@ void TestUrlEncode() {
     std::cout << "All UrlEncode tests passed successfully!" << std::endl;
 }
 
+void TestManifestUpdaterAndHash() {
+    using namespace launcher::update;
+
+    const std::string json = R"({
+      "version": "v1.2.3",
+      "updater": {
+        "name": "updater.exe",
+        "hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      },
+      "files": [
+        { "name": "LauncherJX.exe", "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "zip": "" }
+      ]
+    })";
+
+    ManifestSource source;
+    source.path = L"manifest.json";
+    source.content = json;
+
+    Manifest manifest;
+    std::string error;
+    assert(ParseManifest(source, &manifest, &error));
+    assert(manifest.updater.has_value());
+    assert(manifest.updater->name == "updater.exe");
+    assert(ManifestHasLauncherBinary(manifest));
+}
+
 int main() {
     try {
         TestCompareSemanticVersion();
         TestUrlEncode();
+        TestManifestUpdaterAndHash();
     } catch (const std::exception& e) {
         std::cerr << "Test failed with exception: " << e.what() << std::endl;
         return 1;
@@ -53,3 +80,4 @@ int main() {
     }
     return 0;
 }
+
