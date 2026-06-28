@@ -1,6 +1,12 @@
 # Changelog
 
+## v1.1.5 - 2026-06-28
+
+### Features
+- Add rollback mechanism in updater.exe to restore original launcher if copying new version.json fails during update sequence
+
 ## v1.1.4 - 2026-06-28
+
 
 ### Fixes
 - Fix infinite self-update loop by copying new version.json to the launcher root directory and deleting temp files during updater execution

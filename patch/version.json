@@ -1,9 +1,9 @@
 {
-  "version": "v1.1.4",
+  "version": "v1.1.5",
   "files": [
     {
       "name": "LauncherJX.exe",
-      "hash": "82a906eb6881eb359d9e05a30ab13744d3f9c07bd0bd7c2d73b595a7edf54551",
+      "hash": "2cf6b1515f50e55694dea0bc5248024eb86906d2ded996e2d8e58a8df53645bc",
       "zip": ""
     },
     {
@@ -24184,6 +24184,6 @@
   ],
   "updater": {
     "name": "updater.exe",
-    "hash": "607ee629bc571eec7695e040812d8b959deb01030023b050ca822ad7fb8f13d3"
+    "hash": "61f2ee0337a406ce858b06fceba43af7bac2c38ddca2d384799f1f914304758b"
   }
 }
