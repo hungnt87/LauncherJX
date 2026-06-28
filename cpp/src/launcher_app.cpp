@@ -730,7 +730,14 @@ bool LauncherApp::LaunchUpdaterAndExit(const std::wstring& updater_path, const s
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
     
-    PostQuitMessage(0);
+    // Gửi tin nhắn WM_CLOSE đến cửa sổ chính từ luồng chính (không sử dụng PostQuitMessage trực tiếp trên luồng worker)
+    HWND hWnd = FindWindowW(L"LauncherJXImGuiClass", nullptr);
+    if (hWnd) {
+        PostMessageW(hWnd, WM_CLOSE, 0, 0);
+    } else {
+        PostQuitMessage(0);
+    }
     return true;
 }
+
 
