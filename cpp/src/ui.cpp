@@ -56,6 +56,10 @@ void InitUI(ID3D11Device* device, ID3D11DeviceContext* context, HWND hWnd) {
     style.Colors[ImGuiCol_TabActive] = ImVec4(0.00f, 0.40f, 0.40f, 1.00f);
 }
 
+HWND GetMainWindowHandle() {
+    return g_hWnd;
+}
+
 void RenderUI(LauncherApp& app) {
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(ImVec2(960, 600));

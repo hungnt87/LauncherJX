@@ -1,6 +1,7 @@
 #include "launcher_app.h"
 #include "update.h"
 #include "common.h"
+#include "ui.h"
 
 #include <windows.h>
 #include <wininet.h>
@@ -730,14 +731,12 @@ bool LauncherApp::LaunchUpdaterAndExit(const std::wstring& updater_path, const s
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
     
-    // Gửi tin nhắn WM_CLOSE đến cửa sổ chính từ luồng chính (không sử dụng PostQuitMessage trực tiếp trên luồng worker)
-    HWND hWnd = FindWindowW(L"LauncherJXImGuiClass", nullptr);
+    // Đóng cửa sổ chính từ worker bằng WM_CLOSE, để luồng UI xử lý vòng lặp thoát
+    HWND hWnd = GetMainWindowHandle();
     if (hWnd) {
         PostMessageW(hWnd, WM_CLOSE, 0, 0);
     } else {
-        PostQuitMessage(0);
+        return false;
     }
     return true;
 }
-
-
