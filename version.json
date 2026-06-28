@@ -1,14 +1,14 @@
 {
-  "version": "v1.1.9",
+  "version": "v1.1.10",
   "files": [
     {
       "name": "JX1Mod.ini",
       "hash": "3701404ef1cf3296358c71388c602b2122aed91d6f59ab303a70b8e4a0260b87",
-      "zip": ""
+      "zip": "root.zip"
     },
     {
       "name": "LauncherJX.exe",
-      "hash": "f89aa54959d40e70d0ecc9f0243dbcfff5a12fbc6fb8c867fcf86205aca45286",
+      "hash": "f874a314b0531719d52bdd6d601b5550f5a4f3734fdebe07a7dc9e3b16ac77e9",
       "zip": ""
     },
     {
@@ -19,7 +19,7 @@
     {
       "name": "config.ini",
       "hash": "79fcdd2163e11d49570cf64d0198af57722790d091e7b4097d5fecb18bd33626",
-      "zip": ""
+      "zip": "root.zip"
     },
     {
       "name": "data/1024.pak",
@@ -59,7 +59,7 @@
     {
       "name": "package.ini",
       "hash": "1226d4cc93e4a6415149a26bc4247b10e32326f4496ed4272c18675580f98ad1",
-      "zip": ""
+      "zip": "root.zip"
     },
     {
       "name": "rainbow.dll",

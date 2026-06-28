@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.10 - 2026-06-28
+
+### Features
+- Pack all root patch files including .ini config files (config.ini, JX1Mod.ini, package.ini) into root.zip
+- Implement a local backup and restore mechanism in the launcher to preserve player configuration files during zip updates
+
 ## v1.1.9 - 2026-06-28
 
 ### Fixes

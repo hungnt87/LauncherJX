@@ -421,6 +421,32 @@ void LauncherApp::RunUpdateWorker() {
         SetSnapshot(installing_snapshot);
 
         try {
+            // Sao lưu cấu hình của người chơi nếu có trước khi giải nén zip để tránh bị ghi đè
+            std::wstring backup_config = (std::filesystem::path(exe_dir_) / L"tmp" / L"backup_config.ini").wstring();
+            std::wstring backup_jx1mod = (std::filesystem::path(exe_dir_) / L"tmp" / L"backup_jx1mod.ini").wstring();
+            std::wstring backup_package = (std::filesystem::path(exe_dir_) / L"tmp" / L"backup_package.ini").wstring();
+
+            bool has_backup_config = false;
+            bool has_backup_jx1mod = false;
+            bool has_backup_package = false;
+
+            std::wstring local_config = (std::filesystem::path(exe_dir_) / L"config.ini").wstring();
+            std::wstring local_jx1mod = (std::filesystem::path(exe_dir_) / L"JX1Mod.ini").wstring();
+            std::wstring local_package = (std::filesystem::path(exe_dir_) / L"package.ini").wstring();
+
+            if (std::filesystem::exists(local_config)) {
+                std::filesystem::copy_file(local_config, backup_config, std::filesystem::copy_options::overwrite_existing);
+                has_backup_config = true;
+            }
+            if (std::filesystem::exists(local_jx1mod)) {
+                std::filesystem::copy_file(local_jx1mod, backup_jx1mod, std::filesystem::copy_options::overwrite_existing);
+                has_backup_jx1mod = true;
+            }
+            if (std::filesystem::exists(local_package)) {
+                std::filesystem::copy_file(local_package, backup_package, std::filesystem::copy_options::overwrite_existing);
+                has_backup_package = true;
+            }
+
             // 1. Giải nén các gói zip ra thư mục game
             for (const auto& zip_name : zips_to_download) {
                 std::wstring wzip_name = launcher::update::Utf8ToWstring(zip_name);
@@ -429,6 +455,20 @@ void LauncherApp::RunUpdateWorker() {
                 if (!launcher::update::UnzipFile(zip_path, exe_dir_)) {
                     throw std::runtime_error("Không thể giải nén gói: " + zip_name);
                 }
+            }
+
+            // Khôi phục lại cấu hình của người chơi sau khi giải nén
+            if (has_backup_config) {
+                std::filesystem::copy_file(backup_config, local_config, std::filesystem::copy_options::overwrite_existing);
+                try { std::filesystem::remove(backup_config); } catch (...) {}
+            }
+            if (has_backup_jx1mod) {
+                std::filesystem::copy_file(backup_jx1mod, local_jx1mod, std::filesystem::copy_options::overwrite_existing);
+                try { std::filesystem::remove(backup_jx1mod); } catch (...) {}
+            }
+            if (has_backup_package) {
+                std::filesystem::copy_file(backup_package, local_package, std::filesystem::copy_options::overwrite_existing);
+                try { std::filesystem::remove(backup_package); } catch (...) {}
             }
 
             // 2. Copy các file lẻ không nén (nếu có)
