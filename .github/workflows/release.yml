@@ -1,0 +1,71 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - dev
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build Project
+      run: cmake --build build --config Release
+
+    - name: Run Tests
+      run: |
+        build\bin\Release\update_tests.exe
+        build\bin\Release\updater_tests.exe
+
+    - name: Generate Manifest and Package Zips
+      if: startsWith(github.ref, 'refs/tags/v')
+      shell: pwsh
+      run: |
+        $tag = "${{ github.ref_name }}"
+        python tools/generate_manifest.py $tag --updater-path build/bin/Release/updater.exe --launcher-path build/bin/Release/LauncherJX.exe
+
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v2
+      with:
+        name: ${{ github.ref_name }}
+        tag_name: ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+        files: |
+          build/bin/Release/LauncherJX.exe
+          build/bin/Release/updater.exe
+          version.json
+          zips/root.zip
+          zips/data.zip
+          zips/script.zip
+          zips/settings.zip
+          zips/spr.zip
+          zips/ui.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
