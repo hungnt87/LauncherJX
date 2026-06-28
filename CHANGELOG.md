@@ -1,6 +1,12 @@
 # Changelog
 
+## v1.1.6 - 2026-06-28
+
+### Features
+- Implement file creation and modification time preservation during update and self-update using GetFileTime/SetFileTime APIs
+
 ## v1.1.5 - 2026-06-28
+
 
 ### Features
 - Add rollback mechanism in updater.exe to restore original launcher if copying new version.json fails during update sequence
