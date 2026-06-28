@@ -133,25 +133,29 @@ bool ParseUpdaterArgs(int argc, wchar_t** argv, UpdaterArgs* out, std::wstring* 
 }
 
 bool WaitForLauncherExit(DWORD pid, std::wstring* error) {
-    HANDLE hProcess = OpenProcess(SYNCHRONIZE, FALSE, pid);
+    // Mở tiến trình với quyền SYNCHRONIZE để đợi và PROCESS_TERMINATE để có thể tắt nếu bị kẹt
+    HANDLE hProcess = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, FALSE, pid);
     if (!hProcess) {
         // Có thể tiến trình đã thoát rồi
         return true;
     }
 
-    DWORD wait_result = WaitForSingleObject(hProcess, 10000); // Đợi tối đa 10 giây
-    CloseHandle(hProcess);
-
+    DWORD wait_result = WaitForSingleObject(hProcess, 5000); // Đợi tối đa 5 giây
     if (wait_result == WAIT_TIMEOUT) {
-        if (error) *error = L"Timed out waiting for launcher process to exit";
-        return false;
+        // Nếu quá 5 giây mà launcher cũ chưa thoát (bị kẹt), ép buộc kết thúc tiến trình
+        TerminateProcess(hProcess, 0);
+        // Đợi thêm tối đa 2 giây để hệ điều hành giải phóng hoàn toàn tệp thực thi
+        WaitForSingleObject(hProcess, 2000);
     } else if (wait_result == WAIT_FAILED) {
         if (error) *error = L"Failed to wait for launcher process exit: " + std::to_wstring(GetLastError());
+        CloseHandle(hProcess);
         return false;
     }
 
+    CloseHandle(hProcess);
     return true;
 }
+
 
 bool VerifyFileSha256(const std::wstring& path, const std::string& expected_hash, std::wstring* error) {
     std::string actual_hash = ComputeSha256(path);
