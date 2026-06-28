@@ -110,7 +110,12 @@ const std::string& LauncherApp::ChangelogContent() const noexcept {
 }
 
 void LauncherApp::LoadChangelog() {
+    changelog_content_ = "Đang tải thông tin cập nhật từ GitHub...";
     const std::wstring temp_changelog_path = exe_dir_ + L"\\tmp\\CHANGELOG.md";
+    try {
+        std::filesystem::remove(temp_changelog_path);
+    } catch (...) {}
+
     // Thêm timestamp để phá cache CDN của GitHub Raw, đảm bảo tải thông tin mới nhất lập tức
     std::wstring remote_changelog_url = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/main/CHANGELOG.md?t=" + std::to_wstring(std::time(nullptr));
     

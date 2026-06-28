@@ -384,7 +384,8 @@ bool DownloadFile(void* hInternet, const std::wstring& url, const std::wstring& 
     if (!active_hInternet) return false;
 
     DWORD flags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_SECURE;
-    HINTERNET hUrl = InternetOpenUrlW(active_hInternet, url.c_str(), nullptr, 0, flags, 0);
+    const wchar_t* headers = L"Cache-Control: no-cache\r\nPragma: no-cache\r\n";
+    HINTERNET hUrl = InternetOpenUrlW(active_hInternet, url.c_str(), headers, (DWORD)-1, flags, 0);
     if (!hUrl) {
         DWORD err = GetLastError(); // Lưu lại mã lỗi kết nối
         if (internal_hInternet) {

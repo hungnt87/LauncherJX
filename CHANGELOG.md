@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.13 - 2026-06-28
+
+### Fixes
+- Force WinINet and intermediate CDNs to bypass caching when downloading CHANGELOG.md by adding Cache-Control and Pragma headers
+- Fix loading status indicator by resetting the changelog content to "Loading..." and cleaning up temp files immediately when LoadChangelog begins
+
 ## v1.1.12 - 2026-06-28
 
 ### Features
