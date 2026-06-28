@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.11 - 2026-06-28
+
+### Features
+- Implement dynamic INI structure merge logic in launcher using Win32 Private Profile APIs to automatically restore missing Sections/Keys from default configurations without overwriting player settings
+
 ## v1.1.10 - 2026-06-28
 
 ### Features
