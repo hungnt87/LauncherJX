@@ -9,6 +9,7 @@
 #include <d3d11.h>
 #include <gdiplus.h>
 #include <sstream>
+#include <shellapi.h>
 
 namespace {
 
@@ -335,8 +336,29 @@ void RenderUI(LauncherApp& app) {
         ImGui::EndDisabled();
     } else if (snapshot.phase == launcher::update::UpdatePhase::Done) {
         if (ImGui::Button("VÀO GAME", ImVec2(120, 36))) {
-            MessageBoxW(g_hWnd, L"Đang khởi chạy game Võ Lâm Truyền Kỳ! Chúc đại hiệp chơi game vui vẻ.", L"LauncherJX", MB_OK | MB_ICONINFORMATION);
-            PostQuitMessage(0);
+            std::wstring gamePath = app.ExecutableDir() + L"\\game.exe";
+            HINSTANCE hInst = ShellExecuteW(
+                g_hWnd,
+                L"runas",        // Chạy dưới quyền Administrator
+                gamePath.c_str(),
+                nullptr,
+                app.ExecutableDir().c_str(), // Thư mục làm việc là thư mục chứa game
+                SW_SHOWNORMAL
+            );
+
+            if ((INT_PTR)hInst <= 32) {
+                // Khởi chạy thất bại
+                DWORD err = GetLastError();
+                if (err == ERROR_CANCELLED) {
+                    MessageBoxW(g_hWnd, L"Bạn đã từ chối cấp quyền Administrator để khởi chạy game.", L"Cảnh báo", MB_OK | MB_ICONWARNING);
+                } else {
+                    std::wstring errMsg = L"Không thể khởi chạy game.exe (Mã lỗi: " + std::to_wstring(err) + L").\nVui lòng kiểm tra xem tệp game.exe có tồn tại trong thư mục game hay không.";
+                    MessageBoxW(g_hWnd, errMsg.c_str(), L"Lỗi khởi chạy", MB_OK | MB_ICONERROR);
+                }
+            } else {
+                // Thành công, đóng launcher
+                PostQuitMessage(0);
+            }
         }
     }
 
