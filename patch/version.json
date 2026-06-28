@@ -1,19 +1,9 @@
 {
-  "version": "v1.0.11",
+  "version": "v1.2.3",
   "files": [
-    {
-      "name": "JX1Mod.ini",
-      "hash": "3701404ef1cf3296358c71388c602b2122aed91d6f59ab303a70b8e4a0260b87",
-      "zip": ""
-    },
     {
       "name": "config.exe",
       "hash": "19a76cf9828da51b89d9d3dd8580168459230a26ae9f51fbbfaca03a69857647",
-      "zip": ""
-    },
-    {
-      "name": "config.ini",
-      "hash": "79fcdd2163e11d49570cf64d0198af57722790d091e7b4097d5fecb18bd33626",
       "zip": ""
     },
     {
@@ -49,11 +39,6 @@
     {
       "name": "lualibdll.dll",
       "hash": "bdcb26034051c7373def4635319b42a7a56fbb167de93e6c434c4de5f2d1ff21",
-      "zip": ""
-    },
-    {
-      "name": "package.ini",
-      "hash": "1226d4cc93e4a6415149a26bc4247b10e32326f4496ed4272c18675580f98ad1",
       "zip": ""
     },
     {
@@ -24191,5 +24176,9 @@
       "hash": "7f929fef3a2204a2c265fed2263e477a24991831e3554d5fd225cd4484c09c01",
       "zip": ""
     }
-  ]
+  ],
+  "updater": {
+    "name": "updater.exe",
+    "hash": "ff01473789ec5314e5273f73b678a12527b699196a35a00d04be16c5bfce03b7"
+  }
 }

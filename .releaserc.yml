@@ -12,10 +12,18 @@ tag:
   prefix: v
   sign: false
 
-# Tự động chạy script generate_manifest.py với tag phiên bản mới
+# Tự động chạy script generate_manifest.py với tag phiên bản mới và hash updater.exe
 hooks:
-  prepare_artifact: "python {project_root}/tools/generate_manifest.py {version}"
+  prepare_artifact: "python {project_root}/tools/generate_manifest.py {version} --updater-path {project_root}/build/bin/Release/updater.exe"
 
 # Đảm bảo file version.json đã cập nhật được đưa vào release commit
 include:
   - patch/version.json
+
+# Đóng gói và phát hành các file binary làm tài nguyên của Release
+assets:
+  - path: "build/bin/Release/LauncherJX.exe"
+    name: "LauncherJX.exe"
+  - path: "build/bin/Release/updater.exe"
+    name: "updater.exe"
+
