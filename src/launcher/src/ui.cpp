@@ -124,13 +124,13 @@ void RenderUI(LauncherApp& app) {
                 app.SetGameResolution(800);
             }
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Ghi Theme=800 vào config.ini\nvà 0=800.pak vào package.ini");
+                ImGui::SetTooltip("CẢNH BÁO: Bạn cần cài đặt thư viện Visual C++ Runtime (VCRedist) để game hoạt động đúng độ phân giải mong muốn!\n(Đường dẫn tải ở phía dưới)");
             ImGui::Spacing();
             if (ImGui::RadioButton("1024 x 768 (đồ họa cao hơn, máy tốt)", sel1024)) {
                 app.SetGameResolution(1024);
             }
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Ghi Theme=1024 vào config.ini\nvà 0=1024.pak vào package.ini");
+                ImGui::SetTooltip("CẢNH BÁO: Bạn cần cài đặt thư viện Visual C++ Runtime (VCRedist) để game hoạt động đúng độ phân giải mong muốn!\n(Đường dẫn tải ở phía dưới)");
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -167,6 +167,13 @@ void RenderUI(LauncherApp& app) {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
             ImGui::TextWrapped("* Thay đổi được lưu ngay lập tức vào config.ini và package.ini.");
             ImGui::TextWrapped("* Cần khởi động lại game để áp dụng cài đặt mới.");
+            ImGui::TextWrapped("* Nếu thiết lập/game không hoạt động, vui lòng tải và cài đặt thư viện Visual C++ Runtime tại:");
+            static char link_buf[] = "https://github.com/abbodi1406/vcredist";
+            ImGui::SetNextItemWidth(380.0f);
+            ImGui::InputText("##vcredist_link", link_buf, sizeof(link_buf), ImGuiInputTextFlags_ReadOnly);
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("CẢNH BÁO: Thiếu thư viện Visual C++ Runtime (VCRedist) sẽ khiến game không hoạt động đúng độ phân giải mong muốn trong thiết lập độ phân giải!");
+            }
             ImGui::PopStyleColor();
 
             ImGui::EndChild();

@@ -26,6 +26,7 @@ Dự án được phát triển bằng ngôn ngữ **C++17**, sử dụng thư v
 - **Trình biên dịch:** MSVC (Microsoft Visual C++) đi kèm với **Visual Studio 2022** (đã cài đặt gói _Desktop development with C++_).
 - **Công cụ build:** **CMake** phiên bản 3.20 trở lên.
 - **Môi trường chạy script:** **Python 3.x** (dùng để chạy công cụ đóng gói cập nhật và sinh manifest).
+- **Thư viện chạy game (Runtime):** Trình khởi chạy và game yêu cầu thư viện C++ Runtime. Nếu gặp lỗi thiếu DLL hoặc game không khởi động được/phần thiết lập cài đặt không hoạt động, vui lòng tải và cài đặt bộ thư viện tổng hợp **Visual C++ Redistributable** tại: [abbodi1406/vcredist](https://github.com/abbodi1406/vcredist).
 
 > [!NOTE]
 > Dự án sử dụng tính năng `FetchContent` của CMake để tự động tải thư viện **Dear ImGui** trực tiếp từ GitHub khi cấu hình dự án, do đó bạn không cần phải cài đặt thủ công thư viện này.
