@@ -441,12 +441,17 @@ void LauncherApp::RunUpdateWorker() {
                     std::filesystem::create_directories(dest_path.parent_path());
                 }
                 std::filesystem::copy_file(temp_path, dest_path, std::filesystem::copy_options::overwrite_existing);
+                // Bảo toàn ngày giờ của file lẻ
+                common::CopyFileTime(temp_path.wstring(), dest_path.wstring());
             }
 
             // 3. Copy đè version.json mới
             std::filesystem::path temp_ver = std::filesystem::path(exe_dir_) / L"tmp" / L"version.json";
             std::filesystem::path dest_ver = std::filesystem::path(exe_dir_) / L"version.json";
             std::filesystem::copy_file(temp_ver, dest_ver, std::filesystem::copy_options::overwrite_existing);
+            // Bảo toàn ngày giờ của tệp version.json
+            common::CopyFileTime(temp_ver.wstring(), dest_ver.wstring());
+
 
             // 4. Xóa sạch thư mục tạm
             std::filesystem::remove_all(std::filesystem::path(exe_dir_) / L"tmp");

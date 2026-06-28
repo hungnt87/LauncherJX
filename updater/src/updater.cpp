@@ -221,6 +221,9 @@ bool ReplaceExecutable(const std::wstring& current_path, const std::wstring& new
         return false;
     }
 
+    // Bảo toàn ngày giờ (Creation & Last Write Time) của launcher mới
+    common::CopyFileTime(new_path, current_path);
+
     // Sao chép tệp version.json mới để cập nhật thông tin phiên bản local của người chơi
     std::wstring cur_dir = current_path;
     size_t pos_cur = cur_dir.find_last_of(L"\\/");
@@ -245,7 +248,10 @@ bool ReplaceExecutable(const std::wstring& current_path, const std::wstring& new
             DeleteFileW(src_ver.c_str());
             return false;
         }
+        // Bảo toàn ngày giờ của tệp version.json
+        common::CopyFileTime(src_ver, dest_ver);
     }
+
 
     // Xóa file tạm launcher mới, file version.json tạm và file backup
     DeleteFileW(new_path.c_str());
