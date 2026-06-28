@@ -1,6 +1,12 @@
 # Changelog
 
+## v1.1.4 - 2026-06-28
+
+### Fixes
+- Fix infinite self-update loop by copying new version.json to the launcher root directory and deleting temp files during updater execution
+
 ## v1.1.3 - 2026-06-28
+
 
 ### Fixes
 - Add active process termination fallback in updater.exe to force terminate the launcher process if it does not exit within 5 seconds during update sequence

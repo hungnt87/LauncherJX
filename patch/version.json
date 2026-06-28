@@ -1,5 +1,5 @@
 {
-  "version": "v1.1.3",
+  "version": "v1.1.4",
   "files": [
     {
       "name": "LauncherJX.exe",
@@ -24184,6 +24184,6 @@
   ],
   "updater": {
     "name": "updater.exe",
-    "hash": "5b00818e73dbb780d8454308bd39a5623318c730b99a1bfb27f6de32539206ca"
+    "hash": "607ee629bc571eec7695e040812d8b959deb01030023b050ca822ad7fb8f13d3"
   }
 }
