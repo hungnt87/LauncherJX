@@ -1,6 +1,29 @@
 # Changelog
 
+## v1.1.0 - 2026-06-28
+
+### Features
+- Implement a Windows self-update path for LauncherJX that downloads `updater.exe` and replaces the launcher safely
+- Implement launcher UI with configuration and JX1 mod management tabs using Dear ImGui
+- Implement core launcher application logic and update coordination system
+- Add JX1Mod tab with 16 toggles reading/writing JX1Mod.ini keys
+- Add Settings tab with resolution selector (800x600/1024x768) and FullScreen radio buttons writing to config.ini and package.ini
+- Embed PNG images directly into EXE resources and load them from memory using GDI+
+- Support publishing updater asset metadata in release manifest
+
+### Fixes
+- Only ignore config.ini, jx1mod.ini, and package.ini in manifest generation and client updates instead of all ini files
+
+### Refactor
+- Localize launcher UI, buttons, updates and error messages to Vietnamese
+- Convert app_icon.png to launcher.ico and update exe resource icon
+- Replace copy buttons and selectable list with single read-only multiline input box for changelog text selection
+
+### Documentation
+- Add self-update launcher design spec
+
 ## v1.0.11 - 2026-06-27
+
 
 ### Features
 - Integrate professional game icon into LauncherJX.exe using Windows resource files
