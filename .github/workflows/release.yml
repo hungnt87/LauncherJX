@@ -93,7 +93,7 @@ jobs:
 
         Stop-Process -Id $dummy.Id -ErrorAction SilentlyContinue
 
-        Get-Process LauncherJX -ErrorAction SilentlyContinue |
+        Get-Process LauncherJX, current, new -ErrorAction SilentlyContinue |
             Where-Object { $_.Path -and $_.Path.StartsWith($smoke, [System.StringComparison]::OrdinalIgnoreCase) } |
             Stop-Process -Force -ErrorAction SilentlyContinue
 
