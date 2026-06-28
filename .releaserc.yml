@@ -1,7 +1,8 @@
 # Cấu hình tự động release bằng release-skills
 version:
-  file: patch/version.json
+  file: version.json
   path: $.version
+
 
 changelog:
   files:
@@ -19,7 +20,7 @@ hooks:
 
 # Đảm bảo file version.json đã cập nhật được đưa vào release commit
 include:
-  - patch/version.json
+  - version.json
 
 # Đóng gói và phát hành các file binary làm tài nguyên của Release
 assets:
@@ -27,6 +28,10 @@ assets:
     name: "LauncherJX.exe"
   - path: "build/bin/Release/updater.exe"
     name: "updater.exe"
+  - path: "version.json"
+    name: "version.json"
+  - path: "zips/root.zip"
+    name: "root.zip"
   - path: "zips/data.zip"
     name: "data.zip"
   - path: "zips/script.zip"
@@ -37,5 +42,6 @@ assets:
     name: "spr.zip"
   - path: "zips/ui.zip"
     name: "ui.zip"
+
 
 

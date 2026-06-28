@@ -97,7 +97,8 @@ def generate_manifest(patch_dir, version, updater_path=None, updater_name="updat
                             "zip": f"{sub_dir}.zip"
                         })
                         
-    # 2. Quét các file lẻ nằm trực tiếp ở thư mục gốc (không nén)
+    # 2. Quét các file lẻ nằm trực tiếp ở thư mục gốc và nén thành root.zip
+    root_files = []
     ignored_files = {"config.ini", "jx1mod.ini", "package.ini"}
     for item in os.listdir(patch_dir):
         abs_path = os.path.join(patch_dir, item)
@@ -105,21 +106,40 @@ def generate_manifest(patch_dir, version, updater_path=None, updater_name="updat
             file = item
             if file == "version.json" or file.endswith(".zip") or file.lower() in ignored_files:
                 continue
-            sha = get_sha256(abs_path)
-            if sha:
-                manifest["files"].append({
-                    "name": file,
-                    "hash": sha,
-                    "zip": ""
-                })
+            root_files.append(item)
+
+    if root_files:
+        root_zip_path = os.path.join(zips_dir, "root.zip")
+        import zipfile
+        try:
+            with zipfile.ZipFile(root_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for file in root_files:
+                    abs_path = os.path.join(patch_dir, file)
+                    zipf.write(abs_path, file)
+            print(f"Compressed root files to {root_zip_path}")
+
+            # Thêm các file lẻ này vào manifest với trường "zip": "root.zip"
+            for file in root_files:
+                abs_path = os.path.join(patch_dir, file)
+                sha = get_sha256(abs_path)
+                if sha:
+                    manifest["files"].append({
+                        "name": file,
+                        "hash": sha,
+                        "zip": "root.zip"
+                    })
+        except Exception as e:
+            print(f"Error compressing root files to zip: {e}")
                 
     manifest["files"].sort(key=lambda x: x["name"])
     
-    manifest_path = os.path.join(patch_dir, "version.json")
+    # Lưu version.json ra ngoài cùng cấp với thư mục dự án (bên ngoài thư mục patch)
+    manifest_path = os.path.abspath(os.path.join(patch_dir, "..", "version.json"))
     with open(manifest_path, 'w', encoding='utf-8') as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
     
     print(f"Manifest generated successfully at {manifest_path} with {len(manifest['files'])} files.")
+
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -135,7 +155,7 @@ if __name__ == "__main__":
             print(f"Could not create patch directory: {e}")
             exit(1)
             
-    version_file = os.path.join(patch_dir, "version.json")
+    version_file = os.path.abspath(os.path.join(patch_dir, "..", "version.json"))
     old_version = "v1.0.0"
     if os.path.exists(version_file):
         try:
@@ -144,6 +164,7 @@ if __name__ == "__main__":
                 old_version = data.get("version", "v1.0.0")
         except Exception as e:
             print(f"Warning reading current version.json: {e}")
+
             
     print(f"Thu muc patch phat hien tai: {patch_dir}")
     
