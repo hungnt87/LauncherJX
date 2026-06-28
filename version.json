@@ -8,7 +8,7 @@
     },
     {
       "name": "LauncherJX.exe",
-      "hash": "5f7681e1a3dd20c5eaf2adc6daead26ee1174af5a8944801b6564dc0ccf2cb35",
+      "hash": "1bcf2a34f12bdc97161d9e481c52eb69d7b41671e0a45fbaf9cdb21225ba385d",
       "zip": ""
     },
     {
@@ -24199,6 +24199,6 @@
   ],
   "updater": {
     "name": "updater.exe",
-    "hash": "2f0c00a5820d544c235b84f95f09fb21c78c43498dc399cc773c880b3b93513d"
+    "hash": "37d9e73033dc4c838558d2d55c1d5194d4e1cdbdd40564ae4c65b28bc9ca07c2"
   }
 }
