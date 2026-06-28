@@ -1,6 +1,14 @@
 # Changelog
 
+## v1.1.1 - 2026-06-28
+
+### Fixes
+- Fix self-update process by adding LauncherJX.exe to manifest files list
+- Point manifest URL to raw GitHub patch/version.json with cache buster query parameter
+- Update release configuration to include all patch zip files in GitHub Release assets
+
 ## v1.1.0 - 2026-06-28
+
 
 ### Features
 - Implement a Windows self-update path for LauncherJX that downloads `updater.exe` and replaces the launcher safely
