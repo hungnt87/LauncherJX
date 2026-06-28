@@ -1,6 +1,12 @@
 # Changelog
 
+## v1.1.3 - 2026-06-28
+
+### Fixes
+- Add active process termination fallback in updater.exe to force terminate the launcher process if it does not exit within 5 seconds during update sequence
+
 ## v1.1.2 - 2026-06-28
+
 
 ### Fixes
 - Fix deadlock in self-update exit sequence by closing main window from main thread using PostMessageW instead of calling PostQuitMessage directly from worker thread
