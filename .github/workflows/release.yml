@@ -205,6 +205,7 @@ jobs:
         if (git diff --cached --quiet) {
           Write-Host "version.json is already up to date on main."
           exit 0
+        }
         git commit -m "chore: sync version.json from $env:TAG_NAME [skip ci]"
         git pull origin main --rebase
         git push origin main
