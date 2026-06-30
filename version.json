@@ -1,5 +1,5 @@
 {
-  "version": "v1.0.0",
+  "version": "v1.0.1",
   "files": [
     {
       "name": "JX1Mod.ini",
@@ -16633,7 +16633,7 @@
     },
     {
       "name": "settings/serverlist.ini",
-      "hash": "e4709fa25c22b7444c7d5b71f8ffb7caf76478d171c9aefffa52e6d5052a715f",
+      "hash": "c43d4dfd650b7b00e5a7110c6ed82408eb4ea525cf004f620b81258d18f56738",
       "zip": "settings.zip"
     },
     {
