@@ -1,5 +1,5 @@
 {
-  "version": "v1.0.6",
+  "version": "v1.0.7",
   "files": [
     {
       "name": "JX1Mod.ini",
@@ -8,7 +8,7 @@
     },
     {
       "name": "LauncherJX.exe",
-      "hash": "81abbfb9d5d336c3f3afc765fd846a56880bbbd0ba3bd5a7c47ec4d35aadaf35",
+      "hash": "9be43e11d5bc37deb71e29c5518d2ed3caf7fdf14d91424bfc0df976e2c05d07",
       "zip": ""
     },
     {
@@ -16633,7 +16633,7 @@
     },
     {
       "name": "settings/serverlist.ini",
-      "hash": "c43d4dfd650b7b00e5a7110c6ed82408eb4ea525cf004f620b81258d18f56738",
+      "hash": "c65cd79cc2c86870a21d3a1d7a9403b7de32d8642c2b56153a4eb472e40057e8",
       "zip": "settings.zip"
     },
     {
@@ -24199,6 +24199,6 @@
   ],
   "updater": {
     "name": "updater.exe",
-    "hash": "b744aedbd12915005d5ad47e3c4af585a9dcf38a258a4ee80ac2d47bc191ea89"
+    "hash": "00f19f44b23d5866bb8b2d538d60296b3bec5174e482a7b5ee6cdcc27eb4ed07"
   }
 }
