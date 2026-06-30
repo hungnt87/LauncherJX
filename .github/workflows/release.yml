@@ -127,6 +127,7 @@ jobs:
           build/bin/Release/LauncherJX.exe
           build/bin/Release/updater.exe
           version.json
+          patch/settings/serverlist.ini
           zips/root.zip
           zips/data.zip
           zips/script.zip
