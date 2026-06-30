@@ -2,6 +2,30 @@
 
 Tất cả các thay đổi lớn đối với dự án này sẽ được ghi lại trong tệp này.
 
+## v1.0.1 - 2026-06-30
+
+### Tính năng nổi bật & Cải tiến
+
+#### 1. Quản lý Máy chủ Độc lập (Region_1 & Region_2)
+- **Tách biệt vai trò**: Danh sách máy chủ trong `settings/serverlist.ini` được chia làm 2 vùng riêng biệt:
+  - `Region_1` (Offline): Người chơi tự do thêm, sửa, xóa máy chủ offline/LAN của họ trực tiếp trên giao diện Cài đặt.
+  - `Region_2` (Online): Danh sách máy chủ trực tuyến chính thức do Admin quản lý.
+- **Tự động đồng bộ Online**: Launcher tự động tải và cập nhật đè nội dung máy chủ Online của Admin từ GitHub (`Region_2`) khi khởi động/sửa lỗi game.
+- **Bảo toàn cài đặt Offline**: Khi cập nhật game hoặc giải nén bản vá ZIP, hệ thống tự động backup và khôi phục nguyên vẹn toàn bộ máy chủ Offline của người chơi (`Region_1`).
+
+#### 2. Trình chỉnh sửa máy chủ thủ công & Kiểm tra lỗi (Validation)
+- **Lưu thủ công**: Loại bỏ cơ chế tự động lưu đĩa liên tục khi gõ phím, tích hợp nút **"Lưu thay đổi"** để người chơi chủ động lưu thiết lập.
+- **Kiểm tra tính hợp lệ**: Khi nhấn lưu, launcher sẽ tự động kiểm tra các điều kiện:
+  - Tên máy chủ và địa chỉ IP không được để trống.
+  - Địa chỉ IP phải đúng định dạng IPv4 số (`A.B.C.D` từ `0.0.0.0` đến `255.255.255.255`).
+  - Không được trùng tên máy chủ (không phân biệt chữ hoa/thường) hoặc trùng địa chỉ IP giữa các dòng.
+  - Chặn lưu và cảnh báo nếu phát hiện lỗi.
+- **Popup thông báo**: Tích hợp Modal Popup trong ImGui hiển thị thông báo Lưu thành công hoặc chi tiết lỗi validation cụ thể để người chơi dễ dàng khắc phục.
+
+#### 3. Tối ưu hóa giao diện (UI)
+- **Cột song song hoàn hảo**: Sử dụng `ImGui::Table` để chia giao diện Cài đặt thành 2 cột độc lập song song (bên trái chỉnh đồ họa/hiển thị, bên phải sửa serverlist), khắc phục triệt để lỗi lệch dòng do separator của `ImGui::Columns`.
+- **Dọn dẹp nút dư thừa**: Loại bỏ 2 nút khôi phục thủ công "Cập nhật từ Admin" và "Reset mặc định" để giao diện gọn gàng, do quá trình đồng bộ IP Online từ Admin hiện tại đã được thực hiện tự động hoàn toàn.
+
 ## v1.0.0 - 2026-06-28
 
 Đây là phiên bản phát hành chính thức đầu tiên (Production-ready) của **LauncherJX**, mang lại một giải pháp khởi chạy game và cập nhật dữ liệu toàn diện cho game MMORPG võ hiệp với phong cách giao diện Win32 Retro hoài cổ.
