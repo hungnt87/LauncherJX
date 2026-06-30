@@ -43,6 +43,15 @@ jobs:
       shell: pwsh
       run: |
         $exe = (Resolve-Path 'build\bin\Release\LauncherJX.exe').Path
+        $exeDir = Split-Path -Parent $exe
+        $smokeVersion = Join-Path $exeDir 'version.json'
+        $tag = "${{ github.ref_name }}"
+        @{
+            version = $tag
+            files = @()
+        } | ConvertTo-Json -Depth 3 | Out-File -FilePath $smokeVersion -Encoding utf8
+
+        $beforeHash = (Get-FileHash -Algorithm SHA256 $exe).Hash
         $p = Start-Process -FilePath $exe -WindowStyle Hidden -PassThru
         Start-Sleep -Seconds 5
         if ($p.HasExited) {
@@ -51,6 +60,11 @@ jobs:
             }
         } else {
             Stop-Process -Id $p.Id -Force
+        }
+
+        $afterHash = (Get-FileHash -Algorithm SHA256 $exe).Hash
+        if ($afterHash -ne $beforeHash) {
+            throw "LauncherJX.exe changed during smoke test. Before: $beforeHash After: $afterHash"
         }
 
     - name: Smoke Test updater.exe
