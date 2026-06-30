@@ -46,10 +46,9 @@ jobs:
         $exeDir = Split-Path -Parent $exe
         $smokeVersion = Join-Path $exeDir 'version.json'
         $tag = "${{ github.ref_name }}"
-        @{
-            version = $tag
-            files = @()
-        } | ConvertTo-Json -Depth 3 | Out-File -FilePath $smokeVersion -Encoding utf8
+        $manifest = Get-Content -Raw -Path 'version.json' | ConvertFrom-Json
+        $manifest.version = $tag
+        $manifest | ConvertTo-Json -Depth 100 | Out-File -FilePath $smokeVersion -Encoding utf8
 
         $beforeHash = (Get-FileHash -Algorithm SHA256 $exe).Hash
         $p = Start-Process -FilePath $exe -WindowStyle Hidden -PassThru
