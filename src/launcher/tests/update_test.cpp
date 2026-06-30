@@ -151,6 +151,92 @@ void TestMergeIniFiles() {
     std::cout << "All MergeIniFiles tests passed successfully!" << std::endl;
 }
 
+void TestUpdateServerListOnlineRegion() {
+    using namespace launcher::update;
+
+    std::filesystem::path temp_dir = std::filesystem::temp_directory_path() / "launcher_test_serverlist";
+    std::filesystem::remove_all(temp_dir);
+    std::filesystem::create_directories(temp_dir);
+
+    std::filesystem::path default_path = temp_dir / "server_default.ini";
+    std::filesystem::path local_path = temp_dir / "server_local.ini";
+
+    {
+        std::ofstream out(default_path);
+        out << "[List]\n"
+            << "RegionCount=3\n"
+            << "Region_0=Server Recent\n"
+            << "Region_1=Server Online\n"
+            << "Region_2=Server Offline\n"
+            << "\n"
+            << "[Region_1]\n"
+            << "Count=1\n"
+            << "0_Title=Admin Online\n"
+            << "0_Address=10.0.0.1\n";
+    }
+
+    {
+        std::ofstream out(local_path);
+        out << "[List]\n"
+            << "RegionCount=2\n"
+            << "Region_0=Local Recent\n"
+            << "Region_1=Local Online\n"
+            << "Region_2=Local Editable\n"
+            << "\n"
+            << "[Region_1]\n"
+            << "Count=2\n"
+            << "0_Title=Old Admin\n"
+            << "0_Address=192.168.1.10\n"
+            << "1_Title=Extra Old\n"
+            << "1_Address=192.168.1.11\n"
+            << "\n"
+            << "[Region_2]\n"
+            << "Count=1\n"
+            << "0_Title=User Server\n"
+            << "0_Address=172.16.0.1\n";
+    }
+
+    UpdateServerListOnlineRegion(default_path.wstring(), local_path.wstring());
+
+    wchar_t val[100];
+    GetPrivateProfileStringW(L"List", L"RegionCount", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"3");
+
+    GetPrivateProfileStringW(L"List", L"Region_0", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"Server Recent");
+
+    GetPrivateProfileStringW(L"List", L"Region_1", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"Server Online");
+
+    GetPrivateProfileStringW(L"List", L"Region_2", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"Local Editable");
+
+    GetPrivateProfileStringW(L"Region_1", L"Count", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"1");
+
+    GetPrivateProfileStringW(L"Region_1", L"0_Title", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"Admin Online");
+
+    GetPrivateProfileStringW(L"Region_1", L"0_Address", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"10.0.0.1");
+
+    GetPrivateProfileStringW(L"Region_1", L"1_Title", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val).empty());
+
+    GetPrivateProfileStringW(L"Region_2", L"Count", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"1");
+
+    GetPrivateProfileStringW(L"Region_2", L"0_Title", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"User Server");
+
+    GetPrivateProfileStringW(L"Region_2", L"0_Address", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"172.16.0.1");
+
+    std::filesystem::remove_all(temp_dir);
+
+    std::cout << "All UpdateServerListOnlineRegion tests passed successfully!" << std::endl;
+}
+
 int main() {
     try {
         TestCompareSemanticVersion();
@@ -158,6 +244,7 @@ int main() {
         TestManifestUpdaterAndHash();
         TestLauncherSelfUpdateSelection();
         TestMergeIniFiles();
+        TestUpdateServerListOnlineRegion();
     } catch (const std::exception& e) {
         std::cerr << "Test failed with exception: " << e.what() << std::endl;
         return 1;

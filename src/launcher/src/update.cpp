@@ -535,14 +535,42 @@ void UpdateServerListOnlineRegion(const std::wstring& default_ini_path, const st
             std::filesystem::create_directories(parent);
         }
         std::filesystem::copy_file(default_ini_path, local_ini_path, std::filesystem::copy_options::overwrite_existing);
-        return;
     }
 
-    int count = GetPrivateProfileIntW(L"Region_2", L"Count", 0, default_ini_path.c_str());
+    int local_region_count = GetPrivateProfileIntW(L"List", L"RegionCount", 0, local_ini_path.c_str());
+    int default_region_count = GetPrivateProfileIntW(L"List", L"RegionCount", 0, default_ini_path.c_str());
+    int repaired_region_count = (std::max)({local_region_count, default_region_count, 3});
+    WritePrivateProfileStringW(L"List", L"RegionCount", std::to_wstring(repaired_region_count).c_str(), local_ini_path.c_str());
+
+    wchar_t default_region0[64] = {0};
+    wchar_t default_region1[64] = {0};
+    wchar_t default_region2[64] = {0};
+    GetPrivateProfileStringW(L"List", L"Region_0", L"", default_region0, 64, default_ini_path.c_str());
+    GetPrivateProfileStringW(L"List", L"Region_1", L"", default_region1, 64, default_ini_path.c_str());
+    GetPrivateProfileStringW(L"List", L"Region_2", L"", default_region2, 64, default_ini_path.c_str());
+
+    if (wcslen(default_region0) > 0) {
+        WritePrivateProfileStringW(L"List", L"Region_0", default_region0, local_ini_path.c_str());
+    }
+    if (wcslen(default_region1) > 0) {
+        WritePrivateProfileStringW(L"List", L"Region_1", default_region1, local_ini_path.c_str());
+    }
+
+    wchar_t local_region2[64] = {0};
+    GetPrivateProfileStringW(L"List", L"Region_2", L"", local_region2, 64, local_ini_path.c_str());
+    if (wcslen(local_region2) == 0) {
+        if (wcslen(default_region2) > 0) {
+            WritePrivateProfileStringW(L"List", L"Region_2", default_region2, local_ini_path.c_str());
+        } else {
+            WritePrivateProfileStringW(L"List", L"Region_2", L"Offline", local_ini_path.c_str());
+        }
+    }
+
+    int count = GetPrivateProfileIntW(L"Region_1", L"Count", 0, default_ini_path.c_str());
     
-    WritePrivateProfileSectionW(L"Region_2", nullptr, local_ini_path.c_str());
+    WritePrivateProfileSectionW(L"Region_1", nullptr, local_ini_path.c_str());
     
-    WritePrivateProfileStringW(L"Region_2", L"Count", std::to_wstring(count).c_str(), local_ini_path.c_str());
+    WritePrivateProfileStringW(L"Region_1", L"Count", std::to_wstring(count).c_str(), local_ini_path.c_str());
     
     for (int i = 0; i < count; ++i) {
         std::wstring title_key = std::to_wstring(i) + L"_Title";
@@ -551,27 +579,11 @@ void UpdateServerListOnlineRegion(const std::wstring& default_ini_path, const st
         wchar_t title_val[256] = {0};
         wchar_t addr_val[256] = {0};
         
-        GetPrivateProfileStringW(L"Region_2", title_key.c_str(), L"", title_val, 256, default_ini_path.c_str());
-        GetPrivateProfileStringW(L"Region_2", addr_key.c_str(), L"", addr_val, 256, default_ini_path.c_str());
+        GetPrivateProfileStringW(L"Region_1", title_key.c_str(), L"", title_val, 256, default_ini_path.c_str());
+        GetPrivateProfileStringW(L"Region_1", addr_key.c_str(), L"", addr_val, 256, default_ini_path.c_str());
         
-        WritePrivateProfileStringW(L"Region_2", title_key.c_str(), title_val, local_ini_path.c_str());
-        WritePrivateProfileStringW(L"Region_2", addr_key.c_str(), addr_val, local_ini_path.c_str());
-    }
-
-    wchar_t region2_val[64] = {0};
-    GetPrivateProfileStringW(L"List", L"Region_2", L"", region2_val, 64, local_ini_path.c_str());
-    if (wcslen(region2_val) == 0) {
-        wchar_t default_r2[64] = {0};
-        GetPrivateProfileStringW(L"List", L"Region_2", L"Online", default_r2, 64, default_ini_path.c_str());
-        WritePrivateProfileStringW(L"List", L"Region_2", default_r2, local_ini_path.c_str());
-    }
-    
-    wchar_t region_count[8] = {0};
-    GetPrivateProfileStringW(L"List", L"RegionCount", L"", region_count, 8, local_ini_path.c_str());
-    if (wcslen(region_count) == 0) {
-        wchar_t default_rc[8] = {0};
-        GetPrivateProfileStringW(L"List", L"RegionCount", L"2", default_rc, 8, default_ini_path.c_str());
-        WritePrivateProfileStringW(L"List", L"RegionCount", default_rc, local_ini_path.c_str());
+        WritePrivateProfileStringW(L"Region_1", title_key.c_str(), title_val, local_ini_path.c_str());
+        WritePrivateProfileStringW(L"Region_1", addr_key.c_str(), addr_val, local_ini_path.c_str());
     }
 }
 

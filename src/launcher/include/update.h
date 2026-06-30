@@ -80,6 +80,7 @@ bool UnzipFile(const std::wstring& zip_path, const std::wstring& dest_dir);
 bool DownloadFile(void* hInternet, const std::wstring& url, const std::wstring& dest_path, const std::atomic<bool>& running, const std::function<void(float)>& progress_callback);
 
 void MergeIniFiles(const std::wstring& default_ini_path, const std::wstring& local_ini_path);
+void UpdateServerListOnlineRegion(const std::wstring& default_ini_path, const std::wstring& local_ini_path);
 bool CheckAndRepairIniFiles(const std::wstring& exe_dir, const Manifest& manifest, const std::atomic<bool>& running);
 
 }  // namespace launcher::update

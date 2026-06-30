@@ -247,7 +247,7 @@ void RenderUI(LauncherApp& app) {
             ImGui::TableNextColumn();
 
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f));
-            ImGui::Text("== Danh sách máy chủ (serverlist.ini) ==");
+            ImGui::Text("== Máy chủ tự chỉnh (Region_2) ==");
             ImGui::PopStyleColor();
             ImGui::Separator();
             ImGui::Spacing();
@@ -326,7 +326,7 @@ void RenderUI(LauncherApp& app) {
                 do_save = true;
             }
             if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Lưu các chỉnh sửa máy chủ hiện tại vào serverlist.ini");
+                ImGui::SetTooltip("Lưu các chỉnh sửa vào [Region_2] trong serverlist.ini");
             }
 
             if (do_save) {
