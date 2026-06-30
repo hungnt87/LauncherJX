@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build & Test
@@ -115,6 +119,33 @@ jobs:
         $tag = "${{ github.ref_name }}"
         python tools/generate_manifest.py $tag --updater-path build/bin/Release/updater.exe --launcher-path build/bin/Release/LauncherJX.exe
 
+    - name: Verify release tag still points to this commit
+      shell: pwsh
+      run: |
+        $tag = "${{ github.ref_name }}"
+        $expected = "${{ github.sha }}"
+        $refs = git ls-remote origin "refs/tags/$tag" "refs/tags/$tag^{}"
+
+        if (-not $refs) {
+            throw "Could not resolve remote tag $tag"
+        }
+
+        $escapedTag = [regex]::Escape($tag)
+        $peeledRef = $refs | Where-Object { $_ -match "refs/tags/$escapedTag\^\{\}$" } | Select-Object -First 1
+        $directRef = $refs | Where-Object { $_ -match "refs/tags/$escapedTag$" } | Select-Object -First 1
+        $selectedRef = if ($peeledRef) { $peeledRef } else { $directRef }
+
+        if (-not $selectedRef) {
+            throw "Could not parse remote tag $tag from git ls-remote output"
+        }
+
+        $actual = ($selectedRef -split "\s+")[0]
+        if ($actual -ne $expected) {
+            throw "Tag $tag moved during release. Expected $expected but remote points to $actual. Refusing to upload assets."
+        }
+
+        Write-Host "Remote tag $tag still points to $expected."
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
@@ -123,6 +154,8 @@ jobs:
         body_path: tag_message.txt
         draft: false
         prerelease: false
+        overwrite_files: false
+        fail_on_unmatched_files: true
         files: |
           build/bin/Release/LauncherJX.exe
           build/bin/Release/updater.exe
