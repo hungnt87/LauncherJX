@@ -2,6 +2,16 @@
 
 Tất cả các thay đổi lớn đối với dự án này sẽ được ghi lại trong tệp này.
 
+## v1.0.7 - 2026-06-30
+
+### Sửa lỗi & Cải tiến
+- **Tách biệt danh sách máy chủ Admin và Offline**: Cập nhật hàm `UpdateServerListOnlineRegion` và các unit test liên quan nhằm tách biệt hoàn toàn danh sách máy chủ trực tuyến do Admin quản lý (`Region_1`) và danh sách máy chủ ngoại tuyến tự chỉnh sửa (`Region_2`).
+
+## v1.0.3 - 2026-06-30
+
+### Tính năng nổi bật & Cải tiến
+- **Tải trực tiếp serverlist.ini**: Thay đổi cơ chế đồng bộ danh sách máy chủ, hỗ trợ tải trực tiếp tệp `serverlist.ini` từ tài nguyên release (Release Assets) của GitHub thay vì tải toàn bộ gói nén `settings.zip`.
+
 ## v1.0.1 - 2026-06-30
 
 ### Tính năng nổi bật & Cải tiến
