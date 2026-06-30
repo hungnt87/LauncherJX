@@ -1,5 +1,5 @@
 {
-  "version": "v1.0.4",
+  "version": "v1.0.6",
   "files": [
     {
       "name": "JX1Mod.ini",
@@ -8,7 +8,7 @@
     },
     {
       "name": "LauncherJX.exe",
-      "hash": "1bcf2a34f12bdc97161d9e481c52eb69d7b41671e0a45fbaf9cdb21225ba385d",
+      "hash": "81abbfb9d5d336c3f3afc765fd846a56880bbbd0ba3bd5a7c47ec4d35aadaf35",
       "zip": ""
     },
     {
@@ -24199,6 +24199,6 @@
   ],
   "updater": {
     "name": "updater.exe",
-    "hash": "37d9e73033dc4c838558d2d55c1d5194d4e1cdbdd40564ae4c65b28bc9ca07c2"
+    "hash": "b744aedbd12915005d5ad47e3c4af585a9dcf38a258a4ee80ac2d47bc191ea89"
   }
 }
