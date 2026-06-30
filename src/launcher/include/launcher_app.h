@@ -28,6 +28,11 @@ struct JX1ModSettings {
     bool add_point_popup      = false;  // [AddPointPopup] Enabled
 };
 
+struct ServerInfo {
+    std::string title;
+    std::string address;
+};
+
 class LauncherApp {
 public:
     LauncherApp();
@@ -36,6 +41,11 @@ public:
     void Initialize(const std::wstring& exe_dir);
     void StartUpdate();
     void Shutdown() noexcept;
+
+    const std::vector<ServerInfo>& GetServerList() const noexcept;
+    void SaveServerList(const std::vector<ServerInfo>& servers);
+    void LoadServerList();
+    void RestoreDefaultServerList(bool overwrite);
 
     launcher::update::UpdateSnapshot Snapshot() const;
     const std::wstring& ExecutableDir() const noexcept;
@@ -76,6 +86,8 @@ private:
     int game_resolution_ = 1024;
     bool fullscreen_ = false;
     JX1ModSettings jx1mod_settings_;
+    std::vector<ServerInfo> servers_;
+    int original_server_count_ = 0;
     
     launcher::update::Manifest server_manifest_;
     bool has_update_ = false;

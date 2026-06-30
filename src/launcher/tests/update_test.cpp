@@ -2,6 +2,9 @@
 #include <iostream>
 #include <cassert>
 #include <string>
+#include <filesystem>
+#include <fstream>
+#include <windows.h>
 
 void TestCompareSemanticVersion() {
     using namespace launcher::update;
@@ -79,12 +82,82 @@ void TestLauncherSelfUpdateSelection() {
     assert(ManifestHasLauncherBinary(manifest));
 }
 
+void TestMergeIniFiles() {
+    using namespace launcher::update;
+
+    std::filesystem::path temp_dir = std::filesystem::temp_directory_path() / "launcher_test_ini";
+    std::filesystem::create_directories(temp_dir);
+
+    std::filesystem::path default_path = temp_dir / "default.ini";
+    std::filesystem::path local_path = temp_dir / "local.ini";
+
+    // Tạo default.ini (file mẫu chuẩn mới từ server)
+    {
+        std::ofstream out(default_path);
+        out << "[List]\n"
+            << "RegionCount=3\n"
+            << "Region_0=May chu da vao\n"
+            << "Region_1=Vo lam truyen ky\n"
+            << "\n"
+            << "[Region_1]\n"
+            << "Count=3\n"
+            << "0_Title=Offline_CentOS\n"
+            << "0_Address=192.168.1.12\n"
+            << "1_Title=Online\n"
+            << "1_Address=192.168.196.111\n"
+            << "2_Title=New_Server\n"
+            << "2_Address=192.168.1.200\n";
+    }
+
+    // Tạo local.ini (file cấu hình hiện tại của người chơi)
+    {
+        std::ofstream out(local_path);
+        out << "[List]\n"
+            << "RegionCount=2\n"
+            << "Region_0=May chu da vao\n"
+            << "Region_1=Vo lam truyen ky\n"
+            << "\n"
+            << "[Region_1]\n"
+            << "Count=2\n"
+            << "0_Title=Offline_CentOS\n"
+            << "0_Address=192.168.1.12\n"
+            << "1_Title=Online\n"
+            << "1_Address=192.168.196.111\n";
+    }
+
+    // Tiến hành merge
+    MergeIniFiles(default_path.wstring(), local_path.wstring());
+
+    wchar_t val[100];
+    // Kiểm tra RegionCount (vẫn phải là 2 vì đã tồn tại ở local)
+    GetPrivateProfileStringW(L"List", L"RegionCount", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"2");
+
+    // Kiểm tra Count (vẫn phải là 2 vì đã tồn tại ở local)
+    GetPrivateProfileStringW(L"Region_1", L"Count", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"2");
+
+    // Kiểm tra 2_Title (phải được thêm mới)
+    GetPrivateProfileStringW(L"Region_1", L"2_Title", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"New_Server");
+
+    // Kiểm tra 2_Address (phải được thêm mới)
+    GetPrivateProfileStringW(L"Region_1", L"2_Address", L"", val, 100, local_path.wstring().c_str());
+    assert(std::wstring(val) == L"192.168.1.200");
+
+    // Dọn dẹp
+    std::filesystem::remove_all(temp_dir);
+
+    std::cout << "All MergeIniFiles tests passed successfully!" << std::endl;
+}
+
 int main() {
     try {
         TestCompareSemanticVersion();
         TestUrlEncode();
         TestManifestUpdaterAndHash();
         TestLauncherSelfUpdateSelection();
+        TestMergeIniFiles();
     } catch (const std::exception& e) {
         std::cerr << "Test failed with exception: " << e.what() << std::endl;
         return 1;

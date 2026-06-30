@@ -62,6 +62,7 @@ void LauncherApp::Initialize(const std::wstring& exe_dir) {
     changelog_content_ = "Đang tải thông tin cập nhật từ GitHub...";
     LoadResolutionSettings();
     LoadJx1ModSettings();
+    LoadServerList();
     check_thread_ = std::thread(&LauncherApp::RunCheckWorker, this);
 }
 
@@ -436,14 +437,17 @@ void LauncherApp::RunUpdateWorker() {
             std::wstring backup_config = (std::filesystem::path(exe_dir_) / L"tmp" / L"backup_config.ini").wstring();
             std::wstring backup_jx1mod = (std::filesystem::path(exe_dir_) / L"tmp" / L"backup_jx1mod.ini").wstring();
             std::wstring backup_package = (std::filesystem::path(exe_dir_) / L"tmp" / L"backup_package.ini").wstring();
+            std::wstring backup_serverlist = (std::filesystem::path(exe_dir_) / L"tmp" / L"backup_serverlist.ini").wstring();
 
             bool has_backup_config = false;
             bool has_backup_jx1mod = false;
             bool has_backup_package = false;
+            bool has_backup_serverlist = false;
 
             std::wstring local_config = (std::filesystem::path(exe_dir_) / L"config.ini").wstring();
             std::wstring local_jx1mod = (std::filesystem::path(exe_dir_) / L"JX1Mod.ini").wstring();
             std::wstring local_package = (std::filesystem::path(exe_dir_) / L"package.ini").wstring();
+            std::wstring local_serverlist = (std::filesystem::path(exe_dir_) / L"settings" / L"serverlist.ini").wstring();
 
             if (std::filesystem::exists(local_config)) {
                 std::filesystem::copy_file(local_config, backup_config, std::filesystem::copy_options::overwrite_existing);
@@ -456,6 +460,10 @@ void LauncherApp::RunUpdateWorker() {
             if (std::filesystem::exists(local_package)) {
                 std::filesystem::copy_file(local_package, backup_package, std::filesystem::copy_options::overwrite_existing);
                 has_backup_package = true;
+            }
+            if (std::filesystem::exists(local_serverlist)) {
+                std::filesystem::copy_file(local_serverlist, backup_serverlist, std::filesystem::copy_options::overwrite_existing);
+                has_backup_serverlist = true;
             }
 
             // 1. Giải nén các gói zip ra thư mục game
@@ -483,6 +491,35 @@ void LauncherApp::RunUpdateWorker() {
                 launcher::update::MergeIniFiles(local_package, backup_package);
                 std::filesystem::copy_file(backup_package, local_package, std::filesystem::copy_options::overwrite_existing);
                 try { std::filesystem::remove(backup_package); } catch (...) {}
+            }
+            if (has_backup_serverlist) {
+                // Khôi phục Region_1 (Offline) của người chơi vào file mới giải nén
+                int count = GetPrivateProfileIntW(L"Region_1", L"Count", 0, backup_serverlist.c_str());
+                
+                WritePrivateProfileSectionW(L"Region_1", nullptr, local_serverlist.c_str());
+                WritePrivateProfileStringW(L"Region_1", L"Count", std::to_wstring(count).c_str(), local_serverlist.c_str());
+                
+                for (int i = 0; i < count; ++i) {
+                    std::wstring title_key = std::to_wstring(i) + L"_Title";
+                    std::wstring addr_key = std::to_wstring(i) + L"_Address";
+                    
+                    wchar_t title_val[256] = {0};
+                    wchar_t addr_val[256] = {0};
+                    
+                    GetPrivateProfileStringW(L"Region_1", title_key.c_str(), L"", title_val, 256, backup_serverlist.c_str());
+                    GetPrivateProfileStringW(L"Region_1", addr_key.c_str(), L"", addr_val, 256, backup_serverlist.c_str());
+                    
+                    WritePrivateProfileStringW(L"Region_1", title_key.c_str(), title_val, local_serverlist.c_str());
+                    WritePrivateProfileStringW(L"Region_1", addr_key.c_str(), addr_val, local_serverlist.c_str());
+                }
+                
+                wchar_t region1_val[64] = {0};
+                GetPrivateProfileStringW(L"List", L"Region_1", L"", region1_val, 64, local_serverlist.c_str());
+                if (wcslen(region1_val) == 0) {
+                    WritePrivateProfileStringW(L"List", L"Region_1", L"Offline", local_serverlist.c_str());
+                }
+
+                try { std::filesystem::remove(backup_serverlist); } catch (...) {}
             }
 
             // 2. Copy các file lẻ không nén (nếu có)
@@ -798,4 +835,149 @@ bool LauncherApp::LaunchUpdaterAndExit(const std::wstring& updater_path, const s
         return false;
     }
     return true;
+}
+
+const std::vector<ServerInfo>& LauncherApp::GetServerList() const noexcept {
+    return servers_;
+}
+
+void LauncherApp::LoadServerList() {
+    servers_.clear();
+    std::wstring path = exe_dir_ + L"\\settings\\serverlist.ini";
+    if (!std::filesystem::exists(path)) {
+        original_server_count_ = 0;
+        return;
+    }
+    
+    int count = GetPrivateProfileIntW(L"Region_1", L"Count", 0, path.c_str());
+    original_server_count_ = count;
+    
+    for (int i = 0; i < count; ++i) {
+        std::wstring title_key = std::to_wstring(i) + L"_Title";
+        std::wstring addr_key = std::to_wstring(i) + L"_Address";
+        
+        wchar_t title_buf[256] = {0};
+        wchar_t addr_buf[256] = {0};
+        
+        GetPrivateProfileStringW(L"Region_1", title_key.c_str(), L"", title_buf, 256, path.c_str());
+        GetPrivateProfileStringW(L"Region_1", addr_key.c_str(), L"", addr_buf, 256, path.c_str());
+        
+        ServerInfo info;
+        info.title = common::WideToUtf8(title_buf);
+        info.address = common::WideToUtf8(addr_buf);
+        servers_.push_back(info);
+    }
+}
+
+void LauncherApp::SaveServerList(const std::vector<ServerInfo>& servers) {
+    servers_ = servers;
+    std::wstring path = exe_dir_ + L"\\settings\\serverlist.ini";
+    
+    std::filesystem::path fs_path(path);
+    if (fs_path.has_parent_path()) {
+        std::filesystem::create_directories(fs_path.parent_path());
+    }
+    
+    int old_count = GetPrivateProfileIntW(L"Region_1", L"Count", 0, path.c_str());
+    int new_count = static_cast<int>(servers_.size());
+    
+    wchar_t region_count_buf[8] = {0};
+    GetPrivateProfileStringW(L"List", L"RegionCount", L"", region_count_buf, 8, path.c_str());
+    if (wcslen(region_count_buf) == 0) {
+        WritePrivateProfileStringW(L"List", L"RegionCount", L"2", path.c_str());
+        WritePrivateProfileStringW(L"List", L"Region_0", L"May chu da vao", path.c_str());
+        WritePrivateProfileStringW(L"List", L"Region_1", L"Offline", path.c_str());
+        WritePrivateProfileStringW(L"List", L"Region_2", L"Online", path.c_str());
+    }
+
+    WritePrivateProfileStringW(L"Region_1", L"Count", std::to_wstring(new_count).c_str(), path.c_str());
+    
+    int max_count = (std::max)(new_count, old_count);
+    for (int i = 0; i < max_count; ++i) {
+        std::wstring title_key = std::to_wstring(i) + L"_Title";
+        std::wstring addr_key = std::to_wstring(i) + L"_Address";
+        
+        if (i < new_count) {
+            std::wstring title_val = common::Utf8ToWide(servers_[i].title);
+            std::wstring addr_val = common::Utf8ToWide(servers_[i].address);
+            WritePrivateProfileStringW(L"Region_1", title_key.c_str(), title_val.c_str(), path.c_str());
+            WritePrivateProfileStringW(L"Region_1", addr_key.c_str(), addr_val.c_str(), path.c_str());
+        } else {
+            WritePrivateProfileStringW(L"Region_1", title_key.c_str(), nullptr, path.c_str());
+            WritePrivateProfileStringW(L"Region_1", addr_key.c_str(), nullptr, path.c_str());
+        }
+    }
+    
+    original_server_count_ = new_count;
+}
+
+void LauncherApp::RestoreDefaultServerList(bool overwrite) {
+    std::wstring branch = (server_manifest_.version.empty() || server_manifest_.version == "v0.0.0") ? L"dev" : common::Utf8ToWide(server_manifest_.version);
+    std::wstring file_url = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/" + branch + L"/patch/settings/serverlist.ini";
+    
+    std::wstring path = exe_dir_ + L"\\settings\\serverlist.ini";
+    std::wstring temp_path = exe_dir_ + L"\\tmp\\serverlist.ini.default";
+    
+    std::atomic<bool> temp_running{true};
+    if (launcher::update::DownloadFile(nullptr, file_url, temp_path, temp_running, nullptr)) {
+        if (overwrite) {
+            std::filesystem::path fs_path(path);
+            if (fs_path.has_parent_path()) {
+                std::filesystem::create_directories(fs_path.parent_path());
+            }
+            std::filesystem::copy_file(temp_path, path, std::filesystem::copy_options::overwrite_existing);
+        } else {
+            // Đọc danh sách máy chủ của Admin từ file tạm
+            std::vector<ServerInfo> admin_servers;
+            int admin_count = GetPrivateProfileIntW(L"Region_1", L"Count", 0, temp_path.c_str());
+            for (int i = 0; i < admin_count; ++i) {
+                std::wstring title_key = std::to_wstring(i) + L"_Title";
+                std::wstring addr_key = std::to_wstring(i) + L"_Address";
+                wchar_t title_buf[256] = {0};
+                wchar_t addr_buf[256] = {0};
+                GetPrivateProfileStringW(L"Region_1", title_key.c_str(), L"", title_buf, 256, temp_path.c_str());
+                GetPrivateProfileStringW(L"Region_1", addr_key.c_str(), L"", addr_buf, 256, temp_path.c_str());
+                
+                ServerInfo info;
+                info.title = common::WideToUtf8(title_buf);
+                info.address = common::WideToUtf8(addr_buf);
+                admin_servers.push_back(info);
+            }
+
+            // Gộp danh sách máy chủ Admin vào danh sách local hiện có (servers_)
+            for (const auto& admin_srv : admin_servers) {
+                bool found_by_title = false;
+                for (auto& local_srv : servers_) {
+                    std::string local_title_lower = local_srv.title;
+                    std::string admin_title_lower = admin_srv.title;
+                    std::transform(local_title_lower.begin(), local_title_lower.end(), local_title_lower.begin(), ::tolower);
+                    std::transform(admin_title_lower.begin(), admin_title_lower.end(), admin_title_lower.begin(), ::tolower);
+                    
+                    if (local_title_lower == admin_title_lower) {
+                        local_srv.address = admin_srv.address; // Cập nhật IP mới của Admin
+                        found_by_title = true;
+                        break;
+                    }
+                }
+                
+                if (!found_by_title) {
+                    bool found_by_ip = false;
+                    for (const auto& local_srv : servers_) {
+                        if (local_srv.address == admin_srv.address) {
+                            found_by_ip = true;
+                            break;
+                        }
+                    }
+                    if (!found_by_ip) {
+                        servers_.push_back(admin_srv); // Thêm mới
+                    }
+                }
+            }
+
+            // Lưu danh sách đã gộp xuống file local
+            SaveServerList(servers_);
+        }
+        try { std::filesystem::remove(temp_path); } catch (...) {}
+        LoadServerList();
+    }
 }

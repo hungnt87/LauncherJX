@@ -10,12 +10,72 @@
 #include <gdiplus.h>
 #include <sstream>
 #include <shellapi.h>
+#include <algorithm>
 
 namespace {
 
 ID3D11Device* g_pd3dDevice = nullptr;
 ID3D11DeviceContext* g_pd3dDeviceContext = nullptr;
 HWND g_hWnd = nullptr;
+
+bool IsValidIPv4(const std::string& ip) {
+    if (ip.empty()) return false;
+    
+    int num_dots = 0;
+    for (char c : ip) {
+        if (c == '.') num_dots++;
+        else if (c < '0' || c > '9') return false;
+    }
+    if (num_dots != 3) return false;
+    
+    std::stringstream ss(ip);
+    std::string segment;
+    int seg_count = 0;
+    while (std::getline(ss, segment, '.')) {
+        seg_count++;
+        if (segment.empty() || segment.length() > 3) return false;
+        try {
+            int val = std::stoi(segment);
+            if (val < 0 || val > 255) return false;
+        } catch (...) {
+            return false;
+        }
+    }
+    return seg_count == 4;
+}
+
+std::string ValidateServerList(const std::vector<ServerInfo>& servers) {
+    if (servers.empty()) {
+        return "Danh sách máy chủ không được để trống!";
+    }
+    
+    for (size_t i = 0; i < servers.size(); ++i) {
+        if (servers[i].title.empty()) {
+            return "Tên máy chủ ở dòng " + std::to_string(i + 1) + " không được để trống!";
+        }
+        if (servers[i].address.empty()) {
+            return "Địa chỉ IP ở dòng " + std::to_string(i + 1) + " không được để trống!";
+        }
+        if (!IsValidIPv4(servers[i].address)) {
+            return "Địa chỉ IP '" + servers[i].address + "' ở dòng " + std::to_string(i + 1) + " không đúng định dạng IPv4 (A.B.C.D)!";
+        }
+        
+        for (size_t j = i + 1; j < servers.size(); ++j) {
+            std::string title_i_lower = servers[i].title;
+            std::string title_j_lower = servers[j].title;
+            std::transform(title_i_lower.begin(), title_i_lower.end(), title_i_lower.begin(), ::tolower);
+            std::transform(title_j_lower.begin(), title_j_lower.end(), title_j_lower.begin(), ::tolower);
+            
+            if (title_i_lower == title_j_lower) {
+                return "Trùng tên máy chủ: '" + servers[i].title + "' xuất hiện nhiều lần!";
+            }
+            if (servers[i].address == servers[j].address) {
+                return "Trùng địa chỉ IP: '" + servers[i].address + "' xuất hiện nhiều lần!";
+            }
+        }
+    }
+    return "";
+}
 
 }  // namespace
 
@@ -107,26 +167,33 @@ void RenderUI(LauncherApp& app) {
             ImGui::Spacing();
             ImGui::BeginChild("SettingsArea", ImVec2(936, 434), true);
 
+            if (ImGui::BeginTable("SettingsLayoutTable", 2, ImGuiTableFlags_None)) {
+                ImGui::TableSetupColumn("LeftCol", ImGuiTableColumnFlags_WidthFixed, 450.0f);
+                ImGui::TableSetupColumn("RightCol", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+
+            // ================= COL 1: Cài đặt Độ phân giải và hiển thị =================
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f));
             ImGui::Text("== Độ phân giải Game ==");
             ImGui::PopStyleColor();
             ImGui::Separator();
             ImGui::Spacing();
 
-            ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Chọn độ phân giải phù hợp với máy tính của bạn:");
+            ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "Chọn độ phân giải phù hợp:");
             ImGui::Spacing();
 
             int currentRes = app.GameResolution();
             bool sel800  = (currentRes == 800);
             bool sel1024 = (currentRes == 1024);
 
-            if (ImGui::RadioButton("800 x 600  (tiết kiệm tài nguyên, máy cũ)", sel800)) {
+            if (ImGui::RadioButton("800 x 600  (tiết kiệm tài nguyên)", sel800)) {
                 app.SetGameResolution(800);
             }
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("CẢNH BÁO: Bạn cần cài đặt thư viện Visual C++ Runtime (VCRedist) để game hoạt động đúng độ phân giải mong muốn!\n(Đường dẫn tải ở phía dưới)");
             ImGui::Spacing();
-            if (ImGui::RadioButton("1024 x 768 (đồ họa cao hơn, máy tốt)", sel1024)) {
+            if (ImGui::RadioButton("1024 x 768 (đồ họa cao hơn)", sel1024)) {
                 app.SetGameResolution(1024);
             }
             if (ImGui::IsItemHovered())
@@ -165,16 +232,133 @@ void RenderUI(LauncherApp& app) {
             ImGui::Separator();
             ImGui::Spacing();
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
-            ImGui::TextWrapped("* Thay đổi được lưu ngay lập tức vào config.ini và package.ini.");
-            ImGui::TextWrapped("* Cần khởi động lại game để áp dụng cài đặt mới.");
-            ImGui::TextWrapped("* Nếu thiết lập/game không hoạt động, vui lòng tải và cài đặt thư viện Visual C++ Runtime tại:");
+            ImGui::TextWrapped("* Thay đổi được lưu vào config.ini và package.ini.");
+            ImGui::TextWrapped("* Cần khởi động lại game để áp dụng.");
+            ImGui::TextWrapped("* Link cài đặt Visual C++ Runtime:");
             static char link_buf[] = "https://github.com/abbodi1406/vcredist";
-            ImGui::SetNextItemWidth(380.0f);
+            ImGui::SetNextItemWidth(400.0f);
             ImGui::InputText("##vcredist_link", link_buf, sizeof(link_buf), ImGuiInputTextFlags_ReadOnly);
             if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("CẢNH BÁO: Thiếu thư viện Visual C++ Runtime (VCRedist) sẽ khiến game không hoạt động đúng độ phân giải mong muốn trong thiết lập độ phân giải!");
+                ImGui::SetTooltip("CẢNH BÁO: Thiếu thư viện Visual C++ Runtime (VCRedist) sẽ khiến game không hoạt động đúng độ phân giải mong muốn!");
             }
             ImGui::PopStyleColor();
+
+            // ================= COL 2: Trình chỉnh sửa ServerList =================
+            ImGui::TableNextColumn();
+
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 1.0f, 1.0f));
+            ImGui::Text("== Danh sách máy chủ (serverlist.ini) ==");
+            ImGui::PopStyleColor();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            static std::vector<ServerInfo> temp_servers;
+            static bool temp_servers_loaded = false;
+            if (!temp_servers_loaded) {
+                temp_servers = app.GetServerList();
+                temp_servers_loaded = true;
+            }
+
+            bool restore_overwrite = false;
+            bool restore_merge = false;
+            bool do_save = false;
+
+            static std::string popup_message = "";
+            static bool show_popup = false;
+
+            // Bảng danh sách máy chủ cuộn cuộn
+            ImGui::BeginChild("ServerListScroll", ImVec2(0, 310), true);
+            if (ImGui::BeginTable("ServerListTable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
+                ImGui::TableSetupColumn("Tên máy chủ", ImGuiTableColumnFlags_WidthStretch, 0.5f);
+                ImGui::TableSetupColumn("Địa chỉ IP", ImGuiTableColumnFlags_WidthStretch, 0.4f);
+                ImGui::TableSetupColumn("Xóa", ImGuiTableColumnFlags_WidthFixed, 30.0f);
+                ImGui::TableHeadersRow();
+
+                for (size_t i = 0; i < temp_servers.size(); ++i) {
+                    ImGui::PushID(static_cast<int>(i));
+                    ImGui::TableNextRow();
+                    
+                    // Cột 1: Tên máy chủ
+                    ImGui::TableNextColumn();
+                    char title_buf[128];
+                    strncpy_s(title_buf, temp_servers[i].title.c_str(), _TRUNCATE);
+                    ImGui::SetNextItemWidth(-1.0f);
+                    if (ImGui::InputText("##title", title_buf, sizeof(title_buf))) {
+                        temp_servers[i].title = title_buf;
+                    }
+
+                    // Cột 2: Địa chỉ IP
+                    ImGui::TableNextColumn();
+                    char addr_buf[128];
+                    strncpy_s(addr_buf, temp_servers[i].address.c_str(), _TRUNCATE);
+                    ImGui::SetNextItemWidth(-1.0f);
+                    if (ImGui::InputText("##addr", addr_buf, sizeof(addr_buf))) {
+                        temp_servers[i].address = addr_buf;
+                    }
+
+                    // Cột 3: Nút xóa
+                    ImGui::TableNextColumn();
+                    if (ImGui::Button("X", ImVec2(-1.0f, 0.0f))) {
+                        temp_servers.erase(temp_servers.begin() + i);
+                        i--;
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::SetTooltip("Xóa máy chủ này khỏi danh sách");
+                    }
+
+                    ImGui::PopID();
+                }
+                ImGui::EndTable();
+            }
+            ImGui::EndChild();
+
+            ImGui::Spacing();
+            
+            // Nút điều khiển
+            if (ImGui::Button("Thêm máy chủ mới")) {
+                ServerInfo new_server;
+                new_server.title = "May chu moi";
+                new_server.address = "127.0.0.1";
+                temp_servers.push_back(new_server);
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Lưu thay đổi")) {
+                do_save = true;
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Lưu các chỉnh sửa máy chủ hiện tại vào serverlist.ini");
+            }
+
+            if (do_save) {
+                std::string err = ValidateServerList(temp_servers);
+                if (err.empty()) {
+                    app.SaveServerList(temp_servers);
+                    popup_message = "Lưu danh sách máy chủ thành công!";
+                    show_popup = true;
+                } else {
+                    popup_message = "Lưu thất bại!\n\n" + err;
+                    show_popup = true;
+                }
+            }
+
+            if (show_popup) {
+                ImGui::OpenPopup("Thông báo Cài đặt");
+                show_popup = false;
+            }
+
+            if (ImGui::BeginPopupModal("Thông báo Cài đặt", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+                ImGui::Text("%s", popup_message.c_str());
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+                if (ImGui::Button("OK", ImVec2(120, 0))) {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+
+            ImGui::EndTable();
+            }
 
             ImGui::EndChild();
             ImGui::EndTabItem();

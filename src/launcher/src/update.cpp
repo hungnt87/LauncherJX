@@ -311,21 +311,22 @@ std::vector<FileEntry> CollectFilesToUpdate(const std::wstring& exe_dir, const M
         std::wstring wname = Utf8ToWstring(file.name);
         const std::filesystem::path local_path = root / std::filesystem::path(wname);
         
-        // Chỉ bỏ qua kiểm tra hash đối với config.ini, jx1mod.ini, package.ini (giữ cấu hình người chơi)
-        std::wstring filename = local_path.filename().wstring();
-        std::transform(filename.begin(), filename.end(), filename.begin(), ::tolower);
+        std::string rel_path = file.name;
+        std::transform(rel_path.begin(), rel_path.end(), rel_path.begin(), ::tolower);
+        for (char& c : rel_path) {
+            if (c == '\\') c = '/';
+        }
 
-        if (filename == L"launcherjx.exe") {
+        if (rel_path == "launcherjx.exe") {
             continue;
         }
 
-        if (filename == L"config.ini" || filename == L"jx1mod.ini" || filename == L"package.ini") {
-
+        if (rel_path == "config.ini" || rel_path == "jx1mod.ini" || rel_path == "package.ini" || rel_path == "settings/serverlist.ini") {
             if (!std::filesystem::exists(local_path)) {
                 files_to_update.push_back(file);
             }
         } else {
-            // Đối với các file game thông thường (kể cả các file .ini khác), check sự tồn tại và khớp hash SHA-256
+            // Đối với các file game thông thường, check sự tồn tại và khớp hash SHA-256
             const std::string local_hash = ComputeSha256(local_path.wstring());
             if (local_hash.empty() || ToLowerAscii(local_hash) != ToLowerAscii(file.hash)) {
                 files_to_update.push_back(file);
@@ -525,11 +526,60 @@ void MergeIniFiles(const std::wstring& default_ini_path, const std::wstring& loc
     }
 }
 
+void UpdateServerListOnlineRegion(const std::wstring& default_ini_path, const std::wstring& local_ini_path) {
+    if (!std::filesystem::exists(default_ini_path)) return;
+    
+    if (!std::filesystem::exists(local_ini_path)) {
+        std::filesystem::path parent = std::filesystem::path(local_ini_path).parent_path();
+        if (!parent.empty()) {
+            std::filesystem::create_directories(parent);
+        }
+        std::filesystem::copy_file(default_ini_path, local_ini_path, std::filesystem::copy_options::overwrite_existing);
+        return;
+    }
+
+    int count = GetPrivateProfileIntW(L"Region_2", L"Count", 0, default_ini_path.c_str());
+    
+    WritePrivateProfileSectionW(L"Region_2", nullptr, local_ini_path.c_str());
+    
+    WritePrivateProfileStringW(L"Region_2", L"Count", std::to_wstring(count).c_str(), local_ini_path.c_str());
+    
+    for (int i = 0; i < count; ++i) {
+        std::wstring title_key = std::to_wstring(i) + L"_Title";
+        std::wstring addr_key = std::to_wstring(i) + L"_Address";
+        
+        wchar_t title_val[256] = {0};
+        wchar_t addr_val[256] = {0};
+        
+        GetPrivateProfileStringW(L"Region_2", title_key.c_str(), L"", title_val, 256, default_ini_path.c_str());
+        GetPrivateProfileStringW(L"Region_2", addr_key.c_str(), L"", addr_val, 256, default_ini_path.c_str());
+        
+        WritePrivateProfileStringW(L"Region_2", title_key.c_str(), title_val, local_ini_path.c_str());
+        WritePrivateProfileStringW(L"Region_2", addr_key.c_str(), addr_val, local_ini_path.c_str());
+    }
+
+    wchar_t region2_val[64] = {0};
+    GetPrivateProfileStringW(L"List", L"Region_2", L"", region2_val, 64, local_ini_path.c_str());
+    if (wcslen(region2_val) == 0) {
+        wchar_t default_r2[64] = {0};
+        GetPrivateProfileStringW(L"List", L"Region_2", L"Online", default_r2, 64, default_ini_path.c_str());
+        WritePrivateProfileStringW(L"List", L"Region_2", default_r2, local_ini_path.c_str());
+    }
+    
+    wchar_t region_count[8] = {0};
+    GetPrivateProfileStringW(L"List", L"RegionCount", L"", region_count, 8, local_ini_path.c_str());
+    if (wcslen(region_count) == 0) {
+        wchar_t default_rc[8] = {0};
+        GetPrivateProfileStringW(L"List", L"RegionCount", L"2", default_rc, 8, default_ini_path.c_str());
+        WritePrivateProfileStringW(L"List", L"RegionCount", default_rc, local_ini_path.c_str());
+    }
+}
+
 bool CheckAndRepairIniFiles(const std::wstring& exe_dir, const Manifest& manifest, const std::atomic<bool>& running) {
     std::wstring branch = (manifest.version.empty() || manifest.version == "v0.0.0") ? L"dev" : Utf8ToWstring(manifest.version);
     std::wstring remote_prefix = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/" + branch + L"/patch/";
 
-    std::vector<std::string> special_configs = {"config.ini", "jx1mod.ini", "package.ini"};
+    std::vector<std::string> special_configs = {"config.ini", "jx1mod.ini", "package.ini", "settings/serverlist.ini"};
     bool any_merged = false;
 
     for (const auto& config_name : special_configs) {
@@ -565,7 +615,11 @@ bool CheckAndRepairIniFiles(const std::wstring& exe_dir, const Manifest& manifes
             std::wstring file_url = remote_prefix + wencoded_name;
 
             if (DownloadFile(nullptr, file_url, temp_default_path, running, nullptr)) {
-                MergeIniFiles(temp_default_path, local_path);
+                if (config_name == "settings/serverlist.ini") {
+                    UpdateServerListOnlineRegion(temp_default_path, local_path);
+                } else {
+                    MergeIniFiles(temp_default_path, local_path);
+                }
                 try { std::filesystem::remove(temp_default_path); } catch (...) {}
                 any_merged = true;
             }
