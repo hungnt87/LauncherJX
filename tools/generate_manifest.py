@@ -91,10 +91,13 @@ def generate_manifest(patch_dir, version, updater_path=None, updater_name="updat
                     rel_path = os.path.relpath(abs_path, patch_dir).replace('\\', '/')
                     sha = get_sha256(abs_path)
                     if sha:
+                        zip_val = f"{sub_dir}.zip"
+                        if rel_path.lower() == "settings/serverlist.ini":
+                            zip_val = ""
                         manifest["files"].append({
                             "name": rel_path,
                             "hash": sha,
-                            "zip": f"{sub_dir}.zip"
+                            "zip": zip_val
                         })
                         
     # 2. Quét các file lẻ nằm trực tiếp ở thư mục gốc và nén thành root.zip
