@@ -614,6 +614,11 @@ bool CheckAndRepairIniFiles(const std::wstring& exe_dir, const Manifest& manifes
             std::wstring wencoded_name = Utf8ToWstring(encoded_name);
             std::wstring file_url = remote_prefix + wencoded_name;
 
+            if (config_name == "settings/serverlist.ini") {
+                std::wstring tag_w = Utf8ToWstring(manifest.version);
+                file_url = L"https://github.com/hungnt87/LauncherJX/releases/download/" + tag_w + L"/serverlist.ini";
+            }
+
             if (DownloadFile(nullptr, file_url, temp_default_path, running, nullptr)) {
                 if (config_name == "settings/serverlist.ini") {
                     UpdateServerListOnlineRegion(temp_default_path, local_path);

@@ -912,8 +912,8 @@ void LauncherApp::SaveServerList(const std::vector<ServerInfo>& servers) {
 }
 
 void LauncherApp::RestoreDefaultServerList(bool overwrite) {
-    std::wstring branch = (server_manifest_.version.empty() || server_manifest_.version == "v0.0.0") ? L"dev" : common::Utf8ToWide(server_manifest_.version);
-    std::wstring file_url = L"https://raw.githubusercontent.com/hungnt87/LauncherJX/" + branch + L"/patch/settings/serverlist.ini";
+    std::wstring tag_w = (server_manifest_.version.empty() || server_manifest_.version == "v0.0.0") ? L"v1.0.2" : common::Utf8ToWide(server_manifest_.version);
+    std::wstring file_url = L"https://github.com/hungnt87/LauncherJX/releases/download/" + tag_w + L"/serverlist.ini";
     
     std::wstring path = exe_dir_ + L"\\settings\\serverlist.ini";
     std::wstring temp_path = exe_dir_ + L"\\tmp\\serverlist.ini.default";
